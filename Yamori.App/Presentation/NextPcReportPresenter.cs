@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Yamori.Core.Formatting;
 using Yamori.Core.Hardware;
 using Yamori.Core.Processes;
 using Yamori.Core.Recommendations;
+using Yamori.Localization;
 
 namespace Yamori.Presentation;
 
 /// <summary>
-/// <see cref="Core.Reports.NextPcReport"/> の中身を、画面に出す行の一覧に変換する。
+/// <see cref="Core.Reports.NextPcReport"/> の中身を、画面に出す項目の一覧に変換する。言語は現在の UI カルチャに従う。
 /// </summary>
 public sealed class NextPcReportPresenter
 {
@@ -28,10 +28,10 @@ public sealed class NextPcReportPresenter
     }
 
     /// <summary>
-    /// ハードウェア一覧を表示用の行にする。
+    /// ハードウェア一覧を表示用の項目にする。
     /// </summary>
     /// <param name="inventory">ハードウェア一覧。</param>
-    /// <returns>表示用の行。</returns>
+    /// <returns>表示用の項目。</returns>
     public IReadOnlyList<HardwareRow> BuildHardwareRows(HardwareInventory inventory)
     {
         ArgumentNullException.ThrowIfNull(inventory);
@@ -39,35 +39,39 @@ public sealed class NextPcReportPresenter
         var rows = new List<HardwareRow>();
         if (inventory.Cpu is { } cpu)
         {
-            rows.Add(new HardwareRow(
-                "CPU",
+            rows.Add(Row(
+                HardwareComponent.Cpu,
                 cpu.Name,
-                string.Format(CultureInfo.InvariantCulture, "{0} コア / {1} スレッド・最大 {2:0.0} GHz", cpu.PhysicalCores, cpu.LogicalProcessors, cpu.MaxClockMhz / 1000.0)));
+                UiText.Format("Hw_Cpu_Detail", cpu.PhysicalCores, cpu.LogicalProcessors, cpu.MaxClockMhz / 1000.0)));
         }
 
         if (inventory.Memory is { } memory)
         {
-            var speed = memory.SpeedMhz is { } s ? $"・{s} MT/s" : string.Empty;
-            rows.Add(new HardwareRow("メモリ", ByteSizeFormatter.Format(memory.TotalBytes), $"{memory.ModuleCount} 枚{speed}"));
+            rows.Add(Row(
+                HardwareComponent.Memory,
+                ByteSizeFormatter.Format(memory.TotalBytes),
+                memory.SpeedMhz is { } speed
+                    ? UiText.Format("Hw_Memory_ModulesWithSpeed", memory.ModuleCount, speed)
+                    : UiText.Format("Hw_Memory_Modules", memory.ModuleCount)));
         }
 
-        rows.AddRange(inventory.Storage.Select(d => new HardwareRow(
-            "ストレージ",
+        rows.AddRange(inventory.Storage.Select(d => Row(
+            HardwareComponent.Storage,
             d.Model,
-            $"{ByteSizeFormatter.Format(d.SizeBytes)}・{MediaTypeLabel(d.MediaType)}（{d.BusType}）・{HealthLabel(d.Health)}")));
+            UiText.Format("Hw_Storage_Detail", ByteSizeFormatter.Format(d.SizeBytes), MediaTypeLabel(d.MediaType), d.BusType, HealthLabel(d.Health)))));
 
-        rows.AddRange(inventory.Gpus.Select(g => new HardwareRow(
-            "GPU",
+        rows.AddRange(inventory.Gpus.Select(g => Row(
+            HardwareComponent.Gpu,
             g.Name,
             g.AdapterRamBytes is { } ram
-                ? $"ビデオメモリ {ByteSizeFormatter.Format(ram)}（4GB 以上は正しく表示されないことがあります）・ドライバー {g.DriverVersion}"
-                : $"ドライバー {g.DriverVersion}")));
+                ? UiText.Format("Hw_Gpu_WithRam", ByteSizeFormatter.Format(ram), g.DriverVersion)
+                : UiText.Format("Hw_Gpu_DriverOnly", g.DriverVersion))));
 
-        rows.AddRange(inventory.Batteries.Select(b => new HardwareRow("バッテリー", b.Name, BatteryDetail(b))));
+        rows.AddRange(inventory.Batteries.Select(b => Row(HardwareComponent.Battery, b.Name, BatteryDetail(b))));
 
         if (rows.Count == 0)
         {
-            rows.Add(new HardwareRow("—", "ハードウェア情報を取得できませんでした", "Windows の管理機能（WMI）が応答していない可能性があります。"));
+            rows.Add(new HardwareRow(HardwareGlyphs.Unknown, "—", UiText.Get("Hw_None_Title"), UiText.Get("Hw_None_Detail")));
         }
 
         return rows;
@@ -82,8 +86,8 @@ public sealed class NextPcReportPresenter
     {
         ArgumentNullException.ThrowIfNull(recommendations);
         return recommendations
-            .Select(_recommendationFormatter.Format)
-            .Select(t => new RecommendationItem(t.Title, t.Explanation))
+            .Select(r => (Recommendation: r, Text: _recommendationFormatter.Format(r)))
+            .Select(x => new RecommendationItem(HardwareGlyphs.For(x.Recommendation.Component), x.Text.Title, x.Text.Explanation))
             .ToArray();
     }
 
@@ -95,10 +99,20 @@ public sealed class NextPcReportPresenter
     public IReadOnlyList<AppUsageItem> BuildTopApps(IEnumerable<ProcessUsage> apps)
     {
         ArgumentNullException.ThrowIfNull(apps);
-        return apps
-            .Select(a => new AppUsageItem(a.Name, ByteSizeFormatter.Format(a.WorkingSetBytes), $"{a.ProcessCount} プロセス"))
+
+        var list = apps.ToArray();
+        var largest = list.Length == 0 ? 0UL : list.Max(a => a.WorkingSetBytes);
+        return list
+            .Select(a => new AppUsageItem(
+                a.Name,
+                ByteSizeFormatter.Format(a.WorkingSetBytes),
+                UiText.Format("Apps_ProcessCount", a.ProcessCount),
+                largest == 0 ? 0 : 100.0 * a.WorkingSetBytes / largest))
             .ToArray();
     }
+
+    private static HardwareRow Row(HardwareComponent component, string title, string detail) =>
+        new(HardwareGlyphs.For(component), ComponentDisplayNames.Get(component), title, detail);
 
     private static string MediaTypeLabel(StorageMediaType type) =>
         type switch
@@ -106,23 +120,25 @@ public sealed class NextPcReportPresenter
             StorageMediaType.Ssd => "SSD",
             StorageMediaType.Hdd => "HDD",
             StorageMediaType.Scm => "SCM",
-            _ => "種類不明",
+            _ => UiText.Get("Media_Unknown"),
         };
 
     private static string HealthLabel(StorageHealth health) =>
         health switch
         {
-            StorageHealth.Healthy => "Windows の判定：正常",
-            StorageHealth.Warning => "Windows の判定：注意（バックアップをおすすめします）",
-            StorageHealth.Unhealthy => "Windows の判定：異常（早めのバックアップと交換をおすすめします）",
-            _ => "健康状態は不明",
+            StorageHealth.Healthy => UiText.Get("Health_Healthy"),
+            StorageHealth.Warning => UiText.Get("Health_Warning"),
+            StorageHealth.Unhealthy => UiText.Get("Health_Unhealthy"),
+            _ => UiText.Get("Health_Unknown"),
         };
 
     private static string BatteryDetail(BatteryInfo battery)
     {
-        var charge = battery.ChargePercent is { } c ? $"残量 {c}%" : "残量不明";
+        var charge = battery.ChargePercent is { } c
+            ? UiText.Format("Hw_Battery_Charge", c)
+            : UiText.Get("Hw_Battery_ChargeUnknown");
         return battery.HealthRatio is { } ratio
-            ? string.Format(CultureInfo.InvariantCulture, "{0}・満充電容量は新品時の {1:0}%（80% を下回ると持ちの悪さを感じやすくなります）", charge, ratio * 100)
+            ? UiText.Format("Hw_Battery_Health", charge, ratio * 100)
             : charge;
     }
 }

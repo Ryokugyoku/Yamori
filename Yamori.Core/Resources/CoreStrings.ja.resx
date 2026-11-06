@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Component_Cpu" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="Component_Memory" xml:space="preserve">
+    <value>メモリ</value>
+  </data>
+  <data name="Component_Storage" xml:space="preserve">
+    <value>ストレージ</value>
+  </data>
+  <data name="Component_Gpu" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="Component_Battery" xml:space="preserve">
+    <value>バッテリー</value>
+  </data>
+  <data name="Rec_NotEnoughData_Title" xml:space="preserve">
+    <value>{0}：データを集めています</value>
+  </data>
+  <data name="Rec_NotEnoughData_Explanation" xml:space="preserve">
+    <value>判定には、もう少し長い時間の記録が必要です（今の記録：{0}）。Yamori を開いている間、使用率を記録しています。</value>
+  </data>
+  <data name="Rec_Fact" xml:space="preserve">
+    <value>{0}使用率が{1:0}%を超えていた時間は、記録した時間（{2}）全体の{3:0}%です。</value>
+  </data>
+  <data name="Rec_Causes" xml:space="preserve">
+    <value>主な原因は{0}です。</value>
+  </data>
+  <data name="Rec_CauseSeparator" xml:space="preserve">
+    <value>と</value>
+  </data>
+  <data name="Rec_Meaning_Sufficient" xml:space="preserve">
+    <value>今の使い方には足りています。</value>
+  </data>
+  <data name="Rec_Meaning_Borderline" xml:space="preserve">
+    <value>ときどき限界に近づいていますが、普段の作業に大きな支障はない水準です。</value>
+  </data>
+  <data name="Rec_Meaning_Insufficient" xml:space="preserve">
+    <value>限界に近い状態で使っている時間が長く、動作が遅くなる原因になっている可能性があります。</value>
+  </data>
+  <data name="Rec_Title_Level" xml:space="preserve">
+    <value>{0}：{1}</value>
+  </data>
+  <data name="Rec_Title_Sufficient" xml:space="preserve">
+    <value>{0}：次の PC も {1} あれば十分です</value>
+  </data>
+  <data name="Rec_Title_Recommended" xml:space="preserve">
+    <value>{0}：次の PC は {1} 以上がおすすめです</value>
+  </data>
+  <data name="Level_Sufficient" xml:space="preserve">
+    <value>足りています</value>
+  </data>
+  <data name="Level_Borderline" xml:space="preserve">
+    <value>ときどき限界に近い</value>
+  </data>
+  <data name="Level_Insufficient" xml:space="preserve">
+    <value>限界に近い時間が長い</value>
+  </data>
+  <data name="Level_Unknown" xml:space="preserve">
+    <value>判定できません</value>
+  </data>
+  <data name="Unit_Gigabytes" xml:space="preserve">
+    <value>{0}GB</value>
+  </data>
+  <data name="Unit_Threads" xml:space="preserve">
+    <value>{0}スレッド</value>
+  </data>
+  <data name="Duration_Days" xml:space="preserve">
+    <value>{0:0.#}日</value>
+  </data>
+  <data name="Duration_Hours" xml:space="preserve">
+    <value>{0:0.#}時間</value>
+  </data>
+  <data name="Duration_Minutes" xml:space="preserve">
+    <value>{0:0}分</value>
+  </data>
+</root>

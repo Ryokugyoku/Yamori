@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -11,23 +9,29 @@ using CommunityToolkit.Mvvm.Input;
 using Yamori.Core.Hardware;
 using Yamori.Core.Monitoring;
 using Yamori.Core.Reports;
+using Yamori.Core.Storage;
+using Yamori.Localization;
 using Yamori.Presentation;
 
 namespace Yamori.ViewModels;
 
 /// <summary>
-/// メイン画面の状態。今の使用率、ハードウェア一覧、次の PC のおすすめ、アプリの使用量を持つ。
+/// 概要・ハードウェア・アプリの各画面で共有する状態。今の使用率、ハードウェア一覧、次の PC のおすすめ、アプリの使用量を持つ。
 /// </summary>
 public sealed class MainViewModel : ObservableObject, IDisposable
 {
     private readonly NextPcReportService _reportService;
     private readonly UsageMonitor _monitor;
     private readonly NextPcReportPresenter _presenter;
+    private readonly HistoryStorageService _storage;
     private readonly SynchronizationContext _uiContext;
 
-    private string _cpuUsageText = "—";
-    private string _memoryUsageText = "—";
-    private string _statusText = "読み込み中…";
+    private double _cpuUsage;
+    private double _memoryUsage;
+    private bool _hasUsage;
+    private string _statusText;
+    private string _privacyNoteText = string.Empty;
+    private string _dataDirectoryText = string.Empty;
     private bool _isBusy;
 
     /// <summary>
@@ -36,28 +40,31 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     /// <param name="reportService">レポートを作る処理。</param>
     /// <param name="monitor">使用率の監視処理。</param>
     /// <param name="presenter">レポートを表示用に変換する処理。</param>
-    /// <param name="dataDirectory">履歴の保存先フォルダー（画面に表示する）。</param>
+    /// <param name="storage">記録の保存先（画面に表示する）。</param>
     /// <exception cref="ArgumentNullException">いずれかの引数が null。</exception>
     /// <exception cref="InvalidOperationException">UI スレッド以外から呼ばれた。</exception>
-    public MainViewModel(NextPcReportService reportService, UsageMonitor monitor, NextPcReportPresenter presenter, string dataDirectory)
+    public MainViewModel(NextPcReportService reportService, UsageMonitor monitor, NextPcReportPresenter presenter, HistoryStorageService storage)
     {
         ArgumentNullException.ThrowIfNull(reportService);
         ArgumentNullException.ThrowIfNull(monitor);
         ArgumentNullException.ThrowIfNull(presenter);
-        ArgumentNullException.ThrowIfNull(dataDirectory);
+        ArgumentNullException.ThrowIfNull(storage);
 
         _reportService = reportService;
         _monitor = monitor;
         _presenter = presenter;
+        _storage = storage;
         _uiContext = SynchronizationContext.Current
             ?? throw new InvalidOperationException("MainViewModel は UI スレッドで作成してください。");
 
-        DataDirectoryText = $"記録はこの PC の中だけに保存されます：{dataDirectory}";
+        _statusText = UiText.Get("Status_Loading");
+        UpdateLocationTexts();
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
         _monitor.SamplesRecorded += OnSamplesRecorded;
+        _storage.LocationChanged += OnLocationChanged;
     }
 
-    /// <summary>ハードウェア一覧の行を取得する。</summary>
+    /// <summary>ハードウェア一覧の項目を取得する。</summary>
     public ObservableCollection<HardwareRow> Hardware { get; } = [];
 
     /// <summary>次の PC のおすすめを取得する。</summary>
@@ -69,22 +76,51 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     /// <summary>表示を最新にするコマンドを取得する。</summary>
     public IAsyncRelayCommand RefreshCommand { get; }
 
-    /// <summary>データの保存先の説明を取得する。</summary>
-    public string DataDirectoryText { get; }
-
-    /// <summary>今の CPU 使用率の表示を取得する。</summary>
-    public string CpuUsageText
+    /// <summary>記録の保存先のフォルダーを示す文字列を取得する。</summary>
+    public string DataDirectoryText
     {
-        get => _cpuUsageText;
-        private set => SetProperty(ref _cpuUsageText, value);
+        get => _dataDirectoryText;
+        private set => SetProperty(ref _dataDirectoryText, value);
     }
 
-    /// <summary>今のメモリ使用率の表示を取得する。</summary>
-    public string MemoryUsageText
+    /// <summary>通信とデータの扱いについての説明を取得する。保存先によって変わる。</summary>
+    public string PrivacyNoteText
     {
-        get => _memoryUsageText;
-        private set => SetProperty(ref _memoryUsageText, value);
+        get => _privacyNoteText;
+        private set => SetProperty(ref _privacyNoteText, value);
     }
+
+    /// <summary>今の CPU 使用率（%）を取得する。</summary>
+    public double CpuUsage
+    {
+        get => _cpuUsage;
+        private set
+        {
+            if (SetProperty(ref _cpuUsage, value))
+            {
+                OnPropertyChanged(nameof(CpuUsageText));
+            }
+        }
+    }
+
+    /// <summary>今のメモリ使用率（%）を取得する。</summary>
+    public double MemoryUsage
+    {
+        get => _memoryUsage;
+        private set
+        {
+            if (SetProperty(ref _memoryUsage, value))
+            {
+                OnPropertyChanged(nameof(MemoryUsageText));
+            }
+        }
+    }
+
+    /// <summary>今の CPU 使用率の表示を取得する。まだ測れていなければ「—」。</summary>
+    public string CpuUsageText => FormatPercent(CpuUsage);
+
+    /// <summary>今のメモリ使用率の表示を取得する。まだ測れていなければ「—」。</summary>
+    public string MemoryUsageText => FormatPercent(MemoryUsage);
 
     /// <summary>最後に更新した時刻などの状態表示を取得する。</summary>
     public string StatusText
@@ -101,9 +137,25 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// 監視処理のイベント購読を解除する。
+    /// 監視処理と保存先のイベント購読を解除する。
     /// </summary>
-    public void Dispose() => _monitor.SamplesRecorded -= OnSamplesRecorded;
+    public void Dispose()
+    {
+        _monitor.SamplesRecorded -= OnSamplesRecorded;
+        _storage.LocationChanged -= OnLocationChanged;
+    }
+
+    /// <summary>
+    /// 表示言語が変わったときに、文字列をすべて作り直す。
+    /// </summary>
+    /// <returns>作り直し終わったときに完了するタスク。</returns>
+    public Task ReloadForLanguageAsync()
+    {
+        UpdateLocationTexts();
+        OnPropertyChanged(nameof(CpuUsageText));
+        OnPropertyChanged(nameof(MemoryUsageText));
+        return RefreshCommand.ExecuteAsync(null);
+    }
 
     private async Task RefreshAsync()
     {
@@ -116,11 +168,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             Replace(Hardware, _presenter.BuildHardwareRows(report.Inventory));
             Replace(Recommendations, _presenter.BuildRecommendations(report.Recommendations));
             Replace(TopApps, _presenter.BuildTopApps(report.TopApps));
-            StatusText = $"最終更新：{report.GeneratedAt.ToLocalTime():yyyy/MM/dd HH:mm:ss}";
+            StatusText = UiText.Format("Status_LastUpdated", report.GeneratedAt.ToLocalTime().ToString("G"));
         }
         catch (IOException ex)
         {
-            StatusText = $"記録の読み込みに失敗しました：{ex.Message}";
+            StatusText = UiText.Format("Status_LoadFailed", ex.Message);
         }
         finally
         {
@@ -128,21 +180,35 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
     }
 
+    private string FormatPercent(double value) => _hasUsage ? $"{value:0}%" : "—";
+
+    private void UpdateLocationTexts()
+    {
+        var location = _storage.CurrentLocation;
+        DataDirectoryText = StorageLocationTexts.PathLabel(location);
+        PrivacyNoteText = StorageLocationTexts.PrivacyNote(location);
+    }
+
+    private void OnLocationChanged(object? sender, HistoryLocation location) =>
+        _uiContext.Post(_ => UpdateLocationTexts(), null);
+
     private void OnSamplesRecorded(object? sender, IReadOnlyList<ComponentUsageSample> samples)
     {
         _uiContext.Post(
             _ =>
             {
+                _hasUsage = true;
                 foreach (var sample in samples)
                 {
-                    var text = sample.UsagePercent.ToString("0", CultureInfo.InvariantCulture) + "%";
                     switch (sample.Component)
                     {
                         case HardwareComponent.Cpu:
-                            CpuUsageText = text;
+                            CpuUsage = sample.UsagePercent;
+                            OnPropertyChanged(nameof(CpuUsageText));
                             break;
                         case HardwareComponent.Memory:
-                            MemoryUsageText = text;
+                            MemoryUsage = sample.UsagePercent;
+                            OnPropertyChanged(nameof(MemoryUsageText));
                             break;
                     }
                 }

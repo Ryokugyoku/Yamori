@@ -83,12 +83,27 @@ public class NextPcAdvisorTests
     [Fact]
     public void FormatterExplainsTheFactsAndCauses()
     {
+        using var _ = new UiCultureScope("ja-JP");
         var text = new RecommendationTextFormatter().Format(EvaluateMemory(Samples(100, 35)));
 
         Assert.Equal("メモリ：次の PC は 32GB 以上がおすすめです", text.Title);
         Assert.Contains("80%を超えていた時間", text.Explanation);
         Assert.Contains("35%", text.Explanation);
         Assert.Contains("chromeとTeams", text.Explanation);
+    }
+
+    [Theory]
+    [InlineData("en-US", "Memory: 32 GB or more is recommended for your next PC", "chrome, Teams")]
+    [InlineData("es-ES", "Memoria: se recomienda 32 GB o más para tu próximo PC", "chrome, Teams")]
+    [InlineData("fr-FR", "Memory: 32 GB or more is recommended for your next PC", "chrome, Teams")]
+    public void FormatterFollowsTheUiLanguage(string culture, string expectedTitle, string expectedCauses)
+    {
+        using var _ = new UiCultureScope(culture);
+        var text = new RecommendationTextFormatter().Format(EvaluateMemory(Samples(100, 35)));
+
+        Assert.Equal(expectedTitle, text.Title);
+        Assert.Contains("35%", text.Explanation);
+        Assert.Contains(expectedCauses, text.Explanation);
     }
 
     [Theory]

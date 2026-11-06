@@ -1,4 +1,5 @@
 using Yamori.Core.Hardware;
+using Yamori.Core.Localization;
 
 namespace Yamori.Core.Formatting;
 
@@ -8,18 +9,18 @@ namespace Yamori.Core.Formatting;
 public static class ComponentDisplayNames
 {
     /// <summary>
-    /// 部品の種類の表示名を取得する。
+    /// 部品の種類の表示名を、現在の UI カルチャの言語で取得する。
     /// </summary>
     /// <param name="component">部品の種類。</param>
-    /// <returns>日本語の表示名。</returns>
+    /// <returns>表示名。</returns>
     public static string Get(HardwareComponent component) =>
         component switch
         {
-            HardwareComponent.Cpu => "CPU",
-            HardwareComponent.Memory => "メモリ",
-            HardwareComponent.Storage => "ストレージ",
-            HardwareComponent.Gpu => "GPU",
-            HardwareComponent.Battery => "バッテリー",
+            HardwareComponent.Cpu => CoreText.Get("Component_Cpu"),
+            HardwareComponent.Memory => CoreText.Get("Component_Memory"),
+            HardwareComponent.Storage => CoreText.Get("Component_Storage"),
+            HardwareComponent.Gpu => CoreText.Get("Component_Gpu"),
+            HardwareComponent.Battery => CoreText.Get("Component_Battery"),
             _ => component.ToString(),
         };
 }

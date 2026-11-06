@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Component_Cpu" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="Component_Memory" xml:space="preserve">
+    <value>Memoria</value>
+  </data>
+  <data name="Component_Storage" xml:space="preserve">
+    <value>Almacenamiento</value>
+  </data>
+  <data name="Component_Gpu" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="Component_Battery" xml:space="preserve">
+    <value>Batería</value>
+  </data>
+  <data name="Rec_NotEnoughData_Title" xml:space="preserve">
+    <value>{0}: recopilando datos</value>
+  </data>
+  <data name="Rec_NotEnoughData_Explanation" xml:space="preserve">
+    <value>Se necesita más tiempo de registro para poder evaluar (registrado hasta ahora: {0}). Yamori registra el uso mientras está abierto.</value>
+  </data>
+  <data name="Rec_Fact" xml:space="preserve">
+    <value>Uso de {0}: superó el {1:0}% durante el {3:0}% del tiempo registrado ({2}).</value>
+  </data>
+  <data name="Rec_Causes" xml:space="preserve">
+    <value> Las causas principales son {0}.</value>
+  </data>
+  <data name="Rec_CauseSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="Rec_Meaning_Sufficient" xml:space="preserve">
+    <value> Es suficiente para el uso que le das hoy.</value>
+  </data>
+  <data name="Rec_Meaning_Borderline" xml:space="preserve">
+    <value> A veces se acerca a su límite, pero no lo suficiente como para afectar al trabajo diario.</value>
+  </data>
+  <data name="Rec_Meaning_Insufficient" xml:space="preserve">
+    <value> Pasa mucho tiempo cerca de su límite, lo que puede explicar que el PC vaya lento.</value>
+  </data>
+  <data name="Rec_Title_Level" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Rec_Title_Sufficient" xml:space="preserve">
+    <value>{0}: con {1} bastará para tu próximo PC</value>
+  </data>
+  <data name="Rec_Title_Recommended" xml:space="preserve">
+    <value>{0}: se recomienda {1} o más para tu próximo PC</value>
+  </data>
+  <data name="Level_Sufficient" xml:space="preserve">
+    <value>Suficiente</value>
+  </data>
+  <data name="Level_Borderline" xml:space="preserve">
+    <value>A veces cerca del límite</value>
+  </data>
+  <data name="Level_Insufficient" xml:space="preserve">
+    <value>A menudo cerca del límite</value>
+  </data>
+  <data name="Level_Unknown" xml:space="preserve">
+    <value>No se puede evaluar</value>
+  </data>
+  <data name="Unit_Gigabytes" xml:space="preserve">
+    <value>{0} GB</value>
+  </data>
+  <data name="Unit_Threads" xml:space="preserve">
+    <value>{0} hilos</value>
+  </data>
+  <data name="Duration_Days" xml:space="preserve">
+    <value>{0:0.#} días</value>
+  </data>
+  <data name="Duration_Hours" xml:space="preserve">
+    <value>{0:0.#} horas</value>
+  </data>
+  <data name="Duration_Minutes" xml:space="preserve">
+    <value>{0:0} min</value>
+  </data>
+</root>

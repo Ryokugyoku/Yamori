@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Yamori.Views.ShellView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Yamori.Localization">
+
+    <NavigationView
+        x:Name="Navigation"
+        IsBackButtonVisible="Collapsed"
+        IsSettingsVisible="False"
+        IsTitleBarAutoPaddingEnabled="False"
+        OpenPaneLength="248"
+        PaneDisplayMode="Auto"
+        SelectionChanged="OnSelectionChanged">
+
+        <NavigationView.MenuItems>
+            <NavigationViewItem x:Name="OverviewItem" Content="{l:Loc Key=Nav_Overview}" Tag="Overview">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE80F;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem Content="{l:Loc Key=Nav_Hardware}" Tag="Hardware">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE950;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem Content="{l:Loc Key=Nav_Apps}" Tag="Apps">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE71D;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+        </NavigationView.MenuItems>
+
+        <NavigationView.FooterMenuItems>
+            <NavigationViewItem
+                Content="{x:Bind Settings.Account.UserName}"
+                SelectsOnInvoked="False"
+                ToolTipService.ToolTip="{x:Bind Settings.Account.QualifiedName}">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE77B;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem x:Name="SettingsItem" Content="{l:Loc Key=Nav_Settings}" Tag="Settings">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE713;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+        </NavigationView.FooterMenuItems>
+
+        <ScrollViewer x:Name="PageScroller" VerticalScrollBarVisibility="Auto">
+            <ContentControl
+                x:Name="PageHost"
+                HorizontalContentAlignment="Stretch"
+                IsTabStop="False" />
+        </ScrollViewer>
+    </NavigationView>
+</UserControl>

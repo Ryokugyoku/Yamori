@@ -10,6 +10,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- Emit XML docs; missing public documentation becomes a build warning (CS1591). -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Resources/CoreStrings.resx is English; ja / es are satellite assemblies. -->
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
 
   <ItemGroup>

@@ -14,6 +14,11 @@ namespace Yamori.Core.Storage;
 /// </remarks>
 public sealed class CsvUsageHistoryStore : IUsageHistoryStore
 {
+    /// <summary>
+    /// 履歴ファイルを探すときの検索パターン。
+    /// </summary>
+    public const string FileSearchPattern = FilePrefix + "*" + FileExtension;
+
     private const string FilePrefix = "usage-";
     private const string FileExtension = ".csv";
 

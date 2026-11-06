@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Component_Cpu" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="Component_Memory" xml:space="preserve">
+    <value>Memory</value>
+  </data>
+  <data name="Component_Storage" xml:space="preserve">
+    <value>Storage</value>
+  </data>
+  <data name="Component_Gpu" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="Component_Battery" xml:space="preserve">
+    <value>Battery</value>
+  </data>
+  <data name="Rec_NotEnoughData_Title" xml:space="preserve">
+    <value>{0}: Collecting data</value>
+  </data>
+  <data name="Rec_NotEnoughData_Explanation" xml:space="preserve">
+    <value>More recording time is needed before Yamori can judge (recorded so far: {0}). Yamori records usage while it is open.</value>
+  </data>
+  <data name="Rec_Fact" xml:space="preserve">
+    <value>{0} usage was above {1:0}% for {3:0}% of the recorded time ({2}).</value>
+  </data>
+  <data name="Rec_Causes" xml:space="preserve">
+    <value> The main causes are {0}.</value>
+  </data>
+  <data name="Rec_CauseSeparator" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="Rec_Meaning_Sufficient" xml:space="preserve">
+    <value> This is enough for how you use your PC today.</value>
+  </data>
+  <data name="Rec_Meaning_Borderline" xml:space="preserve">
+    <value> It sometimes gets close to its limit, but not enough to get in the way of everyday work.</value>
+  </data>
+  <data name="Rec_Meaning_Insufficient" xml:space="preserve">
+    <value> It spends a long time close to its limit, which may be why your PC feels slow.</value>
+  </data>
+  <data name="Rec_Title_Level" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="Rec_Title_Sufficient" xml:space="preserve">
+    <value>{0}: {1} will be enough for your next PC</value>
+  </data>
+  <data name="Rec_Title_Recommended" xml:space="preserve">
+    <value>{0}: {1} or more is recommended for your next PC</value>
+  </data>
+  <data name="Level_Sufficient" xml:space="preserve">
+    <value>Enough</value>
+  </data>
+  <data name="Level_Borderline" xml:space="preserve">
+    <value>Sometimes near its limit</value>
+  </data>
+  <data name="Level_Insufficient" xml:space="preserve">
+    <value>Often near its limit</value>
+  </data>
+  <data name="Level_Unknown" xml:space="preserve">
+    <value>Can&apos;t be judged</value>
+  </data>
+  <data name="Unit_Gigabytes" xml:space="preserve">
+    <value>{0} GB</value>
+  </data>
+  <data name="Unit_Threads" xml:space="preserve">
+    <value>{0} threads</value>
+  </data>
+  <data name="Duration_Days" xml:space="preserve">
+    <value>{0:0.#} days</value>
+  </data>
+  <data name="Duration_Hours" xml:space="preserve">
+    <value>{0:0.#} hours</value>
+  </data>
+  <data name="Duration_Minutes" xml:space="preserve">
+    <value>{0:0} min</value>
+  </data>
+</root>

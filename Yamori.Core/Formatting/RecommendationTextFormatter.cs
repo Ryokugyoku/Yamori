@@ -1,11 +1,11 @@
-using System.Globalization;
 using Yamori.Core.Hardware;
+using Yamori.Core.Localization;
 using Yamori.Core.Recommendations;
 
 namespace Yamori.Core.Formatting;
 
 /// <summary>
-/// <see cref="HardwareRecommendation"/> を、事実と根拠を添えた日本語の文章にする。
+/// <see cref="HardwareRecommendation"/> を、事実と根拠を添えた文章にする。言語は現在の UI カルチャに従う。
 /// </summary>
 /// <remarks>
 /// 方針：不安をあおらない。測った事実、その意味、次の PC での目安だけを書く。
@@ -26,28 +26,26 @@ public sealed class RecommendationTextFormatter
         if (recommendation.Level == RecommendationLevel.NotEnoughData)
         {
             return new RecommendationText(
-                $"{name}：データを集めています",
-                $"判定には、もう少し長い時間の記録が必要です（今の記録：{FormatDuration(recommendation.HighLoad.TotalObserved)}）。"
-                + "Yamori を開いている間、使用率を記録しています。");
+                CoreText.Format("Rec_NotEnoughData_Title", name),
+                CoreText.Format("Rec_NotEnoughData_Explanation", FormatDuration(recommendation.HighLoad.TotalObserved)));
         }
 
-        var fact = string.Format(
-            CultureInfo.InvariantCulture,
-            "{0}使用率が{1:0}%を超えていた時間は、記録した時間（{2}）全体の{3:0}%です。",
+        var fact = CoreText.Format(
+            "Rec_Fact",
             name,
             recommendation.HighLoad.ThresholdPercent,
             FormatDuration(recommendation.HighLoad.TotalObserved),
             recommendation.HighLoad.Ratio * 100);
 
         var causes = recommendation.MainCauses.Count > 0
-            ? $"主な原因は{string.Join("と", recommendation.MainCauses)}です。"
+            ? CoreText.Format("Rec_Causes", string.Join(CoreText.Get("Rec_CauseSeparator"), recommendation.MainCauses))
             : string.Empty;
 
         var meaning = recommendation.Level switch
         {
-            RecommendationLevel.Sufficient => "今の使い方には足りています。",
-            RecommendationLevel.Borderline => "ときどき限界に近づいていますが、普段の作業に大きな支障はない水準です。",
-            RecommendationLevel.Insufficient => "限界に近い状態で使っている時間が長く、動作が遅くなる原因になっている可能性があります。",
+            RecommendationLevel.Sufficient => CoreText.Get("Rec_Meaning_Sufficient"),
+            RecommendationLevel.Borderline => CoreText.Get("Rec_Meaning_Borderline"),
+            RecommendationLevel.Insufficient => CoreText.Get("Rec_Meaning_Insufficient"),
             _ => string.Empty,
         };
 
@@ -60,31 +58,31 @@ public sealed class RecommendationTextFormatter
     {
         if (recommendation.RecommendedAmount is not { } amount)
         {
-            return $"{name}：{LevelLabel(recommendation.Level)}";
+            return CoreText.Format("Rec_Title_Level", name, LevelLabel(recommendation.Level));
         }
 
         var unit = recommendation.Component == HardwareComponent.Memory
-            ? $"{amount}GB"
-            : $"{amount}スレッド";
+            ? CoreText.Format("Unit_Gigabytes", amount)
+            : CoreText.Format("Unit_Threads", amount);
 
         return recommendation.Level == RecommendationLevel.Sufficient
-            ? $"{name}：次の PC も {unit} あれば十分です"
-            : $"{name}：次の PC は {unit} 以上がおすすめです";
+            ? CoreText.Format("Rec_Title_Sufficient", name, unit)
+            : CoreText.Format("Rec_Title_Recommended", name, unit);
     }
 
     private static string LevelLabel(RecommendationLevel level) =>
         level switch
         {
-            RecommendationLevel.Sufficient => "足りています",
-            RecommendationLevel.Borderline => "ときどき限界に近い",
-            RecommendationLevel.Insufficient => "限界に近い時間が長い",
-            _ => "判定できません",
+            RecommendationLevel.Sufficient => CoreText.Get("Level_Sufficient"),
+            RecommendationLevel.Borderline => CoreText.Get("Level_Borderline"),
+            RecommendationLevel.Insufficient => CoreText.Get("Level_Insufficient"),
+            _ => CoreText.Get("Level_Unknown"),
         };
 
     private static string FormatDuration(TimeSpan duration) =>
         duration.TotalDays >= 1
-            ? string.Format(CultureInfo.InvariantCulture, "{0:0.#}日", duration.TotalDays)
+            ? CoreText.Format("Duration_Days", duration.TotalDays)
             : duration.TotalHours >= 1
-                ? string.Format(CultureInfo.InvariantCulture, "{0:0.#}時間", duration.TotalHours)
-                : string.Format(CultureInfo.InvariantCulture, "{0:0}分", duration.TotalMinutes);
+                ? CoreText.Format("Duration_Hours", duration.TotalHours)
+                : CoreText.Format("Duration_Minutes", duration.TotalMinutes);
 }

@@ -1,17 +1,15 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Yamori.Composition;
 
 namespace Yamori;
 
 /// <summary>
-/// アプリの起動と終了を管理する。部品の組み立ては <see cref="AppServices"/> に任せる。
+/// アプリの起動と終了を管理する。部品の組み立ては <see cref="AppServices"/>、画面の流れは <see cref="AppSession"/> に任せる。
 /// </summary>
 public partial class App : Application
 {
-    private readonly CancellationTokenSource _monitorCancellation = new();
-    private Window? _window;
+    private MainWindow? _window;
+    private AppSession? _session;
 
     /// <summary>
     /// アプリのインスタンスを作る。最初に実行されるユーザーコード。
@@ -22,24 +20,19 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// アプリが起動したときに呼ばれる。使用率の記録を始め、メイン画面を表示する。
+    /// アプリが起動したときに呼ばれる。サインイン画面を表示する。
     /// </summary>
     /// <param name="args">起動要求の詳細。</param>
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
+        // 表示言語を反映してから画面を作るため、部品の組み立てを先に行う。
         var services = AppServices.Create();
-        var token = _monitorCancellation.Token;
-        _ = Task.Run(() => services.Monitor.RunAsync(token), token);
 
-        var viewModel = services.CreateMainViewModel();
-        _window = new MainWindow(viewModel);
-        _window.Closed += (_, _) =>
-        {
-            _monitorCancellation.Cancel();
-            viewModel.Dispose();
-        };
+        _window = new MainWindow();
+        _session = new AppSession(services, _window);
+        _window.Closed += (_, _) => _session.Dispose();
 
+        _session.Start();
         _window.Activate();
-        _ = viewModel.RefreshCommand.ExecuteAsync(null);
     }
 }

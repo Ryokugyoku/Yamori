@@ -1,0 +1,216 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="App_Tagline" xml:space="preserve">
+    <value>Conoce tu PC, protégelo y elige el siguiente con datos.</value>
+  </data>
+  <data name="Login_Title" xml:space="preserve">
+    <value>Te damos la bienvenida a Yamori</value>
+  </data>
+  <data name="Login_Subtitle" xml:space="preserve">
+    <value>Inicia sesión con la cuenta de Windows de este PC.</value>
+  </data>
+  <data name="Login_SignInButton" xml:space="preserve">
+    <value>Iniciar sesión con Windows Hello</value>
+  </data>
+  <data name="Login_ContinueButton" xml:space="preserve">
+    <value>Continuar con esta cuenta</value>
+  </data>
+  <data name="Login_HelloPrompt" xml:space="preserve">
+    <value>Confirma tu identidad para abrir Yamori.</value>
+  </data>
+  <data name="Login_Checking" xml:space="preserve">
+    <value>Comprobando Windows Hello…</value>
+  </data>
+  <data name="Login_Verifying" xml:space="preserve">
+    <value>Esperando a Windows Hello…</value>
+  </data>
+  <data name="Login_HelloUnavailable" xml:space="preserve">
+    <value>Windows Hello no está configurado en este PC, así que Yamori continuará con la cuenta de Windows con la que has iniciado sesión.</value>
+  </data>
+  <data name="Login_Canceled" xml:space="preserve">
+    <value>Se canceló el inicio de sesión.</value>
+  </data>
+  <data name="Login_Failed" xml:space="preserve">
+    <value>No se pudo confirmar tu identidad. Inténtalo de nuevo.</value>
+  </data>
+  <data name="Login_OfflineNote" xml:space="preserve">
+    <value>El inicio de sesión se realiza solo en este PC. Yamori no se conecta a Internet.</value>
+  </data>
+  <data name="Nav_Overview" xml:space="preserve">
+    <value>Resumen</value>
+  </data>
+  <data name="Nav_Hardware" xml:space="preserve">
+    <value>Hardware</value>
+  </data>
+  <data name="Nav_Apps" xml:space="preserve">
+    <value>Aplicaciones</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Configuración</value>
+  </data>
+  <data name="Common_Refresh" xml:space="preserve">
+    <value>Actualizar</value>
+  </data>
+  <data name="Overview_CpuNow" xml:space="preserve">
+    <value>Uso de CPU (ahora)</value>
+  </data>
+  <data name="Overview_MemoryNow" xml:space="preserve">
+    <value>Uso de memoria (ahora)</value>
+  </data>
+  <data name="Overview_NextPcTitle" xml:space="preserve">
+    <value>Guía para tu próximo PC</value>
+  </data>
+  <data name="Overview_NextPcDescription" xml:space="preserve">
+    <value>Se basa en la proporción del tiempo en que el uso superó el 80%, no en picos puntuales.</value>
+  </data>
+  <data name="Status_Loading" xml:space="preserve">
+    <value>Cargando…</value>
+  </data>
+  <data name="Status_LastUpdated" xml:space="preserve">
+    <value>Última actualización: {0}</value>
+  </data>
+  <data name="Status_LoadFailed" xml:space="preserve">
+    <value>No se pudieron leer los registros: {0}</value>
+  </data>
+  <data name="Hardware_Description" xml:space="preserve">
+    <value>Los componentes de este PC y su estado.</value>
+  </data>
+  <data name="Apps_Description" xml:space="preserve">
+    <value>Aplicaciones que más memoria usan ahora. Los procesos de una misma aplicación se suman.</value>
+  </data>
+  <data name="Privacy_Local" xml:space="preserve">
+    <value>Yamori nunca se conecta a Internet. Los registros se quedan en este PC.</value>
+  </data>
+  <data name="Privacy_OneDrive" xml:space="preserve">
+    <value>Yamori no se conecta a Internet. Los registros se guardan en tu carpeta de OneDrive y la aplicación de OneDrive los sincroniza.</value>
+  </data>
+  <data name="Privacy_Custom" xml:space="preserve">
+    <value>Yamori nunca se conecta a Internet. Los registros se guardan en la carpeta que elegiste.</value>
+  </data>
+  <data name="Storage_PathLabel" xml:space="preserve">
+    <value>Ubicación: {0}</value>
+  </data>
+  <data name="Storage_Fallback" xml:space="preserve">
+    <value>La ubicación que elegiste no está disponible ahora, así que los registros se guardan en este PC.</value>
+  </data>
+  <data name="Settings_AccountHeader" xml:space="preserve">
+    <value>Cuenta</value>
+  </data>
+  <data name="Settings_AccountDescription" xml:space="preserve">
+    <value>Sesión iniciada con tu cuenta de Windows. No se envía nada fuera de este PC.</value>
+  </data>
+  <data name="Settings_StorageHeader" xml:space="preserve">
+    <value>Dónde se guardan los registros</value>
+  </data>
+  <data name="Settings_StorageDescription" xml:space="preserve">
+    <value>Elige dónde se guardan los registros de uso. Los registros existentes se copian a la nueva ubicación y los originales se conservan.</value>
+  </data>
+  <data name="Settings_StorageLocal" xml:space="preserve">
+    <value>Este PC (predeterminado)</value>
+  </data>
+  <data name="Settings_StorageLocalNote" xml:space="preserve">
+    <value>Los registros se quedan solo en este PC.</value>
+  </data>
+  <data name="Settings_StorageOneDrive" xml:space="preserve">
+    <value>OneDrive</value>
+  </data>
+  <data name="Settings_StorageCustom" xml:space="preserve">
+    <value>Una carpeta que yo elija</value>
+  </data>
+  <data name="Settings_OneDriveNotFound" xml:space="preserve">
+    <value>No se encontró ninguna carpeta de OneDrive. Inicia sesión en la aplicación de OneDrive para usar esta opción.</value>
+  </data>
+  <data name="Settings_OneDriveNote" xml:space="preserve">
+    <value>Con OneDrive, la aplicación de OneDrive sincroniza tus registros con la nube. Cada PC tiene su propia carpeta, así que los registros no se mezclan.</value>
+  </data>
+  <data name="Settings_ChooseFolder" xml:space="preserve">
+    <value>Elegir carpeta…</value>
+  </data>
+  <data name="Settings_NoFolderChosen" xml:space="preserve">
+    <value>Todavía no se ha elegido ninguna carpeta</value>
+  </data>
+  <data name="Settings_StorageError" xml:space="preserve">
+    <value>No se pudo cambiar la ubicación: {0}</value>
+  </data>
+  <data name="Settings_StorageApplying" xml:space="preserve">
+    <value>Copiando registros…</value>
+  </data>
+  <data name="Settings_LanguageHeader" xml:space="preserve">
+    <value>Idioma</value>
+  </data>
+  <data name="Settings_LanguageDescription" xml:space="preserve">
+    <value>El idioma que Yamori muestra en pantalla.</value>
+  </data>
+  <data name="Settings_LanguageSystem" xml:space="preserve">
+    <value>Usar la configuración de Windows</value>
+  </data>
+  <data name="Settings_AboutHeader" xml:space="preserve">
+    <value>Acerca de Yamori</value>
+  </data>
+  <data name="Settings_AboutDescription" xml:space="preserve">
+    <value>Un gestor de PC sin conexión y de código abierto. Yamori solo usa lo que ofrece Windows y nunca envía datos fuera de tu PC.</value>
+  </data>
+  <data name="Hw_Cpu_Detail" xml:space="preserve">
+    <value>{0} núcleos / {1} hilos · hasta {2:0.0} GHz</value>
+  </data>
+  <data name="Hw_Memory_Modules" xml:space="preserve">
+    <value>{0} módulo(s)</value>
+  </data>
+  <data name="Hw_Memory_ModulesWithSpeed" xml:space="preserve">
+    <value>{0} módulo(s) · {1} MT/s</value>
+  </data>
+  <data name="Hw_Storage_Detail" xml:space="preserve">
+    <value>{0} · {1} ({2}) · {3}</value>
+  </data>
+  <data name="Media_Unknown" xml:space="preserve">
+    <value>Tipo desconocido</value>
+  </data>
+  <data name="Health_Healthy" xml:space="preserve">
+    <value>Según Windows: en buen estado</value>
+  </data>
+  <data name="Health_Warning" xml:space="preserve">
+    <value>Según Windows: advertencia (se recomienda hacer una copia de seguridad)</value>
+  </data>
+  <data name="Health_Unhealthy" xml:space="preserve">
+    <value>Según Windows: con fallos (haz una copia de seguridad y sustitúyelo pronto)</value>
+  </data>
+  <data name="Health_Unknown" xml:space="preserve">
+    <value>Estado desconocido</value>
+  </data>
+  <data name="Hw_Gpu_WithRam" xml:space="preserve">
+    <value>Memoria de vídeo {0} (más de 4 GB puede mostrarse mal) · Controlador {1}</value>
+  </data>
+  <data name="Hw_Gpu_DriverOnly" xml:space="preserve">
+    <value>Controlador {0}</value>
+  </data>
+  <data name="Hw_Battery_Charge" xml:space="preserve">
+    <value>Carga {0}%</value>
+  </data>
+  <data name="Hw_Battery_ChargeUnknown" xml:space="preserve">
+    <value>Carga desconocida</value>
+  </data>
+  <data name="Hw_Battery_Health" xml:space="preserve">
+    <value>{0} · La capacidad de carga completa es el {1:0}% de la original (por debajo del 80% se suele notar menos autonomía)</value>
+  </data>
+  <data name="Hw_None_Title" xml:space="preserve">
+    <value>No se pudo leer la información del hardware</value>
+  </data>
+  <data name="Hw_None_Detail" xml:space="preserve">
+    <value>Es posible que Instrumental de administración de Windows (WMI) no responda.</value>
+  </data>
+  <data name="Apps_ProcessCount" xml:space="preserve">
+    <value>{0} procesos</value>
+  </data>
+</root>
