@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Windows-only: data sources are WMI/CIM, performance counters and storage APIs. -->
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>Yamori.Core</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Required by the LibraryImport source generator (Win32 interop). -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Emit XML docs; missing public documentation becomes a build warning (CS1591). -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Management" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Yamori.Core.Tests" />
+  </ItemGroup>
+
+</Project>

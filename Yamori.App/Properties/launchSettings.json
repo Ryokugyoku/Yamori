@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Yamori (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Yamori (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
