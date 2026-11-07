@@ -72,6 +72,33 @@
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
 
+  <!--
+    Debug builds leave out the packaged service (the parts of Package.appxmanifest between
+    "release-only:begin" and "release-only:end"), so Visual Studio can deploy without administrator
+    rights and never has to overwrite a running Yamori.Helper.exe. During development the Helper runs
+    as a sc.exe service from a copy (Yamori.Helper\DevService.ps1). Release builds use Package.appxmanifest as is.
+  -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <YamoriDebugAppxManifest>$(MSBuildProjectDirectory)\$(BaseIntermediateOutputPath)Package.Debug.appxmanifest</YamoriDebugAppxManifest>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <AppxManifest Include="$(YamoriDebugAppxManifest)">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+    <None Include="Package.appxmanifest" />
+  </ItemGroup>
+  <Target Name="YamoriWriteDebugAppxManifest"
+          Condition="'$(Configuration)' == 'Debug'"
+          BeforeTargets="PrepareForBuild;_ValidatePresenceOfAppxManifestItems"
+          Inputs="$(MSBuildProjectDirectory)\Package.appxmanifest"
+          Outputs="$(YamoriDebugAppxManifest)">
+    <PropertyGroup>
+      <_YamoriManifestText>$([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)\Package.appxmanifest'))</_YamoriManifestText>
+      <_YamoriManifestText>$([System.Text.RegularExpressions.Regex]::Replace('$(_YamoriManifestText)', '(?s)[ \t]*&lt;!-- release-only:begin.*?release-only:end --&gt;\r?\n', ''))</_YamoriManifestText>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(YamoriDebugAppxManifest)" Lines="$([MSBuild]::Escape($(_YamoriManifestText)))" Overwrite="true" WriteOnlyWhenDifferent="true" />
+  </Target>
+
   <!-- Publish Properties -->
   <PropertyGroup>
     <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>

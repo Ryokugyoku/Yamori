@@ -44,18 +44,22 @@
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
+      <!-- release-only:begin (removed from Debug builds; during development the Helper runs as a sc.exe service via Yamori.Helper\DevService.ps1) -->
       <Extensions>
         <!-- Yamori Helper: the always-on Windows service (LocalSystem) that collects and records sensors and owns PawnIO. -->
         <desktop6:Extension Category="windows.service" Executable="Yamori.Helper.exe" EntryPoint="Windows.FullTrustApplication">
           <desktop6:Service Name="YamoriHelper" StartupType="auto" StartAccount="localSystem" />
         </desktop6:Extension>
       </Extensions>
+      <!-- release-only:end -->
     </Application>
   </Applications>
 
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
+    <!-- release-only:begin -->
     <rescap:Capability Name="packagedServices" />
     <rescap:Capability Name="localSystemServices" />
+    <!-- release-only:end -->
   </Capabilities>
 </Package>
