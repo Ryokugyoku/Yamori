@@ -13,6 +13,9 @@ public sealed record BatteryInfo(
     int? DesignCapacityMwh,
     int? FullChargeCapacityMwh)
 {
+    /// <summary>充放電の回数。取得できない場合は null。</summary>
+    public int? CycleCount { get; init; }
+
     /// <summary>
     /// 設計容量に対する現在の満充電容量の割合（0〜1）を取得する。劣化の目安になる。
     /// </summary>

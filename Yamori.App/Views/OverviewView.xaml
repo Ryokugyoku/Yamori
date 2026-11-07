@@ -1,10 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <UserControl
     x:Class="Yamori.Views.OverviewView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:l="using:Yamori.Localization"
     xmlns:presentation="using:Yamori.Presentation"
+    xmlns:sensors="using:Yamori.ViewModels.Sensors"
     xmlns:views="using:Yamori.Views">
 
     <StackPanel
@@ -18,64 +19,50 @@
             RefreshCommand="{x:Bind ViewModel.RefreshCommand}"
             Title="{l:Loc Key=Nav_Overview}" />
 
-        <!-- 今の使用率 -->
-        <Grid ColumnSpacing="16">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-
-            <Border Style="{StaticResource CardStyle}">
-                <Grid ColumnSpacing="16" RowSpacing="12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Border Style="{StaticResource IconBadgeStyle}">
-                        <FontIcon Glyph="&#xE950;" Style="{StaticResource IconBadgeGlyphStyle}" />
+        <!-- サマリー：カードごとに候補のキーから使えるものを表示する。候補が 1 つもないカードは出さない -->
+        <ItemsRepeater ItemsSource="{x:Bind ViewModel.SummaryCards.Cards}">
+            <ItemsRepeater.Layout>
+                <UniformGridLayout
+                    ItemsStretch="Fill"
+                    MinColumnSpacing="16"
+                    MinItemWidth="220"
+                    MinRowSpacing="16" />
+            </ItemsRepeater.Layout>
+            <ItemsRepeater.ItemTemplate>
+                <DataTemplate x:DataType="sensors:SummaryCardItem">
+                    <Border Opacity="{x:Bind Opacity, Mode=OneWay}" Style="{StaticResource CardStyle}">
+                        <Grid ColumnSpacing="16" RowSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Border Style="{StaticResource IconBadgeStyle}">
+                                <FontIcon Glyph="{x:Bind Glyph, Mode=OneWay}" Style="{StaticResource IconBadgeGlyphStyle}" />
+                            </Border>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{x:Bind Title, Mode=OneWay}" />
+                                <TextBlock Style="{StaticResource TitleLargeTextBlockStyle}" Text="{x:Bind ValueText, Mode=OneWay}" />
+                                <TextBlock
+                                    Style="{StaticResource FootnoteTextStyle}"
+                                    Text="{x:Bind Source, Mode=OneWay}"
+                                    TextTrimming="CharacterEllipsis"
+                                    TextWrapping="NoWrap" />
+                            </StackPanel>
+                            <ProgressBar
+                                Grid.Row="1"
+                                Grid.ColumnSpan="2"
+                                Maximum="100"
+                                Value="{x:Bind Percent, Mode=OneWay}"
+                                Visibility="{x:Bind HasPercent, Mode=OneWay}" />
+                        </Grid>
                     </Border>
-                    <StackPanel Grid.Column="1">
-                        <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:Loc Key=Overview_CpuNow}" />
-                        <TextBlock Style="{StaticResource TitleLargeTextBlockStyle}" Text="{x:Bind ViewModel.CpuUsageText, Mode=OneWay}" />
-                    </StackPanel>
-                    <ProgressBar
-                        Grid.Row="1"
-                        Grid.ColumnSpan="2"
-                        Maximum="100"
-                        Value="{x:Bind ViewModel.CpuUsage, Mode=OneWay}" />
-                </Grid>
-            </Border>
-
-            <Border Grid.Column="1" Style="{StaticResource CardStyle}">
-                <Grid ColumnSpacing="16" RowSpacing="12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Border Style="{StaticResource IconBadgeStyle}">
-                        <FontIcon Glyph="&#xEEA0;" Style="{StaticResource IconBadgeGlyphStyle}" />
-                    </Border>
-                    <StackPanel Grid.Column="1">
-                        <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:Loc Key=Overview_MemoryNow}" />
-                        <TextBlock Style="{StaticResource TitleLargeTextBlockStyle}" Text="{x:Bind ViewModel.MemoryUsageText, Mode=OneWay}" />
-                    </StackPanel>
-                    <ProgressBar
-                        Grid.Row="1"
-                        Grid.ColumnSpan="2"
-                        Maximum="100"
-                        Value="{x:Bind ViewModel.MemoryUsage, Mode=OneWay}" />
-                </Grid>
-            </Border>
-        </Grid>
-
+                </DataTemplate>
+            </ItemsRepeater.ItemTemplate>
+        </ItemsRepeater>
         <!-- 次の PC の基準 -->
         <Border Style="{StaticResource CardStyle}">
             <StackPanel Spacing="16">

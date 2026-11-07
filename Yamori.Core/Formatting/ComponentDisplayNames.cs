@@ -17,10 +17,13 @@ public static class ComponentDisplayNames
         component switch
         {
             HardwareComponent.Cpu => CoreText.Get("Component_Cpu"),
+            HardwareComponent.Motherboard => CoreText.Get("Component_Motherboard"),
             HardwareComponent.Memory => CoreText.Get("Component_Memory"),
-            HardwareComponent.Storage => CoreText.Get("Component_Storage"),
             HardwareComponent.Gpu => CoreText.Get("Component_Gpu"),
-            HardwareComponent.Battery => CoreText.Get("Component_Battery"),
+            HardwareComponent.Storage => CoreText.Get("Component_Storage"),
+            HardwareComponent.Fan => CoreText.Get("Component_Fan"),
+            HardwareComponent.PowerSupply => CoreText.Get("Component_PowerSupply"),
+            HardwareComponent.Network => CoreText.Get("Component_Network"),
             _ => component.ToString(),
         };
 }

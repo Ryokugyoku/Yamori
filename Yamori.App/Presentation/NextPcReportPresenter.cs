@@ -28,56 +28,6 @@ public sealed class NextPcReportPresenter
     }
 
     /// <summary>
-    /// ハードウェア一覧を表示用の項目にする。
-    /// </summary>
-    /// <param name="inventory">ハードウェア一覧。</param>
-    /// <returns>表示用の項目。</returns>
-    public IReadOnlyList<HardwareRow> BuildHardwareRows(HardwareInventory inventory)
-    {
-        ArgumentNullException.ThrowIfNull(inventory);
-
-        var rows = new List<HardwareRow>();
-        if (inventory.Cpu is { } cpu)
-        {
-            rows.Add(Row(
-                HardwareComponent.Cpu,
-                cpu.Name,
-                UiText.Format("Hw_Cpu_Detail", cpu.PhysicalCores, cpu.LogicalProcessors, cpu.MaxClockMhz / 1000.0)));
-        }
-
-        if (inventory.Memory is { } memory)
-        {
-            rows.Add(Row(
-                HardwareComponent.Memory,
-                ByteSizeFormatter.Format(memory.TotalBytes),
-                memory.SpeedMhz is { } speed
-                    ? UiText.Format("Hw_Memory_ModulesWithSpeed", memory.ModuleCount, speed)
-                    : UiText.Format("Hw_Memory_Modules", memory.ModuleCount)));
-        }
-
-        rows.AddRange(inventory.Storage.Select(d => Row(
-            HardwareComponent.Storage,
-            d.Model,
-            UiText.Format("Hw_Storage_Detail", ByteSizeFormatter.Format(d.SizeBytes), MediaTypeLabel(d.MediaType), d.BusType, HealthLabel(d.Health)))));
-
-        rows.AddRange(inventory.Gpus.Select(g => Row(
-            HardwareComponent.Gpu,
-            g.Name,
-            g.AdapterRamBytes is { } ram
-                ? UiText.Format("Hw_Gpu_WithRam", ByteSizeFormatter.Format(ram), g.DriverVersion)
-                : UiText.Format("Hw_Gpu_DriverOnly", g.DriverVersion))));
-
-        rows.AddRange(inventory.Batteries.Select(b => Row(HardwareComponent.Battery, b.Name, BatteryDetail(b))));
-
-        if (rows.Count == 0)
-        {
-            rows.Add(new HardwareRow(HardwareGlyphs.Unknown, "—", UiText.Get("Hw_None_Title"), UiText.Get("Hw_None_Detail")));
-        }
-
-        return rows;
-    }
-
-    /// <summary>
     /// おすすめを表示用の項目にする。
     /// </summary>
     /// <param name="recommendations">おすすめの一覧。</param>
@@ -109,36 +59,5 @@ public sealed class NextPcReportPresenter
                 UiText.Format("Apps_ProcessCount", a.ProcessCount),
                 largest == 0 ? 0 : 100.0 * a.WorkingSetBytes / largest))
             .ToArray();
-    }
-
-    private static HardwareRow Row(HardwareComponent component, string title, string detail) =>
-        new(HardwareGlyphs.For(component), ComponentDisplayNames.Get(component), title, detail);
-
-    private static string MediaTypeLabel(StorageMediaType type) =>
-        type switch
-        {
-            StorageMediaType.Ssd => "SSD",
-            StorageMediaType.Hdd => "HDD",
-            StorageMediaType.Scm => "SCM",
-            _ => UiText.Get("Media_Unknown"),
-        };
-
-    private static string HealthLabel(StorageHealth health) =>
-        health switch
-        {
-            StorageHealth.Healthy => UiText.Get("Health_Healthy"),
-            StorageHealth.Warning => UiText.Get("Health_Warning"),
-            StorageHealth.Unhealthy => UiText.Get("Health_Unhealthy"),
-            _ => UiText.Get("Health_Unknown"),
-        };
-
-    private static string BatteryDetail(BatteryInfo battery)
-    {
-        var charge = battery.ChargePercent is { } c
-            ? UiText.Format("Hw_Battery_Charge", c)
-            : UiText.Get("Hw_Battery_ChargeUnknown");
-        return battery.HealthRatio is { } ratio
-            ? UiText.Format("Hw_Battery_Health", charge, ratio * 100)
-            : charge;
     }
 }

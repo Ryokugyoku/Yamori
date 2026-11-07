@@ -54,6 +54,58 @@ public sealed class WmiRecord
         GetUInt64(name) is { } value && value <= int.MaxValue ? (int)value : null;
 
     /// <summary>
+    /// 真偽値としてプロパティを取り出す。
+    /// </summary>
+    /// <param name="name">プロパティ名。</param>
+    /// <returns>変換できない場合は null。</returns>
+    public bool? GetBoolean(string name) =>
+        GetRaw(name) switch
+        {
+            bool flag => flag,
+            string text when bool.TryParse(text, out var parsed) => parsed,
+            _ => null,
+        };
+
+    /// <summary>
+    /// 日付としてプロパティを取り出す。CIM の DATETIME 形式（例：<c>20241004000000.000000+000</c>）にも対応する。
+    /// </summary>
+    /// <param name="name">プロパティ名。</param>
+    /// <returns>変換できない場合は null。</returns>
+    public DateOnly? GetDate(string name) =>
+        GetRaw(name) switch
+        {
+            DateTime dateTime => DateOnly.FromDateTime(dateTime),
+            DateTimeOffset offset => DateOnly.FromDateTime(offset.DateTime),
+            string text when text.Length >= 8
+                && DateOnly.TryParseExact(text[..8], "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) => date,
+            _ => null,
+        };
+
+    /// <summary>
+    /// 32 ビット整数の配列としてプロパティを取り出す。変換できない要素は除く。
+    /// </summary>
+    /// <param name="name">プロパティ名。</param>
+    /// <returns>存在しないか配列でない場合は空。</returns>
+    public IReadOnlyList<int> GetInt32Array(string name)
+    {
+        if (GetRaw(name) is not Array array)
+        {
+            return [];
+        }
+
+        var values = new List<int>(array.Length);
+        foreach (var item in array)
+        {
+            if (item is IConvertible c && TryConvert(c, out var value) && value <= int.MaxValue)
+            {
+                values.Add((int)value);
+            }
+        }
+
+        return values;
+    }
+
+    /// <summary>
     /// 変換前の値を取り出す。
     /// </summary>
     /// <param name="name">プロパティ名。</param>

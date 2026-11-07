@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <!-- Yamori（家守）: 屋根の下で家を守るヤモリ。このファイルがロゴの原本で、Assets の PNG はここから書き出す。 -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#22A07D"/>
+      <stop offset="1" stop-color="#0A4A40"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#bg)"/>
+
+  <!-- 屋根 -->
+  <path d="M50 102 L128 38 L206 102" fill="none" stroke="#FFFFFF" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- ヤモリ -->
+  <g transform="translate(128 156) scale(0.86) translate(-128 -150)" fill="#D7F36B" stroke="#D7F36B" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 尾 -->
+    <path d="M128 176 C128 204 120 222 100 224 C88 225 82 216 88 210" fill="none" stroke-width="11"/>
+    <!-- 前脚 -->
+    <path d="M118 128 L96 122 L88 104" fill="none" stroke-width="10"/>
+    <path d="M138 128 L160 122 L168 104" fill="none" stroke-width="10"/>
+    <!-- 後脚 -->
+    <path d="M118 164 L96 172 L90 190" fill="none" stroke-width="10"/>
+    <path d="M138 164 L160 172 L166 190" fill="none" stroke-width="10"/>
+    <!-- 指先の吸盤 -->
+    <g stroke="none">
+      <circle cx="80" cy="98" r="5.5"/><circle cx="89" cy="94" r="5.5"/><circle cx="78" cy="108" r="5.5"/>
+      <circle cx="176" cy="98" r="5.5"/><circle cx="167" cy="94" r="5.5"/><circle cx="178" cy="108" r="5.5"/>
+      <circle cx="82" cy="196" r="5.5"/><circle cx="92" cy="199" r="5.5"/><circle cx="80" cy="186" r="5.5"/>
+      <circle cx="174" cy="196" r="5.5"/><circle cx="164" cy="199" r="5.5"/><circle cx="176" cy="186" r="5.5"/>
+    </g>
+    <!-- 胴 -->
+    <ellipse cx="128" cy="148" rx="19" ry="34" stroke="none"/>
+    <!-- 頭 -->
+    <ellipse cx="128" cy="102" rx="19" ry="20" stroke="none"/>
+    <!-- 目 -->
+    <circle cx="118" cy="97" r="4" fill="#0A4A40" stroke="none"/>
+    <circle cx="138" cy="97" r="4" fill="#0A4A40" stroke="none"/>
+  </g>
+</svg>

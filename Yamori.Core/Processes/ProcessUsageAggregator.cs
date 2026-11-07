@@ -9,18 +9,6 @@ namespace Yamori.Core.Processes;
 public static class ProcessUsageAggregator
 {
     /// <summary>
-    /// 集計から外すプロセス名。実体がアプリではないもの。
-    /// </summary>
-    private static readonly HashSet<string> ExcludedNames = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "Idle",
-        "System",
-        "Memory Compression",
-        "Registry",
-        "Secure System",
-    };
-
-    /// <summary>
     /// プロセス名ごとにメモリ使用量を合計し、多い順に返す。
     /// </summary>
     /// <param name="snapshots">プロセスごとの資源使用量。</param>
@@ -34,7 +22,7 @@ public static class ProcessUsageAggregator
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(top);
 
         return snapshots
-            .Where(s => !ExcludedNames.Contains(s.Name))
+            .Where(s => ProcessNameFilter.IsApplication(s.Name))
             .GroupBy(s => s.Name, StringComparer.OrdinalIgnoreCase)
             .Select(g => new ProcessUsage(
                 g.First().Name,

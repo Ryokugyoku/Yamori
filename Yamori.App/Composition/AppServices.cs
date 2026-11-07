@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.UI;
 using Yamori.Accounts;
 using Yamori.Core.Formatting;
@@ -6,14 +6,20 @@ using Yamori.Core.Hardware;
 using Yamori.Core.Hardware.Wmi;
 using Yamori.Core.Monitoring;
 using Yamori.Core.Processes;
+using Yamori.Core.Realtime;
 using Yamori.Core.Recommendations;
 using Yamori.Core.Reports;
+using Yamori.Core.Sensors.Display;
+using Yamori.Core.Sensors.Service;
 using Yamori.Core.Settings;
 using Yamori.Core.Storage;
 using Yamori.Localization;
 using Yamori.Presentation;
+using Yamori.Presentation.Hardware;
+using Yamori.Presentation.Realtime;
 using Yamori.Services;
 using Yamori.ViewModels;
+using Yamori.ViewModels.Sensors;
 
 namespace Yamori.Composition;
 
@@ -22,6 +28,8 @@ namespace Yamori.Composition;
 /// </summary>
 public sealed class AppServices
 {
+    private SensorBoard? _board;
+
     private AppServices(
         ISettingsStore settingsStore,
         LanguageService languageService,
@@ -29,8 +37,10 @@ public sealed class AppServices
         IOneDriveLocator oneDriveLocator,
         IWindowsAccountProvider accountProvider,
         UsageMonitor monitor,
+        LocalSensorService sensors,
         NextPcReportService reportService,
-        NextPcReportPresenter presenter)
+        NextPcReportPresenter presenter,
+        HardwareSectionsPresenter hardwarePresenter)
     {
         SettingsStore = settingsStore;
         LanguageService = languageService;
@@ -38,8 +48,10 @@ public sealed class AppServices
         OneDriveLocator = oneDriveLocator;
         AccountProvider = accountProvider;
         Monitor = monitor;
+        Sensors = sensors;
         ReportService = reportService;
         Presenter = presenter;
+        HardwarePresenter = hardwarePresenter;
     }
 
     /// <summary>設定の保存先を取得する。</summary>
@@ -60,11 +72,17 @@ public sealed class AppServices
     /// <summary>使用率を記録し続ける監視処理を取得する。</summary>
     public UsageMonitor Monitor { get; }
 
+    /// <summary>センサーの窓口を取得する。Helper ができるまでは、このプロセスの中で収集する。</summary>
+    public LocalSensorService Sensors { get; }
+
     /// <summary>次の PC のレポートを作る処理を取得する。</summary>
     public NextPcReportService ReportService { get; }
 
     /// <summary>レポートを表示用に変換する処理を取得する。</summary>
     public NextPcReportPresenter Presenter { get; }
+
+    /// <summary>ハードウェア一覧を部品の種類ごとの表示内容にする処理を取得する。</summary>
+    public HardwareSectionsPresenter HardwarePresenter { get; }
 
     /// <summary>
     /// 標準の構成で部品を組み立てる。保存されている表示言語もここで反映する。UI を作る前に呼ぶこと。
@@ -88,8 +106,13 @@ public sealed class AppServices
 
         var timeProvider = TimeProvider.System;
         var monitor = new UsageMonitor([new CpuUsageSensor(), new MemoryUsageSensor()], storage.Store, timeProvider);
+        var sensors = LocalSensorServiceFactory.Create(
+            new ManagementWmiQueryExecutor(),
+            YamoriDataPaths.GetSensorPriorityFilePath(),
+            YamoriDataPaths.GetSensorDataDirectory(),
+            timeProvider);
         var reportService = new NextPcReportService(
-            HardwareInventoryService.CreateForWmi(new ManagementWmiQueryExecutor()),
+            HardwareInventoryService.CreateDefault(new ManagementWmiQueryExecutor()),
             storage.Store,
             new SystemProcessSnapshotProvider(),
             NextPcAdvisor.CreateDefault(),
@@ -102,8 +125,10 @@ public sealed class AppServices
             oneDriveLocator,
             new CurrentWindowsAccountProvider(),
             monitor,
+            sensors,
             reportService,
-            new NextPcReportPresenter(new RecommendationTextFormatter()));
+            new NextPcReportPresenter(new RecommendationTextFormatter()),
+            HardwareSectionsPresenter.CreateDefault());
     }
 
     /// <summary>
@@ -118,7 +143,25 @@ public sealed class AppServices
     /// 概要・ハードウェア・アプリの画面のビューモデルを作る。UI スレッドから呼ぶこと。
     /// </summary>
     /// <returns>新しいビューモデル。</returns>
-    public MainViewModel CreateMainViewModel() => new(ReportService, Monitor, Presenter, Storage);
+    public MainViewModel CreateMainViewModel() =>
+        new(ReportService, new SummaryCardsViewModel(GetBoard(), SummaryCardDefinitions.Default), Presenter, HardwarePresenter, Storage);
+
+    /// <summary>
+    /// リアルタイム画面のビューモデルを作る。UI スレッドから呼ぶこと。アプリごとの使用量の測定の処理は、測定を始めるときに作る。
+    /// </summary>
+    /// <returns>新しいビューモデル。</returns>
+    public RealtimePageViewModel CreateRealtimeViewModel() =>
+        new(
+            new SensorTreeViewModel(GetBoard()),
+            new RealtimeViewModel(
+                () => RealtimeSnapshotService.CreateDefault(new ManagementWmiQueryExecutor(), TimeProvider.System),
+                RealtimeSectionsPresenter.CreateDefault(),
+                TimeProvider.System));
+
+    /// <summary>
+    /// 画面で共有するセンサーの状態を取得する。最初に呼んだときに UI スレッドで作る。
+    /// </summary>
+    private SensorBoard GetBoard() => _board ??= new SensorBoard(Sensors);
 
     /// <summary>
     /// 設定画面のビューモデルを、保存されている最新の設定で作る。言語を変えたら作り直す。

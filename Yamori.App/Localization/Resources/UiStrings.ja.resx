@@ -63,12 +63,6 @@
   <data name="Common_Refresh" xml:space="preserve">
     <value>更新</value>
   </data>
-  <data name="Overview_CpuNow" xml:space="preserve">
-    <value>CPU 使用率（今）</value>
-  </data>
-  <data name="Overview_MemoryNow" xml:space="preserve">
-    <value>メモリ使用率（今）</value>
-  </data>
   <data name="Overview_NextPcTitle" xml:space="preserve">
     <value>次の PC の基準</value>
   </data>
@@ -88,7 +82,7 @@
     <value>この PC の部品と、その状態です。</value>
   </data>
   <data name="Apps_Description" xml:space="preserve">
-    <value>今メモリを多く使っているアプリです。同じアプリの複数のプロセスはまとめて集計しています。</value>
+    <value>今メモリを多く使っているアプリです。同じアプリの複数のプロセスはまとめて集計しています。アプリごとの CPU・GPU・読み書きは、リアルタイムの画面で見られます。</value>
   </data>
   <data name="Privacy_Local" xml:space="preserve">
     <value>Yamori は外部と通信しません。記録はこの PC の中だけに保存されます。</value>
@@ -162,17 +156,8 @@
   <data name="Settings_AboutDescription" xml:space="preserve">
     <value>完全オフライン・オープンソースの PC 管理アプリです。Windows が提供する仕組みだけを使い、データを PC の外へ送りません。</value>
   </data>
-  <data name="Hw_Cpu_Detail" xml:space="preserve">
-    <value>{0} コア / {1} スレッド・最大 {2:0.0} GHz</value>
-  </data>
   <data name="Hw_Memory_Modules" xml:space="preserve">
     <value>{0} 枚</value>
-  </data>
-  <data name="Hw_Memory_ModulesWithSpeed" xml:space="preserve">
-    <value>{0} 枚・{1} MT/s</value>
-  </data>
-  <data name="Hw_Storage_Detail" xml:space="preserve">
-    <value>{0}・{1}（{2}）・{3}</value>
   </data>
   <data name="Media_Unknown" xml:space="preserve">
     <value>種類不明</value>
@@ -189,28 +174,577 @@
   <data name="Health_Unknown" xml:space="preserve">
     <value>健康状態は不明</value>
   </data>
-  <data name="Hw_Gpu_WithRam" xml:space="preserve">
-    <value>ビデオメモリ {0}（4GB 以上は正しく表示されないことがあります）・ドライバー {1}</value>
-  </data>
-  <data name="Hw_Gpu_DriverOnly" xml:space="preserve">
-    <value>ドライバー {0}</value>
-  </data>
-  <data name="Hw_Battery_Charge" xml:space="preserve">
-    <value>残量 {0}%</value>
-  </data>
-  <data name="Hw_Battery_ChargeUnknown" xml:space="preserve">
-    <value>残量不明</value>
-  </data>
-  <data name="Hw_Battery_Health" xml:space="preserve">
-    <value>{0}・満充電容量は新品時の {1:0}%（80% を下回ると持ちの悪さを感じやすくなります）</value>
-  </data>
-  <data name="Hw_None_Title" xml:space="preserve">
-    <value>ハードウェア情報を取得できませんでした</value>
-  </data>
-  <data name="Hw_None_Detail" xml:space="preserve">
-    <value>Windows の管理機能（WMI）が応答していない可能性があります。</value>
-  </data>
   <data name="Apps_ProcessCount" xml:space="preserve">
     <value>{0} プロセス</value>
+  </data>
+  <data name="Hw_Separator" xml:space="preserve">
+    <value>・</value>
+  </data>
+  <data name="Hw_NotAvailable_Title" xml:space="preserve">
+    <value>情報を取得できませんでした</value>
+  </data>
+  <data name="Hw_NotAvailable_Detail" xml:space="preserve">
+    <value>Windows の管理機能（WMI）が応答していないか、この PC が情報を提供していない可能性があります。</value>
+  </data>
+  <data name="Common_Yes" xml:space="preserve">
+    <value>はい</value>
+  </data>
+  <data name="Hw_Fact_Cores" xml:space="preserve">
+    <value>コア</value>
+  </data>
+  <data name="Hw_Fact_CoreTypes" xml:space="preserve">
+    <value>コアの内訳</value>
+  </data>
+  <data name="Hw_Fact_RatedClock" xml:space="preserve">
+    <value>定格クロック</value>
+  </data>
+  <data name="Hw_Fact_Cache" xml:space="preserve">
+    <value>キャッシュ</value>
+  </data>
+  <data name="Hw_Fact_Socket" xml:space="preserve">
+    <value>ソケット</value>
+  </data>
+  <data name="Hw_Fact_SocketCount" xml:space="preserve">
+    <value>CPU の数（ソケット）</value>
+  </data>
+  <data name="Hw_Fact_Architecture" xml:space="preserve">
+    <value>アーキテクチャ</value>
+  </data>
+  <data name="Hw_Fact_Manufacturer" xml:space="preserve">
+    <value>メーカー</value>
+  </data>
+  <data name="Hw_Fact_Model" xml:space="preserve">
+    <value>型番</value>
+  </data>
+  <data name="Hw_Cpu_CoresThreads" xml:space="preserve">
+    <value>{0} コア / {1} スレッド</value>
+  </data>
+  <data name="Hw_Cpu_Hybrid" xml:space="preserve">
+    <value>高性能 {0} コア + 高効率 {1} コア</value>
+  </data>
+  <data name="Hw_Cpu_IntegratedGpu" xml:space="preserve">
+    <value>内蔵 GPU（CPU の一部）</value>
+  </data>
+  <data name="Hw_Cpu_Note" xml:space="preserve">
+    <value>スレッドが多いほど、たくさんのアプリを同時に動かしやすくなります。定格クロックは Windows が報告する基本の速さで、負荷が高いときはこれより速く動くことがあります。</value>
+  </data>
+  <data name="Hw_Value_Ghz" xml:space="preserve">
+    <value>{0:0.0} GHz</value>
+  </data>
+  <data name="Hw_Fact_Revision" xml:space="preserve">
+    <value>リビジョン</value>
+  </data>
+  <data name="Hw_Fact_PcModel" xml:space="preserve">
+    <value>PC の型番</value>
+  </data>
+  <data name="Hw_Fact_FormFactor" xml:space="preserve">
+    <value>形</value>
+  </data>
+  <data name="Hw_Fact_Bios" xml:space="preserve">
+    <value>BIOS／UEFI</value>
+  </data>
+  <data name="Hw_Fact_BiosDate" xml:space="preserve">
+    <value>BIOS の公開日</value>
+  </data>
+  <data name="Hw_Fact_Smbios" xml:space="preserve">
+    <value>SMBIOS のバージョン</value>
+  </data>
+  <data name="Hw_Board_Unknown" xml:space="preserve">
+    <value>マザーボードの型番は不明</value>
+  </data>
+  <data name="Hw_Board_Note" xml:space="preserve">
+    <value>BIOS の更新では、不具合やセキュリティの問題が直されます。公開日が数年前なら、メーカーのサポートページを一度確認するとよいでしょう。</value>
+  </data>
+  <data name="Chassis_Desktop" xml:space="preserve">
+    <value>デスクトップ</value>
+  </data>
+  <data name="Chassis_Laptop" xml:space="preserve">
+    <value>ノート PC</value>
+  </data>
+  <data name="Chassis_Convertible" xml:space="preserve">
+    <value>2-in-1</value>
+  </data>
+  <data name="Chassis_Tablet" xml:space="preserve">
+    <value>タブレット</value>
+  </data>
+  <data name="Chassis_AllInOne" xml:space="preserve">
+    <value>一体型</value>
+  </data>
+  <data name="Chassis_MiniPc" xml:space="preserve">
+    <value>ミニ PC</value>
+  </data>
+  <data name="Chassis_Server" xml:space="preserve">
+    <value>サーバー</value>
+  </data>
+  <data name="Chassis_Other" xml:space="preserve">
+    <value>その他</value>
+  </data>
+  <data name="Hw_Memory_Total" xml:space="preserve">
+    <value>搭載メモリ</value>
+  </data>
+  <data name="Hw_Fact_Slots" xml:space="preserve">
+    <value>スロット</value>
+  </data>
+  <data name="Hw_Fact_MaxCapacity" xml:space="preserve">
+    <value>最大容量</value>
+  </data>
+  <data name="Hw_Fact_Speed" xml:space="preserve">
+    <value>速度</value>
+  </data>
+  <data name="Hw_Fact_PartNumber" xml:space="preserve">
+    <value>型番</value>
+  </data>
+  <data name="Hw_Fact_Voltage" xml:space="preserve">
+    <value>電圧</value>
+  </data>
+  <data name="Hw_Memory_SlotsUsed" xml:space="preserve">
+    <value>{1} 本中 {0} 本使用（空き {2} 本）</value>
+  </data>
+  <data name="Hw_Memory_SpeedBelowRated" xml:space="preserve">
+    <value>{0} MT/s（モジュールは {1} MT/s に対応。BIOS の XMP／EXPO 設定で速くなることがあります）</value>
+  </data>
+  <data name="Hw_Memory_Note" xml:space="preserve">
+    <value>空きスロットと最大容量を見ると、PC を買い替えずにメモリを増やせるかが分かります。</value>
+  </data>
+  <data name="Hw_Value_Mtps" xml:space="preserve">
+    <value>{0} MT/s</value>
+  </data>
+  <data name="Hw_Value_Volts" xml:space="preserve">
+    <value>{0:0.00} V</value>
+  </data>
+  <data name="Hw_Fact_VideoMemory" xml:space="preserve">
+    <value>ビデオメモリ</value>
+  </data>
+  <data name="Hw_Fact_SharedMemory" xml:space="preserve">
+    <value>共有メモリ</value>
+  </data>
+  <data name="Hw_Fact_Display" xml:space="preserve">
+    <value>画面</value>
+  </data>
+  <data name="Hw_Fact_Driver" xml:space="preserve">
+    <value>ドライバー</value>
+  </data>
+  <data name="Hw_Value_WithDate" xml:space="preserve">
+    <value>{0}（{1}）</value>
+  </data>
+  <data name="Hw_Gpu_MemoryCapped" xml:space="preserve">
+    <value>{0}（4GB 以上は正しく表示されないことがあります）</value>
+  </data>
+  <data name="Hw_Gpu_Display" xml:space="preserve">
+    <value>{0} × {1}</value>
+  </data>
+  <data name="Hw_Gpu_DisplayWithRate" xml:space="preserve">
+    <value>{0} × {1}・{2} Hz</value>
+  </data>
+  <data name="Hw_Gpu_IntegratedOnly_Title" xml:space="preserve">
+    <value>単体の GPU はありません</value>
+  </data>
+  <data name="Hw_Gpu_IntegratedOnly_Detail" xml:space="preserve">
+    <value>画面の表示は CPU の内蔵 GPU が担当しています（CPU の欄に表示しています）。</value>
+  </data>
+  <data name="Hw_Gpu_Note" xml:space="preserve">
+    <value>共有メモリは、ビデオメモリが足りなくなったときにメインメモリから借りる分です（ビデオメモリより遅くなります）。</value>
+  </data>
+  <data name="Hw_Fact_Health" xml:space="preserve">
+    <value>健康状態</value>
+  </data>
+  <data name="Hw_Fact_Drive" xml:space="preserve">
+    <value>ドライブ</value>
+  </data>
+  <data name="Hw_Fact_Temperature" xml:space="preserve">
+    <value>温度</value>
+  </data>
+  <data name="Hw_Fact_Wear" xml:space="preserve">
+    <value>消耗度</value>
+  </data>
+  <data name="Hw_Fact_PowerOnHours" xml:space="preserve">
+    <value>通電時間</value>
+  </data>
+  <data name="Hw_Fact_RotationSpeed" xml:space="preserve">
+    <value>回転数</value>
+  </data>
+  <data name="Hw_Fact_Firmware" xml:space="preserve">
+    <value>ファームウェア</value>
+  </data>
+  <data name="Hw_Storage_MediaBus" xml:space="preserve">
+    <value>{0}（{1}）</value>
+  </data>
+  <data name="Hw_Storage_VolumeUsage" xml:space="preserve">
+    <value>{0}: 空き {1} / {2}（{3:0}% 使用中）</value>
+  </data>
+  <data name="Hw_Storage_Wear" xml:space="preserve">
+    <value>寿命の目安の {0}% を使用</value>
+  </data>
+  <data name="Hw_Storage_Note" xml:space="preserve">
+    <value>温度はディスクに直接問い合わせて読みます。NVMe と SATA のディスクの多くは、管理者権限なしで読めます。消耗度と通電時間は Windows が公開している場合だけ表示します（多くは管理者として実行したときだけ公開されます）。Yamori が管理者権限を求めることはありません。</value>
+  </data>
+  <data name="Hw_Value_Celsius" xml:space="preserve">
+    <value>{0} ℃</value>
+  </data>
+  <data name="Hw_Value_Hours" xml:space="preserve">
+    <value>{0:N0} 時間</value>
+  </data>
+  <data name="Hw_Value_Rpm" xml:space="preserve">
+    <value>{0:N0} rpm</value>
+  </data>
+  <data name="Hw_Fact_Type" xml:space="preserve">
+    <value>種類</value>
+  </data>
+  <data name="Hw_Fact_Status" xml:space="preserve">
+    <value>状態（ファームウェアの報告）</value>
+  </data>
+  <data name="Hw_Fact_RatedSpeed" xml:space="preserve">
+    <value>公称回転数</value>
+  </data>
+  <data name="Hw_Fan_Numbered" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+  <data name="Hw_Fan_None_Title" xml:space="preserve">
+    <value>冷却装置の報告はありません</value>
+  </data>
+  <data name="Hw_Fan_None_Detail" xml:space="preserve">
+    <value>この PC のファームウェアはファンの一覧を公開していません。よくあることで、異常ではありません。</value>
+  </data>
+  <data name="Hw_Fan_Note" xml:space="preserve">
+    <value>ファンの回転数や温度の実測値は、カーネルドライバーなしでは Windows から読めないため表示していません（Yamori はドライバーを使いません）。ここに出ているのはファームウェアの報告で、メーカーによっては仮の値のままのことがあります。</value>
+  </data>
+  <data name="Cooling_Fan" xml:space="preserve">
+    <value>ファン</value>
+  </data>
+  <data name="Cooling_Blower" xml:space="preserve">
+    <value>ブロワー</value>
+  </data>
+  <data name="Cooling_ChipFan" xml:space="preserve">
+    <value>チップ用ファン</value>
+  </data>
+  <data name="Cooling_CaseFan" xml:space="preserve">
+    <value>ケースファン</value>
+  </data>
+  <data name="Cooling_PowerSupplyFan" xml:space="preserve">
+    <value>電源ユニットのファン</value>
+  </data>
+  <data name="Cooling_HeatPipe" xml:space="preserve">
+    <value>ヒートパイプ</value>
+  </data>
+  <data name="Cooling_Refrigeration" xml:space="preserve">
+    <value>冷凍機</value>
+  </data>
+  <data name="Cooling_Active" xml:space="preserve">
+    <value>能動冷却</value>
+  </data>
+  <data name="Cooling_Passive" xml:space="preserve">
+    <value>受動冷却</value>
+  </data>
+  <data name="Cooling_Other" xml:space="preserve">
+    <value>その他の冷却装置</value>
+  </data>
+  <data name="Cooling_Unknown" xml:space="preserve">
+    <value>冷却装置</value>
+  </data>
+  <data name="Status_Ok" xml:space="preserve">
+    <value>正常</value>
+  </data>
+  <data name="Status_NonCritical" xml:space="preserve">
+    <value>軽い異常</value>
+  </data>
+  <data name="Status_Critical" xml:space="preserve">
+    <value>重大な異常</value>
+  </data>
+  <data name="Status_NonRecoverable" xml:space="preserve">
+    <value>故障</value>
+  </data>
+  <data name="Status_Other" xml:space="preserve">
+    <value>その他</value>
+  </data>
+  <data name="Status_Unknown" xml:space="preserve">
+    <value>不明</value>
+  </data>
+  <data name="Hw_Power_CurrentSource" xml:space="preserve">
+    <value>今の電源</value>
+  </data>
+  <data name="Source_Ac" xml:space="preserve">
+    <value>コンセント（AC 電源）</value>
+  </data>
+  <data name="Source_Battery" xml:space="preserve">
+    <value>バッテリー</value>
+  </data>
+  <data name="Source_Unknown" xml:space="preserve">
+    <value>不明</value>
+  </data>
+  <data name="Hw_Power_Unit" xml:space="preserve">
+    <value>電源ユニット</value>
+  </data>
+  <data name="Hw_Power_UnitSubtitle" xml:space="preserve">
+    <value>ファームウェアの報告</value>
+  </data>
+  <data name="Hw_Power_Battery" xml:space="preserve">
+    <value>バッテリー</value>
+  </data>
+  <data name="Hw_Fact_MaxPower" xml:space="preserve">
+    <value>最大出力</value>
+  </data>
+  <data name="Hw_Fact_HotSwap" xml:space="preserve">
+    <value>電源を入れたまま交換</value>
+  </data>
+  <data name="Hw_Fact_Charge" xml:space="preserve">
+    <value>残量</value>
+  </data>
+  <data name="Hw_Fact_BatteryHealth" xml:space="preserve">
+    <value>容量</value>
+  </data>
+  <data name="Hw_Fact_CycleCount" xml:space="preserve">
+    <value>充放電回数</value>
+  </data>
+  <data name="Hw_Power_WattageNotReported" xml:space="preserve">
+    <value>報告なし（本体のラベルで確認できます）</value>
+  </data>
+  <data name="Hw_Power_Note" xml:space="preserve">
+    <value>デスクトップ PC の電源ユニットの多くは容量（W）をマザーボードに伝えないため、ここには表示できないことがよくあります。</value>
+  </data>
+  <data name="Hw_Value_Watts" xml:space="preserve">
+    <value>{0} W</value>
+  </data>
+  <data name="Hw_Value_Percent" xml:space="preserve">
+    <value>{0}%</value>
+  </data>
+  <data name="Hw_Battery_HealthValue" xml:space="preserve">
+    <value>新品時の {0:0}%（80% を下回ると持ちの悪さを感じやすくなります）</value>
+  </data>
+  <data name="Psu_Switching" xml:space="preserve">
+    <value>スイッチング方式</value>
+  </data>
+  <data name="Psu_Linear" xml:space="preserve">
+    <value>リニア方式</value>
+  </data>
+  <data name="Psu_Battery" xml:space="preserve">
+    <value>バッテリー</value>
+  </data>
+  <data name="Psu_Ups" xml:space="preserve">
+    <value>UPS（無停電電源装置）</value>
+  </data>
+  <data name="Psu_Converter" xml:space="preserve">
+    <value>コンバーター</value>
+  </data>
+  <data name="Psu_Regulator" xml:space="preserve">
+    <value>レギュレーター</value>
+  </data>
+  <data name="Psu_Other" xml:space="preserve">
+    <value>その他</value>
+  </data>
+  <data name="Nav_Realtime" xml:space="preserve">
+    <value>リアルタイム</value>
+  </data>
+  <data name="Realtime_Description" xml:space="preserve">
+    <value>この PC で読めるすべてのセンサーを、ハードウェアごとに表示します。値はこの PC の中にだけ記録します。</value>
+  </data>
+  <data name="Realtime_Waiting" xml:space="preserve">
+    <value>測定しています…</value>
+  </data>
+  <data name="Realtime_Updated" xml:space="preserve">
+    <value>最終測定：{0}</value>
+  </data>
+  <data name="Realtime_Unavailable" xml:space="preserve">
+    <value>Windows のパフォーマンス カウンターを開けなかったため、今の値を表示できません。</value>
+  </data>
+  <data name="Rt_Value_Percent" xml:space="preserve">
+    <value>{0:0.0}%</value>
+  </data>
+  <data name="Rt_Value_BytesPerSecond" xml:space="preserve">
+    <value>{0}/秒</value>
+  </data>
+  <data name="Rt_Section_Apps" xml:space="preserve">
+    <value>アプリ</value>
+  </data>
+  <data name="Rt_Apps_Headline" xml:space="preserve">
+    <value>CPU 最多：{0}</value>
+  </data>
+  <data name="Rt_Apps_ByCpu" xml:space="preserve">
+    <value>CPU の使用率</value>
+  </data>
+  <data name="Rt_Apps_ByGpu" xml:space="preserve">
+    <value>GPU の使用率</value>
+  </data>
+  <data name="Rt_Apps_ByIo" xml:space="preserve">
+    <value>読み書きの速さ</value>
+  </data>
+  <data name="Rt_Apps_AppLabel" xml:space="preserve">
+    <value>{0}（{1}）</value>
+  </data>
+  <data name="Rt_Apps_None" xml:space="preserve">
+    <value>今は目立って使っているアプリはありません</value>
+  </data>
+  <data name="Rt_Apps_ReadWrite" xml:space="preserve">
+    <value>{0}（読み込み {1}・書き込み {2}）</value>
+  </data>
+  <data name="Rt_Apps_Note" xml:space="preserve">
+    <value>同じ名前のプロセスは 1 つのアプリとしてまとめ、かっこの中にプロセスの数を示します。CPU は、動作時間（% Processor Time）を PC 全体に対する割合にしたものです。そのためブースト中は、タスク マネージャーより低く出ることがあります。GPU は、各プロセスが最も使っているエンジンの使用率です。読み書きにはファイルのほか、デバイスやネットワークとのやり取りも含まれるため、タスク マネージャーの「ディスク」の列とは一致しません。値はパフォーマンス カウンターから読むため、プロセスを開く必要がなく、保護されたプロセスも集計できます。</value>
+  </data>
+  <data name="Hw_Network_Note" xml:space="preserve">
+    <value>ハードウェアのアダプターだけを表示し、VPN・Hyper-V・Bluetooth のネットワークなどの仮想アダプターは表示しません。Yamori は MAC アドレス・IP アドレス・Wi-Fi のネットワーク名を読み取りません。</value>
+  </data>
+  <data name="Hw_Fact_Connection" xml:space="preserve">
+    <value>接続</value>
+  </data>
+  <data name="Hw_Fact_LinkSpeed" xml:space="preserve">
+    <value>リンク速度</value>
+  </data>
+  <data name="Hw_Network_Connected" xml:space="preserve">
+    <value>接続中</value>
+  </data>
+  <data name="Hw_Network_Disconnected" xml:space="preserve">
+    <value>未接続</value>
+  </data>
+  <data name="Net_Ethernet" xml:space="preserve">
+    <value>有線 LAN</value>
+  </data>
+  <data name="Net_WiFi" xml:space="preserve">
+    <value>Wi-Fi</value>
+  </data>
+  <data name="Net_Cellular" xml:space="preserve">
+    <value>モバイル回線</value>
+  </data>
+  <data name="Net_Bluetooth" xml:space="preserve">
+    <value>Bluetooth</value>
+  </data>
+  <data name="Net_Other" xml:space="preserve">
+    <value>その他</value>
+  </data>
+  <data name="Net_Unknown" xml:space="preserve">
+    <value>不明</value>
+  </data>
+  <data name="Hw_Value_Gbps" xml:space="preserve">
+    <value>{0:0.#} Gbps</value>
+  </data>
+  <data name="Hw_Value_Mbps" xml:space="preserve">
+    <value>{0:0.#} Mbps</value>
+  </data>
+  <data name="Hw_Value_Kbps" xml:space="preserve">
+    <value>{0:0} kbps</value>
+  </data>
+  <data name="SummaryCard_CpuLoad" xml:space="preserve">
+    <value>CPU 使用率</value>
+  </data>
+  <data name="SummaryCard_CpuTemperature" xml:space="preserve">
+    <value>CPU 温度</value>
+  </data>
+  <data name="SummaryCard_CpuClock" xml:space="preserve">
+    <value>CPU クロック</value>
+  </data>
+  <data name="SummaryCard_CpuPower" xml:space="preserve">
+    <value>CPU 電力</value>
+  </data>
+  <data name="SummaryCard_MemoryLoad" xml:space="preserve">
+    <value>メモリ使用率</value>
+  </data>
+  <data name="SummaryCard_GpuLoad" xml:space="preserve">
+    <value>GPU 使用率</value>
+  </data>
+  <data name="SummaryCard_GpuTemperature" xml:space="preserve">
+    <value>GPU 温度</value>
+  </data>
+  <data name="SensorKind_Cpu" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="SensorKind_Memory" xml:space="preserve">
+    <value>メモリ</value>
+  </data>
+  <data name="SensorKind_Gpu" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="SensorKind_Storage" xml:space="preserve">
+    <value>ストレージ</value>
+  </data>
+  <data name="SensorKind_Volume" xml:space="preserve">
+    <value>ドライブ</value>
+  </data>
+  <data name="SensorKind_Network" xml:space="preserve">
+    <value>ネットワーク</value>
+  </data>
+  <data name="SensorKind_Battery" xml:space="preserve">
+    <value>バッテリー</value>
+  </data>
+  <data name="SensorKind_Motherboard" xml:space="preserve">
+    <value>マザーボード</value>
+  </data>
+  <data name="SensorKind_ThermalZone" xml:space="preserve">
+    <value>ACPI 温度ゾーン</value>
+  </data>
+  <data name="SensorKind_System" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="SensorKind_PowerSupply" xml:space="preserve">
+    <value>電源ユニット</value>
+  </data>
+  <data name="SensorGroup_load" xml:space="preserve">
+    <value>使用率</value>
+  </data>
+  <data name="SensorGroup_clock" xml:space="preserve">
+    <value>クロック</value>
+  </data>
+  <data name="SensorGroup_temperature" xml:space="preserve">
+    <value>温度</value>
+  </data>
+  <data name="SensorGroup_power" xml:space="preserve">
+    <value>電力</value>
+  </data>
+  <data name="SensorGroup_voltage" xml:space="preserve">
+    <value>電圧</value>
+  </data>
+  <data name="SensorGroup_current" xml:space="preserve">
+    <value>電流</value>
+  </data>
+  <data name="SensorGroup_fan" xml:space="preserve">
+    <value>ファン</value>
+  </data>
+  <data name="SensorGroup_control" xml:space="preserve">
+    <value>ファン制御</value>
+  </data>
+  <data name="SensorGroup_data" xml:space="preserve">
+    <value>データ量</value>
+  </data>
+  <data name="SensorGroup_throughput" xml:space="preserve">
+    <value>転送速度</value>
+  </data>
+  <data name="SensorGroup_rate" xml:space="preserve">
+    <value>回数（毎秒）</value>
+  </data>
+  <data name="SensorGroup_count" xml:space="preserve">
+    <value>個数</value>
+  </data>
+  <data name="SensorGroup_duration" xml:space="preserve">
+    <value>時間</value>
+  </data>
+  <data name="SensorGroup_level" xml:space="preserve">
+    <value>割合</value>
+  </data>
+  <data name="SensorGroup_energy" xml:space="preserve">
+    <value>エネルギー</value>
+  </data>
+  <data name="SensorGroup_threads" xml:space="preserve">
+    <value>スレッド</value>
+  </data>
+  <data name="SensorGroup_engines" xml:space="preserve">
+    <value>エンジン</value>
+  </data>
+  <data name="SensorGroup_cores" xml:space="preserve">
+    <value>コア</value>
+  </data>
+  <data name="Extended_Title" xml:space="preserve">
+    <value>拡張センサー（PawnIO）</value>
+  </data>
+  <data name="Extended_NotInstalled" xml:space="preserve">
+    <value>PawnIO が入っていないため、Windows の標準 API で読めるセンサーだけを表示しています。</value>
+  </data>
+  <data name="Extended_HelperRequired" xml:space="preserve">
+    <value>PawnIO は入っていますが、読み取りを行う Yamori Helper（サービス）がまだ動いていないため、標準のセンサーだけを表示しています。</value>
+  </data>
+  <data name="Extended_UnsupportedEdition" xml:space="preserve">
+    <value>入っている PawnIO が署名済みの公式版ではないため、Yamori は使いません。</value>
+  </data>
+  <data name="Extended_Active" xml:space="preserve">
+    <value>拡張センサーを使っています（読み取りのみ）。</value>
+  </data>
+  <data name="Extended_Unavailable" xml:space="preserve">
+    <value>拡張センサーが一時的に使えないため、標準のセンサーを表示しています。</value>
   </data>
 </root>

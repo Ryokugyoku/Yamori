@@ -13,8 +13,12 @@ public sealed class AppSession : IDisposable
 {
     private readonly AppServices _services;
     private readonly MainWindow _window;
+    /// <summary>終了するときに、センサーの記録が止まるのを待つ最長の時間。</summary>
+    private static readonly TimeSpan SensorsStopTimeout = TimeSpan.FromSeconds(2);
+
     private readonly CancellationTokenSource _monitorCancellation = new();
     private MainViewModel? _main;
+    private Task? _sensorsRun;
 
     /// <summary>
     /// 部品とウィンドウを指定して作る。
@@ -41,13 +45,28 @@ public sealed class AppSession : IDisposable
         _ = login.InitializeAsync();    }
 
     /// <summary>
-    /// 使用率の記録を止め、イベントの購読を解除する。
+    /// 使用率とセンサーの記録を止め、イベントの購読を解除する。ためていたセンサーの値を書き込んでから、ストアを閉じる。
     /// </summary>
     public void Dispose()
     {
         _monitorCancellation.Cancel();
-        _monitorCancellation.Dispose();
+        try
+        {
+            // 止めるときのまとめ書きが終わるまで、少しだけ待つ。
+            _sensorsRun?.Wait(SensorsStopTimeout);
+        }
+        catch (AggregateException)
+        {
+            // 止める途中の失敗は、終了の妨げにしない。
+        }
+
         _main?.Dispose();
+        if (_sensorsRun is null || _sensorsRun.IsCompleted)
+        {
+            _services.Sensors.Dispose();
+        }
+
+        _monitorCancellation.Dispose();
     }
 
     private void OnSignedIn(object? sender, EventArgs e)
@@ -60,6 +79,7 @@ public sealed class AppSession : IDisposable
         // 記録はサインインした後に始める。
         var token = _monitorCancellation.Token;
         _ = Task.Run(() => _services.Monitor.RunAsync(token), token);
+        _sensorsRun = Task.Run(() => _services.Sensors.RunAsync(token), token);
 
         _main = _services.CreateMainViewModel();
         ShowShell(openSettings: false);
@@ -70,7 +90,7 @@ public sealed class AppSession : IDisposable
     {
         var settings = _services.CreateSettingsViewModel(() => _window.Id);
         settings.LanguageChanged += OnLanguageChanged;
-        _window.ShowContent(new ShellView(_main!, settings, openSettings));
+        _window.ShowContent(new ShellView(_main!, settings, _services.CreateRealtimeViewModel, openSettings));
     }
 
     private void OnLanguageChanged(object? sender, EventArgs e)

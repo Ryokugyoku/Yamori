@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -14,6 +15,9 @@ public sealed partial class MainWindow : Window
 {
     private static readonly SizeInt32 InitialSize = new(1180, 820);
 
+    /// <summary>タスクバーや Alt+Tab に表示するウィンドウのアイコン（アプリのフォルダーからの相対パス）。</summary>
+    private const string WindowIconPath = @"Assets\Logo\Yamori.ico";
+
     private readonly SystemThemeWatcher _themeWatcher;
 
     /// <summary>
@@ -25,9 +29,11 @@ public sealed partial class MainWindow : Window
 
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(AppTitleBar);
-        AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+        // TitleBar は戻るボタンなどを持たないため高さ 32px のコンパクト表示になる。右上のボタンも同じ高さにそろえる。
+        AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Standard;
         AppWindow.TitleBar.PreferredTheme = TitleBarTheme.UseDefaultAppMode;
         AppWindow.Resize(InitialSize);
+        AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, WindowIconPath));
 
         // Windows の設定を変えたら、開いたままでもすぐにライト／ダークを切り替える。
         _themeWatcher = new SystemThemeWatcher();

@@ -24,6 +24,33 @@ public class ProcessUsageAggregatorTests
     }
 
     [Fact]
+    public void GroupsActivityByNameLikeMemoryAggregation()
+    {
+        ProcessActivity[] activities =
+        [
+            new(1, "chrome", 10, 20, 100, 0),
+            new(2, "Chrome", 15, 90, 0, 50),
+            new(3, "System", 50, 0, 1_000_000, 0),
+            new(4, "notepad", 0, 0, 0, 0),
+        ];
+
+        var apps = ProcessActivityAggregator.GroupByApp(activities);
+
+        Assert.Equal(2, apps.Count);
+        var chrome = apps.Single(a => a.Name == "chrome");
+        Assert.Equal((2, 25.0, 100.0, 150.0), (chrome.ProcessCount, chrome.CpuPercent, chrome.GpuPercent, chrome.IoBytesPerSecond));
+        Assert.Empty(ProcessActivityAggregator.Top(apps.Where(a => a.Name == "notepad"), a => a.CpuPercent, 5));
+    }
+
+    [Fact]
+    public void TopActivityOrdersByValueThenName()
+    {
+        AppActivity[] apps = [new("b", 1, 10, 0, 0, 0), new("a", 1, 10, 0, 0, 0), new("c", 1, 30, 0, 0, 0)];
+
+        Assert.Equal(["c", "a"], ProcessActivityAggregator.Top(apps, a => a.CpuPercent, 2).Select(a => a.Name));
+    }
+
+    [Fact]
     public void RejectsNonPositiveTop()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => ProcessUsageAggregator.TopByMemory([], 0));

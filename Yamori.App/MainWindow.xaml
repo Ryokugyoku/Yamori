@@ -20,7 +20,7 @@
 
         <TitleBar x:Name="AppTitleBar" Title="Yamori">
             <TitleBar.IconSource>
-                <FontIconSource Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xEA18;" />
+                <ImageIconSource ImageSource="ms-appx:///Assets/Logo/YamoriLogo.png" />
             </TitleBar.IconSource>
         </TitleBar>
 

@@ -63,12 +63,6 @@
   <data name="Common_Refresh" xml:space="preserve">
     <value>Actualizar</value>
   </data>
-  <data name="Overview_CpuNow" xml:space="preserve">
-    <value>Uso de CPU (ahora)</value>
-  </data>
-  <data name="Overview_MemoryNow" xml:space="preserve">
-    <value>Uso de memoria (ahora)</value>
-  </data>
   <data name="Overview_NextPcTitle" xml:space="preserve">
     <value>Guía para tu próximo PC</value>
   </data>
@@ -88,7 +82,7 @@
     <value>Los componentes de este PC y su estado.</value>
   </data>
   <data name="Apps_Description" xml:space="preserve">
-    <value>Aplicaciones que más memoria usan ahora. Los procesos de una misma aplicación se suman.</value>
+    <value>Aplicaciones que más memoria usan ahora. Los procesos de una misma aplicación se suman. La CPU, la GPU y las lecturas y escrituras por aplicación están en la página En tiempo real.</value>
   </data>
   <data name="Privacy_Local" xml:space="preserve">
     <value>Yamori nunca se conecta a Internet. Los registros se quedan en este PC.</value>
@@ -162,17 +156,8 @@
   <data name="Settings_AboutDescription" xml:space="preserve">
     <value>Un gestor de PC sin conexión y de código abierto. Yamori solo usa lo que ofrece Windows y nunca envía datos fuera de tu PC.</value>
   </data>
-  <data name="Hw_Cpu_Detail" xml:space="preserve">
-    <value>{0} núcleos / {1} hilos · hasta {2:0.0} GHz</value>
-  </data>
   <data name="Hw_Memory_Modules" xml:space="preserve">
     <value>{0} módulo(s)</value>
-  </data>
-  <data name="Hw_Memory_ModulesWithSpeed" xml:space="preserve">
-    <value>{0} módulo(s) · {1} MT/s</value>
-  </data>
-  <data name="Hw_Storage_Detail" xml:space="preserve">
-    <value>{0} · {1} ({2}) · {3}</value>
   </data>
   <data name="Media_Unknown" xml:space="preserve">
     <value>Tipo desconocido</value>
@@ -189,28 +174,577 @@
   <data name="Health_Unknown" xml:space="preserve">
     <value>Estado desconocido</value>
   </data>
-  <data name="Hw_Gpu_WithRam" xml:space="preserve">
-    <value>Memoria de vídeo {0} (más de 4 GB puede mostrarse mal) · Controlador {1}</value>
-  </data>
-  <data name="Hw_Gpu_DriverOnly" xml:space="preserve">
-    <value>Controlador {0}</value>
-  </data>
-  <data name="Hw_Battery_Charge" xml:space="preserve">
-    <value>Carga {0}%</value>
-  </data>
-  <data name="Hw_Battery_ChargeUnknown" xml:space="preserve">
-    <value>Carga desconocida</value>
-  </data>
-  <data name="Hw_Battery_Health" xml:space="preserve">
-    <value>{0} · La capacidad de carga completa es el {1:0}% de la original (por debajo del 80% se suele notar menos autonomía)</value>
-  </data>
-  <data name="Hw_None_Title" xml:space="preserve">
-    <value>No se pudo leer la información del hardware</value>
-  </data>
-  <data name="Hw_None_Detail" xml:space="preserve">
-    <value>Es posible que Instrumental de administración de Windows (WMI) no responda.</value>
-  </data>
   <data name="Apps_ProcessCount" xml:space="preserve">
     <value>{0} procesos</value>
+  </data>
+  <data name="Hw_Separator" xml:space="preserve">
+    <value> · </value>
+  </data>
+  <data name="Hw_NotAvailable_Title" xml:space="preserve">
+    <value>No se pudo leer esta información</value>
+  </data>
+  <data name="Hw_NotAvailable_Detail" xml:space="preserve">
+    <value>Es posible que Instrumental de administración de Windows (WMI) no responda o que este PC no ofrezca esta información.</value>
+  </data>
+  <data name="Common_Yes" xml:space="preserve">
+    <value>Sí</value>
+  </data>
+  <data name="Hw_Fact_Cores" xml:space="preserve">
+    <value>Núcleos</value>
+  </data>
+  <data name="Hw_Fact_CoreTypes" xml:space="preserve">
+    <value>Tipos de núcleo</value>
+  </data>
+  <data name="Hw_Fact_RatedClock" xml:space="preserve">
+    <value>Frecuencia nominal</value>
+  </data>
+  <data name="Hw_Fact_Cache" xml:space="preserve">
+    <value>Caché</value>
+  </data>
+  <data name="Hw_Fact_Socket" xml:space="preserve">
+    <value>Zócalo</value>
+  </data>
+  <data name="Hw_Fact_SocketCount" xml:space="preserve">
+    <value>CPU (zócalos)</value>
+  </data>
+  <data name="Hw_Fact_Architecture" xml:space="preserve">
+    <value>Arquitectura</value>
+  </data>
+  <data name="Hw_Fact_Manufacturer" xml:space="preserve">
+    <value>Fabricante</value>
+  </data>
+  <data name="Hw_Fact_Model" xml:space="preserve">
+    <value>Modelo</value>
+  </data>
+  <data name="Hw_Cpu_CoresThreads" xml:space="preserve">
+    <value>{0} núcleos / {1} hilos</value>
+  </data>
+  <data name="Hw_Cpu_Hybrid" xml:space="preserve">
+    <value>{0} de rendimiento + {1} de eficiencia</value>
+  </data>
+  <data name="Hw_Cpu_IntegratedGpu" xml:space="preserve">
+    <value>Gráficos integrados (parte de la CPU)</value>
+  </data>
+  <data name="Hw_Cpu_Note" xml:space="preserve">
+    <value>Más hilos ayudan cuando usas muchas aplicaciones a la vez. La frecuencia nominal es la velocidad base que indica Windows; la CPU puede ir más rápido cuando acelera.</value>
+  </data>
+  <data name="Hw_Value_Ghz" xml:space="preserve">
+    <value>{0:0.0} GHz</value>
+  </data>
+  <data name="Hw_Fact_Revision" xml:space="preserve">
+    <value>Revisión</value>
+  </data>
+  <data name="Hw_Fact_PcModel" xml:space="preserve">
+    <value>Modelo de PC</value>
+  </data>
+  <data name="Hw_Fact_FormFactor" xml:space="preserve">
+    <value>Formato</value>
+  </data>
+  <data name="Hw_Fact_Bios" xml:space="preserve">
+    <value>BIOS / UEFI</value>
+  </data>
+  <data name="Hw_Fact_BiosDate" xml:space="preserve">
+    <value>Fecha del BIOS</value>
+  </data>
+  <data name="Hw_Fact_Smbios" xml:space="preserve">
+    <value>Versión de SMBIOS</value>
+  </data>
+  <data name="Hw_Board_Unknown" xml:space="preserve">
+    <value>Modelo de placa base desconocido</value>
+  </data>
+  <data name="Hw_Board_Note" xml:space="preserve">
+    <value>Las actualizaciones del BIOS corrigen errores y problemas de seguridad. Si la fecha es de hace varios años, conviene revisar la página de soporte del fabricante.</value>
+  </data>
+  <data name="Chassis_Desktop" xml:space="preserve">
+    <value>Sobremesa</value>
+  </data>
+  <data name="Chassis_Laptop" xml:space="preserve">
+    <value>Portátil</value>
+  </data>
+  <data name="Chassis_Convertible" xml:space="preserve">
+    <value>2 en 1</value>
+  </data>
+  <data name="Chassis_Tablet" xml:space="preserve">
+    <value>Tableta</value>
+  </data>
+  <data name="Chassis_AllInOne" xml:space="preserve">
+    <value>Todo en uno</value>
+  </data>
+  <data name="Chassis_MiniPc" xml:space="preserve">
+    <value>Mini PC</value>
+  </data>
+  <data name="Chassis_Server" xml:space="preserve">
+    <value>Servidor</value>
+  </data>
+  <data name="Chassis_Other" xml:space="preserve">
+    <value>Otro</value>
+  </data>
+  <data name="Hw_Memory_Total" xml:space="preserve">
+    <value>Memoria instalada</value>
+  </data>
+  <data name="Hw_Fact_Slots" xml:space="preserve">
+    <value>Ranuras</value>
+  </data>
+  <data name="Hw_Fact_MaxCapacity" xml:space="preserve">
+    <value>Máximo admitido</value>
+  </data>
+  <data name="Hw_Fact_Speed" xml:space="preserve">
+    <value>Velocidad</value>
+  </data>
+  <data name="Hw_Fact_PartNumber" xml:space="preserve">
+    <value>Número de pieza</value>
+  </data>
+  <data name="Hw_Fact_Voltage" xml:space="preserve">
+    <value>Voltaje</value>
+  </data>
+  <data name="Hw_Memory_SlotsUsed" xml:space="preserve">
+    <value>{0} de {1} en uso ({2} libres)</value>
+  </data>
+  <data name="Hw_Memory_SpeedBelowRated" xml:space="preserve">
+    <value>{0} MT/s (el módulo admite {1} MT/s; puede ir más rápido con el ajuste XMP/EXPO del BIOS)</value>
+  </data>
+  <data name="Hw_Memory_Note" xml:space="preserve">
+    <value>Las ranuras libres y la capacidad máxima indican si puedes añadir memoria en lugar de comprar un PC nuevo.</value>
+  </data>
+  <data name="Hw_Value_Mtps" xml:space="preserve">
+    <value>{0} MT/s</value>
+  </data>
+  <data name="Hw_Value_Volts" xml:space="preserve">
+    <value>{0:0.00} V</value>
+  </data>
+  <data name="Hw_Fact_VideoMemory" xml:space="preserve">
+    <value>Memoria de vídeo</value>
+  </data>
+  <data name="Hw_Fact_SharedMemory" xml:space="preserve">
+    <value>Memoria compartida</value>
+  </data>
+  <data name="Hw_Fact_Display" xml:space="preserve">
+    <value>Pantalla</value>
+  </data>
+  <data name="Hw_Fact_Driver" xml:space="preserve">
+    <value>Controlador</value>
+  </data>
+  <data name="Hw_Value_WithDate" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="Hw_Gpu_MemoryCapped" xml:space="preserve">
+    <value>{0} (más de 4 GB puede mostrarse mal)</value>
+  </data>
+  <data name="Hw_Gpu_Display" xml:space="preserve">
+    <value>{0} × {1}</value>
+  </data>
+  <data name="Hw_Gpu_DisplayWithRate" xml:space="preserve">
+    <value>{0} × {1} a {2} Hz</value>
+  </data>
+  <data name="Hw_Gpu_IntegratedOnly_Title" xml:space="preserve">
+    <value>Sin tarjeta gráfica dedicada</value>
+  </data>
+  <data name="Hw_Gpu_IntegratedOnly_Detail" xml:space="preserve">
+    <value>Los gráficos los gestiona la GPU integrada de la CPU (se muestra en CPU).</value>
+  </data>
+  <data name="Hw_Gpu_Note" xml:space="preserve">
+    <value>La memoria compartida se toma de la memoria principal cuando se agota la de vídeo, y es más lenta.</value>
+  </data>
+  <data name="Hw_Fact_Health" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="Hw_Fact_Drive" xml:space="preserve">
+    <value>Unidad</value>
+  </data>
+  <data name="Hw_Fact_Temperature" xml:space="preserve">
+    <value>Temperatura</value>
+  </data>
+  <data name="Hw_Fact_Wear" xml:space="preserve">
+    <value>Desgaste</value>
+  </data>
+  <data name="Hw_Fact_PowerOnHours" xml:space="preserve">
+    <value>Tiempo encendido</value>
+  </data>
+  <data name="Hw_Fact_RotationSpeed" xml:space="preserve">
+    <value>Velocidad de giro</value>
+  </data>
+  <data name="Hw_Fact_Firmware" xml:space="preserve">
+    <value>Firmware</value>
+  </data>
+  <data name="Hw_Storage_MediaBus" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="Hw_Storage_VolumeUsage" xml:space="preserve">
+    <value>{0}: {1} libres de {2} ({3:0}% en uso)</value>
+  </data>
+  <data name="Hw_Storage_Wear" xml:space="preserve">
+    <value>{0}% de la vida útil estimada</value>
+  </data>
+  <data name="Hw_Storage_Note" xml:space="preserve">
+    <value>La temperatura se consulta directamente al disco, lo que funciona sin permisos de administrador en la mayoría de unidades NVMe y SATA. El desgaste y las horas de encendido solo se muestran si Windows los ofrece, a menudo solo al ejecutar como administrador. Yamori nunca pide permisos de administrador.</value>
+  </data>
+  <data name="Hw_Value_Celsius" xml:space="preserve">
+    <value>{0} °C</value>
+  </data>
+  <data name="Hw_Value_Hours" xml:space="preserve">
+    <value>{0:N0} horas</value>
+  </data>
+  <data name="Hw_Value_Rpm" xml:space="preserve">
+    <value>{0:N0} rpm</value>
+  </data>
+  <data name="Hw_Fact_Type" xml:space="preserve">
+    <value>Tipo</value>
+  </data>
+  <data name="Hw_Fact_Status" xml:space="preserve">
+    <value>Estado (según el firmware)</value>
+  </data>
+  <data name="Hw_Fact_RatedSpeed" xml:space="preserve">
+    <value>Velocidad nominal</value>
+  </data>
+  <data name="Hw_Fan_Numbered" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+  <data name="Hw_Fan_None_Title" xml:space="preserve">
+    <value>No se informa de dispositivos de refrigeración</value>
+  </data>
+  <data name="Hw_Fan_None_Detail" xml:space="preserve">
+    <value>El firmware de este PC no enumera sus ventiladores. Es habitual y no indica ningún problema.</value>
+  </data>
+  <data name="Hw_Fan_Note" xml:space="preserve">
+    <value>La velocidad real de los ventiladores y la temperatura no se pueden leer desde Windows sin un controlador de kernel, que Yamori no usa. Se muestra lo que indica el firmware, y algunos fabricantes dejan valores genéricos.</value>
+  </data>
+  <data name="Cooling_Fan" xml:space="preserve">
+    <value>Ventilador</value>
+  </data>
+  <data name="Cooling_Blower" xml:space="preserve">
+    <value>Soplador</value>
+  </data>
+  <data name="Cooling_ChipFan" xml:space="preserve">
+    <value>Ventilador de chip</value>
+  </data>
+  <data name="Cooling_CaseFan" xml:space="preserve">
+    <value>Ventilador de caja</value>
+  </data>
+  <data name="Cooling_PowerSupplyFan" xml:space="preserve">
+    <value>Ventilador de la fuente</value>
+  </data>
+  <data name="Cooling_HeatPipe" xml:space="preserve">
+    <value>Heat pipe</value>
+  </data>
+  <data name="Cooling_Refrigeration" xml:space="preserve">
+    <value>Refrigeración</value>
+  </data>
+  <data name="Cooling_Active" xml:space="preserve">
+    <value>Refrigeración activa</value>
+  </data>
+  <data name="Cooling_Passive" xml:space="preserve">
+    <value>Refrigeración pasiva</value>
+  </data>
+  <data name="Cooling_Other" xml:space="preserve">
+    <value>Otro dispositivo de refrigeración</value>
+  </data>
+  <data name="Cooling_Unknown" xml:space="preserve">
+    <value>Dispositivo de refrigeración</value>
+  </data>
+  <data name="Status_Ok" xml:space="preserve">
+    <value>Correcto</value>
+  </data>
+  <data name="Status_NonCritical" xml:space="preserve">
+    <value>Problema leve</value>
+  </data>
+  <data name="Status_Critical" xml:space="preserve">
+    <value>Problema grave</value>
+  </data>
+  <data name="Status_NonRecoverable" xml:space="preserve">
+    <value>Averiado</value>
+  </data>
+  <data name="Status_Other" xml:space="preserve">
+    <value>Otro</value>
+  </data>
+  <data name="Status_Unknown" xml:space="preserve">
+    <value>Desconocido</value>
+  </data>
+  <data name="Hw_Power_CurrentSource" xml:space="preserve">
+    <value>Fuente de energía actual</value>
+  </data>
+  <data name="Source_Ac" xml:space="preserve">
+    <value>Conectado (corriente alterna)</value>
+  </data>
+  <data name="Source_Battery" xml:space="preserve">
+    <value>Con batería</value>
+  </data>
+  <data name="Source_Unknown" xml:space="preserve">
+    <value>Desconocida</value>
+  </data>
+  <data name="Hw_Power_Unit" xml:space="preserve">
+    <value>Fuente de alimentación</value>
+  </data>
+  <data name="Hw_Power_UnitSubtitle" xml:space="preserve">
+    <value>Según el firmware</value>
+  </data>
+  <data name="Hw_Power_Battery" xml:space="preserve">
+    <value>Batería</value>
+  </data>
+  <data name="Hw_Fact_MaxPower" xml:space="preserve">
+    <value>Potencia máxima</value>
+  </data>
+  <data name="Hw_Fact_HotSwap" xml:space="preserve">
+    <value>Intercambio en caliente</value>
+  </data>
+  <data name="Hw_Fact_Charge" xml:space="preserve">
+    <value>Carga</value>
+  </data>
+  <data name="Hw_Fact_BatteryHealth" xml:space="preserve">
+    <value>Capacidad</value>
+  </data>
+  <data name="Hw_Fact_CycleCount" xml:space="preserve">
+    <value>Ciclos de carga</value>
+  </data>
+  <data name="Hw_Power_WattageNotReported" xml:space="preserve">
+    <value>No indicada (consulta la etiqueta de la fuente)</value>
+  </data>
+  <data name="Hw_Power_Note" xml:space="preserve">
+    <value>La mayoría de las fuentes de sobremesa no comunican su potencia a la placa base, por lo que a menudo no se puede mostrar aquí.</value>
+  </data>
+  <data name="Hw_Value_Watts" xml:space="preserve">
+    <value>{0} W</value>
+  </data>
+  <data name="Hw_Value_Percent" xml:space="preserve">
+    <value>{0}%</value>
+  </data>
+  <data name="Hw_Battery_HealthValue" xml:space="preserve">
+    <value>{0:0}% de la original (por debajo del 80% se suele notar menos autonomía)</value>
+  </data>
+  <data name="Psu_Switching" xml:space="preserve">
+    <value>Conmutada</value>
+  </data>
+  <data name="Psu_Linear" xml:space="preserve">
+    <value>Lineal</value>
+  </data>
+  <data name="Psu_Battery" xml:space="preserve">
+    <value>Batería</value>
+  </data>
+  <data name="Psu_Ups" xml:space="preserve">
+    <value>SAI</value>
+  </data>
+  <data name="Psu_Converter" xml:space="preserve">
+    <value>Convertidor</value>
+  </data>
+  <data name="Psu_Regulator" xml:space="preserve">
+    <value>Regulador</value>
+  </data>
+  <data name="Psu_Other" xml:space="preserve">
+    <value>Otro</value>
+  </data>
+  <data name="Nav_Realtime" xml:space="preserve">
+    <value>En tiempo real</value>
+  </data>
+  <data name="Realtime_Description" xml:space="preserve">
+    <value>Muestra todos los sensores que Yamori puede leer en este PC, agrupados por hardware. Los valores solo se registran en este PC.</value>
+  </data>
+  <data name="Realtime_Waiting" xml:space="preserve">
+    <value>Midiendo…</value>
+  </data>
+  <data name="Realtime_Updated" xml:space="preserve">
+    <value>Última medición: {0}</value>
+  </data>
+  <data name="Realtime_Unavailable" xml:space="preserve">
+    <value>No se pudieron abrir los contadores de rendimiento de Windows, así que no se pueden mostrar los valores en tiempo real.</value>
+  </data>
+  <data name="Rt_Value_Percent" xml:space="preserve">
+    <value>{0:0.0} %</value>
+  </data>
+  <data name="Rt_Value_BytesPerSecond" xml:space="preserve">
+    <value>{0}/s</value>
+  </data>
+  <data name="Rt_Section_Apps" xml:space="preserve">
+    <value>Aplicaciones</value>
+  </data>
+  <data name="Rt_Apps_Headline" xml:space="preserve">
+    <value>Más activa: {0}</value>
+  </data>
+  <data name="Rt_Apps_ByCpu" xml:space="preserve">
+    <value>Por CPU</value>
+  </data>
+  <data name="Rt_Apps_ByGpu" xml:space="preserve">
+    <value>Por GPU</value>
+  </data>
+  <data name="Rt_Apps_ByIo" xml:space="preserve">
+    <value>Por lecturas y escrituras</value>
+  </data>
+  <data name="Rt_Apps_AppLabel" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="Rt_Apps_None" xml:space="preserve">
+    <value>Nada destacable ahora mismo</value>
+  </data>
+  <data name="Rt_Apps_ReadWrite" xml:space="preserve">
+    <value>{0} (lectura {1}, escritura {2})</value>
+  </data>
+  <data name="Rt_Apps_Note" xml:space="preserve">
+    <value>Los procesos con el mismo nombre se suman como una sola aplicación; el número entre paréntesis es cuántos procesos tiene. La CPU es una parte del total del equipo según el tiempo de CPU (% Processor Time), por lo que puede salir más baja que en el Administrador de tareas con el turbo activo. La GPU es el motor más usado por cada proceso. Las lecturas y escrituras incluyen archivos, dispositivos y red, así que no coinciden con la columna Disco del Administrador de tareas. Los procesos protegidos también se cuentan: estos valores vienen de los contadores de rendimiento y no hace falta abrir los procesos.</value>
+  </data>
+  <data name="Hw_Network_Note" xml:space="preserve">
+    <value>Solo se muestran los adaptadores físicos; los virtuales, como VPN, Hyper-V y la red Bluetooth, se ocultan. Yamori no lee direcciones MAC, direcciones IP ni nombres de redes Wi-Fi.</value>
+  </data>
+  <data name="Hw_Fact_Connection" xml:space="preserve">
+    <value>Conexión</value>
+  </data>
+  <data name="Hw_Fact_LinkSpeed" xml:space="preserve">
+    <value>Velocidad del enlace</value>
+  </data>
+  <data name="Hw_Network_Connected" xml:space="preserve">
+    <value>Conectado</value>
+  </data>
+  <data name="Hw_Network_Disconnected" xml:space="preserve">
+    <value>Sin conexión</value>
+  </data>
+  <data name="Net_Ethernet" xml:space="preserve">
+    <value>Ethernet</value>
+  </data>
+  <data name="Net_WiFi" xml:space="preserve">
+    <value>Wi-Fi</value>
+  </data>
+  <data name="Net_Cellular" xml:space="preserve">
+    <value>Banda ancha móvil</value>
+  </data>
+  <data name="Net_Bluetooth" xml:space="preserve">
+    <value>Bluetooth</value>
+  </data>
+  <data name="Net_Other" xml:space="preserve">
+    <value>Otro</value>
+  </data>
+  <data name="Net_Unknown" xml:space="preserve">
+    <value>Desconocido</value>
+  </data>
+  <data name="Hw_Value_Gbps" xml:space="preserve">
+    <value>{0:0.#} Gbps</value>
+  </data>
+  <data name="Hw_Value_Mbps" xml:space="preserve">
+    <value>{0:0.#} Mbps</value>
+  </data>
+  <data name="Hw_Value_Kbps" xml:space="preserve">
+    <value>{0:0} kbps</value>
+  </data>
+  <data name="SummaryCard_CpuLoad" xml:space="preserve">
+    <value>Uso de CPU</value>
+  </data>
+  <data name="SummaryCard_CpuTemperature" xml:space="preserve">
+    <value>Temperatura de CPU</value>
+  </data>
+  <data name="SummaryCard_CpuClock" xml:space="preserve">
+    <value>Frecuencia de CPU</value>
+  </data>
+  <data name="SummaryCard_CpuPower" xml:space="preserve">
+    <value>Consumo de CPU</value>
+  </data>
+  <data name="SummaryCard_MemoryLoad" xml:space="preserve">
+    <value>Uso de memoria</value>
+  </data>
+  <data name="SummaryCard_GpuLoad" xml:space="preserve">
+    <value>Uso de GPU</value>
+  </data>
+  <data name="SummaryCard_GpuTemperature" xml:space="preserve">
+    <value>Temperatura de GPU</value>
+  </data>
+  <data name="SensorKind_Cpu" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="SensorKind_Memory" xml:space="preserve">
+    <value>Memoria</value>
+  </data>
+  <data name="SensorKind_Gpu" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="SensorKind_Storage" xml:space="preserve">
+    <value>Almacenamiento</value>
+  </data>
+  <data name="SensorKind_Volume" xml:space="preserve">
+    <value>Unidad</value>
+  </data>
+  <data name="SensorKind_Network" xml:space="preserve">
+    <value>Red</value>
+  </data>
+  <data name="SensorKind_Battery" xml:space="preserve">
+    <value>Batería</value>
+  </data>
+  <data name="SensorKind_Motherboard" xml:space="preserve">
+    <value>Placa base</value>
+  </data>
+  <data name="SensorKind_ThermalZone" xml:space="preserve">
+    <value>Zona térmica ACPI</value>
+  </data>
+  <data name="SensorKind_System" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="SensorKind_PowerSupply" xml:space="preserve">
+    <value>Fuente de alimentación</value>
+  </data>
+  <data name="SensorGroup_load" xml:space="preserve">
+    <value>Uso</value>
+  </data>
+  <data name="SensorGroup_clock" xml:space="preserve">
+    <value>Frecuencias</value>
+  </data>
+  <data name="SensorGroup_temperature" xml:space="preserve">
+    <value>Temperaturas</value>
+  </data>
+  <data name="SensorGroup_power" xml:space="preserve">
+    <value>Consumo</value>
+  </data>
+  <data name="SensorGroup_voltage" xml:space="preserve">
+    <value>Voltajes</value>
+  </data>
+  <data name="SensorGroup_current" xml:space="preserve">
+    <value>Corrientes</value>
+  </data>
+  <data name="SensorGroup_fan" xml:space="preserve">
+    <value>Ventiladores</value>
+  </data>
+  <data name="SensorGroup_control" xml:space="preserve">
+    <value>Control de ventiladores</value>
+  </data>
+  <data name="SensorGroup_data" xml:space="preserve">
+    <value>Datos</value>
+  </data>
+  <data name="SensorGroup_throughput" xml:space="preserve">
+    <value>Velocidad de transferencia</value>
+  </data>
+  <data name="SensorGroup_rate" xml:space="preserve">
+    <value>Frecuencia por segundo</value>
+  </data>
+  <data name="SensorGroup_count" xml:space="preserve">
+    <value>Recuentos</value>
+  </data>
+  <data name="SensorGroup_duration" xml:space="preserve">
+    <value>Tiempos</value>
+  </data>
+  <data name="SensorGroup_level" xml:space="preserve">
+    <value>Niveles</value>
+  </data>
+  <data name="SensorGroup_energy" xml:space="preserve">
+    <value>Energía</value>
+  </data>
+  <data name="SensorGroup_threads" xml:space="preserve">
+    <value>Hilos</value>
+  </data>
+  <data name="SensorGroup_engines" xml:space="preserve">
+    <value>Motores</value>
+  </data>
+  <data name="SensorGroup_cores" xml:space="preserve">
+    <value>Núcleos</value>
+  </data>
+  <data name="Extended_Title" xml:space="preserve">
+    <value>Sensores ampliados (PawnIO)</value>
+  </data>
+  <data name="Extended_NotInstalled" xml:space="preserve">
+    <value>PawnIO no está instalado. Solo se muestran los sensores disponibles mediante las API estándar de Windows.</value>
+  </data>
+  <data name="Extended_HelperRequired" xml:space="preserve">
+    <value>PawnIO está instalado, pero el servicio Yamori Helper que lo lee aún no se está ejecutando. Solo se muestran los sensores estándar.</value>
+  </data>
+  <data name="Extended_UnsupportedEdition" xml:space="preserve">
+    <value>El PawnIO instalado no es la edición oficial firmada, por lo que Yamori no lo usa.</value>
+  </data>
+  <data name="Extended_Active" xml:space="preserve">
+    <value>Se están usando los sensores ampliados (solo lectura).</value>
+  </data>
+  <data name="Extended_Unavailable" xml:space="preserve">
+    <value>Los sensores ampliados no están disponibles temporalmente. Se muestran los sensores estándar.</value>
   </data>
 </root>

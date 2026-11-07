@@ -6,8 +6,10 @@
     <RootNamespace>Yamori</RootNamespace>
     <AssemblyName>Yamori</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Platforms>x86;x64;ARM64</Platforms>
-    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <ApplicationIcon>Assets\Logo\Yamori.ico</ApplicationIcon>
+    <!-- x64 only for now: the RocksDB package (time-series store) ships a native DLL for win-x64 only. -->
+    <Platforms>x64</Platforms>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     <UseWinUI>true</UseWinUI>
     <WinUISDKReferences>false</WinUISDKReferences>
@@ -22,9 +24,18 @@
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\Square150x150Logo.scale-200.png" />
     <Content Include="Assets\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.targetsize-16_altform-unplated.png" />
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\Square44x44Logo.targetsize-32_altform-unplated.png" />
+    <Content Include="Assets\Square44x44Logo.targetsize-48_altform-unplated.png" />
+    <Content Include="Assets\Square44x44Logo.targetsize-256_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <!-- ロゴの原本（SVG）と、画面・ウィンドウで使う書き出し。 -->
+    <None Include="Assets\Logo\YamoriLogo.svg" />
+    <!-- パッケージ化しない起動（Unpackaged）でも読めるよう、出力フォルダーにもコピーする。 -->
+    <Content Include="Assets\Logo\YamoriLogo.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Assets\Logo\Yamori.ico" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

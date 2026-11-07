@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -6,53 +6,53 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Yamori.Core.Hardware;
-using Yamori.Core.Monitoring;
 using Yamori.Core.Reports;
 using Yamori.Core.Storage;
 using Yamori.Localization;
 using Yamori.Presentation;
+using Yamori.Presentation.Hardware;
+using Yamori.ViewModels.Sensors;
 
 namespace Yamori.ViewModels;
 
 /// <summary>
-/// 概要・ハードウェア・アプリの各画面で共有する状態。今の使用率、ハードウェア一覧、次の PC のおすすめ、アプリの使用量を持つ。
+/// 概要・ハードウェア・アプリの各画面で共有する状態。サマリーカード、ハードウェア一覧、次の PC のおすすめ、アプリの使用量を持つ。
 /// </summary>
 public sealed class MainViewModel : ObservableObject, IDisposable
 {
     private readonly NextPcReportService _reportService;
-    private readonly UsageMonitor _monitor;
     private readonly NextPcReportPresenter _presenter;
+    private readonly HardwareSectionsPresenter _hardwarePresenter;
     private readonly HistoryStorageService _storage;
     private readonly SynchronizationContext _uiContext;
 
-    private double _cpuUsage;
-    private double _memoryUsage;
-    private bool _hasUsage;
     private string _statusText;
     private string _privacyNoteText = string.Empty;
     private string _dataDirectoryText = string.Empty;
     private bool _isBusy;
 
     /// <summary>
-    /// 必要な処理を指定して作る。UI スレッドから呼ぶこと（使用率の更新を UI スレッドへ戻すため）。
+    /// 必要な処理を指定して作る。UI スレッドから呼ぶこと（保存先の変更の通知を UI スレッドへ戻すため）。
     /// </summary>
     /// <param name="reportService">レポートを作る処理。</param>
-    /// <param name="monitor">使用率の監視処理。</param>
+    /// <param name="summaryCards">概要画面のサマリーカード。このインスタンスが破棄する。</param>
     /// <param name="presenter">レポートを表示用に変換する処理。</param>
+    /// <param name="hardwarePresenter">ハードウェア一覧を部品の種類ごとの表示内容にする処理。</param>
     /// <param name="storage">記録の保存先（画面に表示する）。</param>
     /// <exception cref="ArgumentNullException">いずれかの引数が null。</exception>
     /// <exception cref="InvalidOperationException">UI スレッド以外から呼ばれた。</exception>
-    public MainViewModel(NextPcReportService reportService, UsageMonitor monitor, NextPcReportPresenter presenter, HistoryStorageService storage)
+    public MainViewModel(NextPcReportService reportService, SummaryCardsViewModel summaryCards, NextPcReportPresenter presenter, HardwareSectionsPresenter hardwarePresenter, HistoryStorageService storage)
     {
         ArgumentNullException.ThrowIfNull(reportService);
-        ArgumentNullException.ThrowIfNull(monitor);
+        ArgumentNullException.ThrowIfNull(summaryCards);
         ArgumentNullException.ThrowIfNull(presenter);
+        ArgumentNullException.ThrowIfNull(hardwarePresenter);
         ArgumentNullException.ThrowIfNull(storage);
 
         _reportService = reportService;
-        _monitor = monitor;
+        SummaryCards = summaryCards;
         _presenter = presenter;
+        _hardwarePresenter = hardwarePresenter;
         _storage = storage;
         _uiContext = SynchronizationContext.Current
             ?? throw new InvalidOperationException("MainViewModel は UI スレッドで作成してください。");
@@ -60,12 +60,14 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         _statusText = UiText.Get("Status_Loading");
         UpdateLocationTexts();
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
-        _monitor.SamplesRecorded += OnSamplesRecorded;
         _storage.LocationChanged += OnLocationChanged;
     }
 
-    /// <summary>ハードウェア一覧の項目を取得する。</summary>
-    public ObservableCollection<HardwareRow> Hardware { get; } = [];
+    /// <summary>概要画面のサマリーカードを取得する。</summary>
+    public SummaryCardsViewModel SummaryCards { get; }
+
+    /// <summary>ハードウェア一覧を、部品の種類ごとにまとめた表示内容を取得する。</summary>
+    public ObservableCollection<HardwareSection> Hardware { get; } = [];
 
     /// <summary>次の PC のおすすめを取得する。</summary>
     public ObservableCollection<RecommendationItem> Recommendations { get; } = [];
@@ -90,38 +92,6 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         private set => SetProperty(ref _privacyNoteText, value);
     }
 
-    /// <summary>今の CPU 使用率（%）を取得する。</summary>
-    public double CpuUsage
-    {
-        get => _cpuUsage;
-        private set
-        {
-            if (SetProperty(ref _cpuUsage, value))
-            {
-                OnPropertyChanged(nameof(CpuUsageText));
-            }
-        }
-    }
-
-    /// <summary>今のメモリ使用率（%）を取得する。</summary>
-    public double MemoryUsage
-    {
-        get => _memoryUsage;
-        private set
-        {
-            if (SetProperty(ref _memoryUsage, value))
-            {
-                OnPropertyChanged(nameof(MemoryUsageText));
-            }
-        }
-    }
-
-    /// <summary>今の CPU 使用率の表示を取得する。まだ測れていなければ「—」。</summary>
-    public string CpuUsageText => FormatPercent(CpuUsage);
-
-    /// <summary>今のメモリ使用率の表示を取得する。まだ測れていなければ「—」。</summary>
-    public string MemoryUsageText => FormatPercent(MemoryUsage);
-
     /// <summary>最後に更新した時刻などの状態表示を取得する。</summary>
     public string StatusText
     {
@@ -137,11 +107,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// 監視処理と保存先のイベント購読を解除する。
+    /// センサーと保存先のイベント購読を解除する。
     /// </summary>
     public void Dispose()
     {
-        _monitor.SamplesRecorded -= OnSamplesRecorded;
+        SummaryCards.Dispose();
         _storage.LocationChanged -= OnLocationChanged;
     }
 
@@ -152,8 +122,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public Task ReloadForLanguageAsync()
     {
         UpdateLocationTexts();
-        OnPropertyChanged(nameof(CpuUsageText));
-        OnPropertyChanged(nameof(MemoryUsageText));
+        SummaryCards.Refresh();
         return RefreshCommand.ExecuteAsync(null);
     }
 
@@ -165,7 +134,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             // WMI とファイルの読み込みは時間がかかるため、UI スレッドを止めないよう別スレッドで行う。
             var report = await Task.Run(() => _reportService.Create());
 
-            Replace(Hardware, _presenter.BuildHardwareRows(report.Inventory));
+            Replace(Hardware, _hardwarePresenter.Build(report.Inventory));
             Replace(Recommendations, _presenter.BuildRecommendations(report.Recommendations));
             Replace(TopApps, _presenter.BuildTopApps(report.TopApps));
             StatusText = UiText.Format("Status_LastUpdated", report.GeneratedAt.ToLocalTime().ToString("G"));
@@ -180,8 +149,6 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-    private string FormatPercent(double value) => _hasUsage ? $"{value:0}%" : "—";
-
     private void UpdateLocationTexts()
     {
         var location = _storage.CurrentLocation;
@@ -191,30 +158,6 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     private void OnLocationChanged(object? sender, HistoryLocation location) =>
         _uiContext.Post(_ => UpdateLocationTexts(), null);
-
-    private void OnSamplesRecorded(object? sender, IReadOnlyList<ComponentUsageSample> samples)
-    {
-        _uiContext.Post(
-            _ =>
-            {
-                _hasUsage = true;
-                foreach (var sample in samples)
-                {
-                    switch (sample.Component)
-                    {
-                        case HardwareComponent.Cpu:
-                            CpuUsage = sample.UsagePercent;
-                            OnPropertyChanged(nameof(CpuUsageText));
-                            break;
-                        case HardwareComponent.Memory:
-                            MemoryUsage = sample.UsagePercent;
-                            OnPropertyChanged(nameof(MemoryUsageText));
-                            break;
-                    }
-                }
-            },
-            null);
-    }
 
     private static void Replace<T>(ObservableCollection<T> target, IEnumerable<T> items)
     {

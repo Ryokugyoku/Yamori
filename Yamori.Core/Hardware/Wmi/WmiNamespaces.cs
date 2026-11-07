@@ -11,6 +11,9 @@ public static class WmiNamespaces
     /// <summary>MSFT_PhysicalDisk などストレージ管理クラスがある名前空間。</summary>
     public const string Storage = @"root\Microsoft\Windows\Storage";
 
+    /// <summary>MSFT_NetAdapter などネットワーク管理クラスがある名前空間。</summary>
+    public const string StandardCimv2 = @"root\StandardCimv2";
+
     /// <summary>バッテリー容量などデバイス固有のクラスがある名前空間。</summary>
     public const string Wmi = @"root\WMI";
 }

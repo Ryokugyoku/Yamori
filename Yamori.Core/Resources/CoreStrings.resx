@@ -24,8 +24,17 @@
   <data name="Component_Gpu" xml:space="preserve">
     <value>GPU</value>
   </data>
-  <data name="Component_Battery" xml:space="preserve">
-    <value>Battery</value>
+  <data name="Component_Motherboard" xml:space="preserve">
+    <value>Motherboard</value>
+  </data>
+  <data name="Component_Fan" xml:space="preserve">
+    <value>Fans</value>
+  </data>
+  <data name="Component_PowerSupply" xml:space="preserve">
+    <value>Power supply</value>
+  </data>
+  <data name="Component_Network" xml:space="preserve">
+    <value>Network</value>
   </data>
   <data name="Rec_NotEnoughData_Title" xml:space="preserve">
     <value>{0}: Collecting data</value>

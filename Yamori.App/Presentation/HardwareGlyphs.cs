@@ -8,6 +8,16 @@ namespace Yamori.Presentation;
 public static class HardwareGlyphs
 {
     /// <summary>
+    /// 情報を取得できなかったときのアイコン。
+    /// </summary>
+    public const string Unknown = "";
+
+    /// <summary>
+    /// アプリごとの使用量を表すアイコン。
+    /// </summary>
+    public const string Apps = "";
+
+    /// <summary>
     /// 部品の種類に対応するアイコンを取得する。
     /// </summary>
     /// <param name="component">部品の種類。</param>
@@ -16,15 +26,13 @@ public static class HardwareGlyphs
         component switch
         {
             HardwareComponent.Cpu => "",
+            HardwareComponent.Motherboard => "",
             HardwareComponent.Memory => "",
-            HardwareComponent.Storage => "",
             HardwareComponent.Gpu => "",
-            HardwareComponent.Battery => "",
-            _ => "",
+            HardwareComponent.Storage => "",
+            HardwareComponent.Fan => "",
+            HardwareComponent.PowerSupply => "",
+            HardwareComponent.Network => "",
+            _ => Unknown,
         };
-
-    /// <summary>
-    /// 情報を取得できなかったときのアイコン。
-    /// </summary>
-    public const string Unknown = "";
 }

@@ -33,9 +33,13 @@ internal sealed class FakeWmiQueryExecutor : IWmiQueryExecutor
         return this;
     }
 
+    /// <summary>実行されたクエリを、実行された順に取得する。</summary>
+    public List<string> Queries { get; } = [];
+
     /// <inheritdoc />
     public IReadOnlyList<WmiRecord> Query(string wmiNamespace, string query)
     {
+        Queries.Add(query);
         var wmiClass = query.Split(" FROM ", StringSplitOptions.TrimEntries)[^1];
         if (_failingClasses.Contains(wmiClass))
         {
