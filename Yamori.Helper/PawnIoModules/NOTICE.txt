@@ -1,0 +1,22 @@
+PawnIO.Modules - IntelMSR module
+================================
+
+This folder contains IntelMSR.bin, taken unmodified from the official signed
+release of PawnIO.Modules.
+
+  Project : PawnIO.Modules by namazso
+  Source  : https://github.com/namazso/PawnIO.Modules  (IntelMSR.p)
+  Release : 0.2.11  https://github.com/namazso/PawnIO.Modules/releases/tag/0.2.11
+  Archive : release_0_2_11.zip
+            SHA-256 43608cb89bc84247fef1368a139013f7d043e17db6d6c8dfc9b46bf0905a81f4
+  File    : IntelMSR.bin
+            SHA-256 d6ed85d65ab17a22f813ef98207d6d537155ee2ded5976a21cb48413c9b92e5f
+  License : GNU Lesser General Public License v2.1 (see COPYING in this folder)
+
+The complete corresponding source code of the module is available from the
+repository above, at the tag of the release. Yamori loads the module through
+PawnIO and only calls its read function (ioctl_read_msr) for a fixed list of
+MSRs. Yamori never calls the module's write function.
+
+PawnIO itself (the driver and PawnIOLib.dll) is not included; users install it
+from https://pawnio.eu.

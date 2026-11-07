@@ -88,6 +88,32 @@ public class ExtendedSensorTests
         Assert.Equal(expected, PawnIoEditionVerifier.IsOfficialDescription(description));
 
     [Fact]
+    public void InstalledPawnIoOnThisPcIsRecognizedAsOfficial()
+    {
+        // PawnIO が入っている PC でだけ確かめる（入っていなければ何もしない）。
+        if (!new RegistryPawnIoInstallationProbe().IsInstalled())
+        {
+            return;
+        }
+
+        var path = DriverImagePathResolver.TryResolve("PawnIO");
+
+        Assert.NotNull(path);
+        Assert.True(PawnIoEditionVerifier.IsMicrosoftDriverSigner(CatalogSignatureVerifier.TryGetVerifiedSigner(path!)), "ドライバーの署名者が Microsoft であること");
+        Assert.True(new PawnIoEditionVerifier().IsOfficial());
+    }
+
+    [Fact]
+    public void UnsignedFileHasNoVerifiedSigner()
+    {
+        using var temp = new TempDirectory();
+        var path = Path.Combine(temp.Path, "unsigned.sys");
+        File.WriteAllBytes(path, [1, 2, 3, 4]);
+
+        Assert.Null(CatalogSignatureVerifier.TryGetVerifiedSigner(path));
+    }
+
+    [Fact]
     public void DriverImagePathIsNormalized()
     {
         var windows = Environment.GetFolderPath(Environment.SpecialFolder.Windows);

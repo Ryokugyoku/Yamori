@@ -25,4 +25,11 @@
     <ProjectReference Include="..\Yamori.Core\Yamori.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- PawnIO.Modules 0.2.11 (LGPL-2.1): the signed IntelMSR module, unmodified, with its license and source notice. -->
+    <None Include="PawnIoModules\IntelMSR.bin" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="PawnIoModules\COPYING" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="PawnIoModules\NOTICE.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
