@@ -35,4 +35,17 @@
     <None Include="DevService.ps1" CopyToOutputDirectory="Never" />
   </ItemGroup>
 
+  <!--
+    Debug only: after each build, push changed files to the dev service (YamoriHelperDev) and restart it.
+    Does nothing when the dev service is not installed. A failure never breaks the build.
+    Set YamoriSkipDevServiceSync=true to turn it off.
+  -->
+  <Target Name="YamoriSyncDevService"
+          AfterTargets="Build"
+          Condition="'$(Configuration)' == 'Debug' and '$(YamoriSkipDevServiceSync)' != 'true' and '$(DesignTimeBuild)' != 'true'">
+    <Exec Command="powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\DevService.ps1&quot; -Action Sync -Configuration $(Configuration)"
+          ContinueOnError="WarnAndContinue"
+          IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
 </Project>
