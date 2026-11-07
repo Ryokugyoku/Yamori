@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Yamori.Localization;
 using Yamori.ViewModels;
 
 namespace Yamori.Views;
@@ -29,4 +30,43 @@ public sealed partial class RealtimeView : UserControl
     private void OnLoaded(object sender, RoutedEventArgs e) => ViewModel.Start();
 
     private void OnUnloaded(object sender, RoutedEventArgs e) => ViewModel.Dispose();
+
+    /// <summary>
+    /// PawnIO の利用の同意の画面を出し、確かめてから同意を変える。
+    /// </summary>
+    private async void OnConsentClick(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel.Tree.ConsentAction is not { } enable)
+        {
+            return;
+        }
+
+        var confirm = new ContentDialog
+        {
+            XamlRoot = XamlRoot,
+            Title = UiText.Get("Consent_DialogTitle"),
+            Content = new TextBlock { Text = UiText.Get(enable ? "Consent_DialogBody" : "Consent_DialogDisableBody"), TextWrapping = TextWrapping.Wrap },
+            PrimaryButtonText = UiText.Get(enable ? "Consent_DialogConfirmEnable" : "Consent_DialogConfirmDisable"),
+            CloseButtonText = UiText.Get("Consent_DialogCancel"),
+            DefaultButton = ContentDialogButton.Close,
+        };
+        if (await confirm.ShowAsync() != ContentDialogResult.Primary)
+        {
+            return;
+        }
+
+        var error = await ViewModel.Tree.ApplyConsentAsync(enable);
+        if (error is null)
+        {
+            return;
+        }
+
+        await new ContentDialog
+        {
+            XamlRoot = XamlRoot,
+            Title = UiText.Get("Consent_ErrorTitle"),
+            Content = new TextBlock { Text = error, TextWrapping = TextWrapping.Wrap },
+            CloseButtonText = UiText.Get("Consent_ErrorClose"),
+        }.ShowAsync();
+    }
 }

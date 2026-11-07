@@ -1,39 +1,30 @@
 namespace Yamori.Core.Sensors.Extended;
 
 /// <summary>
-/// 拡張センサーの状態を決め、PawnIO の Provider を登録するかどうかを判断する。
+/// 拡張センサー（PawnIO）の状態を、入っているか・公式版か・同意したか・宣言に成功したかから決める。
 /// </summary>
-public sealed class ExtendedSensorStatusResolver
+public static class ExtendedSensorStatusResolver
 {
-    private readonly IPawnIoInstallationProbe _probe;
+    /// <summary>
+    /// GUI のプロセスの中の状態を決める。GUI のプロセスでは PawnIO を使わない。
+    /// </summary>
+    /// <param name="installed">PawnIO が入っているかどうか。</param>
+    /// <returns>入っていなければ <see cref="ExtendedSensorState.NotInstalled"/>、入っていれば <see cref="ExtendedSensorState.HelperRequired"/>。</returns>
+    public static ExtendedSensorState ResolveOutsideHelper(bool installed) =>
+        installed ? ExtendedSensorState.HelperRequired : ExtendedSensorState.NotInstalled;
 
     /// <summary>
-    /// 調べ方を指定して作る。
+    /// Helper のプロセスの中の状態を決める。
     /// </summary>
-    /// <param name="probe">PawnIO が入っているかどうかの調べ方。</param>
-    /// <exception cref="ArgumentNullException"><paramref name="probe"/> が null。</exception>
-    public ExtendedSensorStatusResolver(IPawnIoInstallationProbe probe)
-    {
-        ArgumentNullException.ThrowIfNull(probe);
-        _probe = probe;
-    }
-
-    /// <summary>
-    /// 起動時の状態を決める。
-    /// </summary>
-    /// <param name="canUsePawnIo">PawnIO を使える立場か（Helper のプロセスで、利用に同意済み、公式版を確認済み）。GUI のプロセスでは false。</param>
-    /// <returns>状態。<see cref="ExtendedSensorState.Active"/> のときだけ PawnIO の Provider を登録する。</returns>
-    public ExtendedSensorState ResolveInitial(bool canUsePawnIo) =>
-        !_probe.IsInstalled() ? ExtendedSensorState.NotInstalled
-        : canUsePawnIo ? ExtendedSensorState.Active
-        : ExtendedSensorState.HelperRequired;
-
-    /// <summary>
-    /// 宣言の結果を反映した状態を決める。
-    /// </summary>
-    /// <param name="initial">起動時の状態。</param>
-    /// <param name="discoveryFailed">PawnIO の Provider の宣言が失敗したかどうか。</param>
-    /// <returns>宣言に失敗した場合は <see cref="ExtendedSensorState.Unavailable"/>、それ以外は <paramref name="initial"/>。</returns>
-    public static ExtendedSensorState AfterDiscovery(ExtendedSensorState initial, bool discoveryFailed) =>
-        initial == ExtendedSensorState.Active && discoveryFailed ? ExtendedSensorState.Unavailable : initial;
+    /// <param name="installed">PawnIO が入っているかどうか。</param>
+    /// <param name="official">PawnIO が公式版（署名済み）かどうか。</param>
+    /// <param name="consented">ユーザーが PawnIO の利用に同意しているかどうか。</param>
+    /// <param name="discoveryFailed">PawnIO の Provider の宣言（読み取り）に失敗したかどうか。</param>
+    /// <returns>状態。PawnIO の Provider を使ってよいのは、<paramref name="installed"/>・<paramref name="official"/>・<paramref name="consented"/> がすべて true のときだけ。</returns>
+    public static ExtendedSensorState ResolveInHelper(bool installed, bool official, bool consented, bool discoveryFailed) =>
+        !installed ? ExtendedSensorState.NotInstalled
+        : !official ? ExtendedSensorState.UnsupportedEdition
+        : !consented ? ExtendedSensorState.ConsentRequired
+        : discoveryFailed ? ExtendedSensorState.Unavailable
+        : ExtendedSensorState.Active;
 }

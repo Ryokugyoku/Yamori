@@ -25,18 +25,11 @@ public static class YamoriDataPaths
     public static string GetSettingsFilePath() => Path.Combine(GetDataDirectory(), "settings.json");
 
     /// <summary>
-    /// センサーの取得元の優先度を決める設定ファイルのパスを取得する。ファイルがなければ既定の優先度を使う。
+    /// Helper が動いていない間の代わりの表示で使う、センサーの取得元の優先度の設定ファイルのパスを取得する。ファイルがなければ既定の優先度を使う。
     /// </summary>
-    /// <remarks>Helper ができたら、サービスと GUI のどちらからも扱える ProgramData 側へ移す。</remarks>
+    /// <remarks>センサーの記録（時系列・マスタ）は Helper だけが <see cref="MachineDataPaths"/> に置く。</remarks>
     /// <returns>設定ファイルの絶対パス。</returns>
     public static string GetSensorPriorityFilePath() => Path.Combine(GetDataDirectory(), "sensor-priority.json");
-
-    /// <summary>
-    /// センサーの時系列のログ（RocksDB）とマスタ（SQLite）を置くフォルダーを取得する。
-    /// </summary>
-    /// <remarks>Helper ができるまでは、ユーザーごとのフォルダーに置く。Helper ができたら ProgramData 側へ移す。</remarks>
-    /// <returns>フォルダーの絶対パス。</returns>
-    public static string GetSensorDataDirectory() => Path.Combine(GetDataDirectory(), "sensors");
 
     /// <summary>
     /// 履歴を置くフォルダーの名前。

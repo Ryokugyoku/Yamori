@@ -17,13 +17,20 @@
 
         <views:PageHeader Description="{l:Loc Key=Realtime_Description}" Title="{l:Loc Key=Nav_Realtime}" />
 
-        <!-- 拡張センサー（PawnIO）の状態は、ここ 1 か所にまとめて表示する -->
+        <!-- Helper との接続と拡張センサー（PawnIO）の状態は、ここ 1 か所にまとめて表示する -->
         <InfoBar
             IsClosable="False"
             IsOpen="True"
-            Message="{x:Bind ViewModel.Tree.ExtendedStateText, Mode=OneWay}"
-            Severity="{x:Bind ViewModel.Tree.ExtendedSeverity, Mode=OneWay}"
-            Title="{l:Loc Key=Extended_Title}" />
+            Message="{x:Bind ViewModel.Tree.NoticeText, Mode=OneWay}"
+            Severity="{x:Bind ViewModel.Tree.NoticeSeverity, Mode=OneWay}"
+            Title="{x:Bind ViewModel.Tree.NoticeTitle, Mode=OneWay}">
+            <InfoBar.ActionButton>
+                <Button
+                    Click="OnConsentClick"
+                    Content="{x:Bind ViewModel.Tree.ConsentActionText, Mode=OneWay}"
+                    Visibility="{x:Bind ViewModel.Tree.CanChangeConsent, Mode=OneWay}" />
+            </InfoBar.ActionButton>
+        </InfoBar>
 
         <!-- 詳細：ハードウェア → グループ → センサー。カタログから自動で組み立てる -->
         <ItemsRepeater ItemsSource="{x:Bind ViewModel.Tree.Hardware}">

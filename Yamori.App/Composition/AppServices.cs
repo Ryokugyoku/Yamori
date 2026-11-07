@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.UI;
 using Yamori.Accounts;
 using Yamori.Core.Formatting;
@@ -10,6 +10,8 @@ using Yamori.Core.Realtime;
 using Yamori.Core.Recommendations;
 using Yamori.Core.Reports;
 using Yamori.Core.Sensors.Display;
+using Yamori.Core.Sensors.Ipc;
+using Yamori.Core.Sensors.Ipc.Client;
 using Yamori.Core.Sensors.Service;
 using Yamori.Core.Settings;
 using Yamori.Core.Storage;
@@ -28,6 +30,9 @@ namespace Yamori.Composition;
 /// </summary>
 public sealed class AppServices
 {
+    /// <summary>Helper のパイプにつながるまで待つ最長の時間。</summary>
+    private static readonly TimeSpan HelperConnectTimeout = TimeSpan.FromSeconds(1);
+
     private SensorBoard? _board;
 
     private AppServices(
@@ -37,7 +42,7 @@ public sealed class AppServices
         IOneDriveLocator oneDriveLocator,
         IWindowsAccountProvider accountProvider,
         UsageMonitor monitor,
-        LocalSensorService sensors,
+        FailoverSensorService sensors,
         NextPcReportService reportService,
         NextPcReportPresenter presenter,
         HardwareSectionsPresenter hardwarePresenter)
@@ -72,8 +77,8 @@ public sealed class AppServices
     /// <summary>使用率を記録し続ける監視処理を取得する。</summary>
     public UsageMonitor Monitor { get; }
 
-    /// <summary>センサーの窓口を取得する。Helper ができるまでは、このプロセスの中で収集する。</summary>
-    public LocalSensorService Sensors { get; }
+    /// <summary>センサーの窓口を取得する。Helper に IPC でつなぎ、Helper が動いていない間は標準 API だけを読んで表示する（記録はしない）。</summary>
+    public FailoverSensorService Sensors { get; }
 
     /// <summary>次の PC のレポートを作る処理を取得する。</summary>
     public NextPcReportService ReportService { get; }
@@ -106,11 +111,9 @@ public sealed class AppServices
 
         var timeProvider = TimeProvider.System;
         var monitor = new UsageMonitor([new CpuUsageSensor(), new MemoryUsageSensor()], storage.Store, timeProvider);
-        var sensors = LocalSensorServiceFactory.Create(
-            new ManagementWmiQueryExecutor(),
-            YamoriDataPaths.GetSensorPriorityFilePath(),
-            YamoriDataPaths.GetSensorDataDirectory(),
-            timeProvider);
+        var sensors = new FailoverSensorService(
+            new RemoteSensorService(SensorPipeConnector.Create(SensorPipeNames.Sensors, HelperConnectTimeout), timeProvider),
+            () => LocalSensorServiceFactory.CreateDisplayOnly(new ManagementWmiQueryExecutor(), YamoriDataPaths.GetSensorPriorityFilePath(), timeProvider));
         var reportService = new NextPcReportService(
             HardwareInventoryService.CreateDefault(new ManagementWmiQueryExecutor()),
             storage.Store,
@@ -161,7 +164,7 @@ public sealed class AppServices
     /// <summary>
     /// 画面で共有するセンサーの状態を取得する。最初に呼んだときに UI スレッドで作る。
     /// </summary>
-    private SensorBoard GetBoard() => _board ??= new SensorBoard(Sensors);
+    private SensorBoard GetBoard() => _board ??= new SensorBoard(Sensors, Sensors);
 
     /// <summary>
     /// 設定画面のビューモデルを、保存されている最新の設定で作る。言語を変えたら作り直す。

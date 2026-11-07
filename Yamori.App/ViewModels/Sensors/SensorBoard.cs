@@ -4,39 +4,48 @@ using System.Linq;
 using System.Threading;
 using Yamori.Core.Sensors;
 using Yamori.Core.Sensors.Display;
+using Yamori.Core.Sensors.Extended;
+using Yamori.Core.Sensors.Ipc.Client;
 using Yamori.Core.Sensors.Service;
 
 namespace Yamori.ViewModels.Sensors;
 
 /// <summary>
-/// 画面で共有する、センサーの今の状態（カタログ、最新値、ヒステリシス付きの表示の状態）。
+/// 画面で共有する、センサーの今の状態（カタログ、最新値、ヒステリシス付きの表示の状態、拡張センサーの状態、Helper との接続の状態）。
 /// センサーの窓口の通知を受け取り、UI スレッドで状態を更新して <see cref="Updated"/> を発生させる。
 /// </summary>
 /// <remarks>UI スレッドで作り、UI スレッドから使うこと。</remarks>
 public sealed class SensorBoard : IDisposable
 {
     private readonly ISensorService _service;
+    private readonly IHelperConnection _connection;
     private readonly SynchronizationContext _uiContext;
     private readonly SensorVisibilityTracker _visibility = new();
     private readonly Dictionary<SensorKey, SensorReading> _latest = [];
     private IReadOnlyList<SensorDescriptor> _catalog = [];
 
     /// <summary>
-    /// センサーの窓口を指定して作る。
+    /// センサーの窓口と、Helper との接続を指定して作る。
     /// </summary>
     /// <param name="service">センサーの窓口。</param>
-    /// <exception cref="ArgumentNullException"><paramref name="service"/> が null。</exception>
+    /// <param name="connection">Helper との接続の状態。</param>
+    /// <exception cref="ArgumentNullException">いずれかの引数が null。</exception>
     /// <exception cref="InvalidOperationException">UI スレッド以外から呼ばれた。</exception>
-    public SensorBoard(ISensorService service)
+    public SensorBoard(ISensorService service, IHelperConnection connection)
     {
         ArgumentNullException.ThrowIfNull(service);
+        ArgumentNullException.ThrowIfNull(connection);
         _service = service;
+        _connection = connection;
         _uiContext = SynchronizationContext.Current
             ?? throw new InvalidOperationException("SensorBoard は UI スレッドで作成してください。");
 
+        ConnectionState = connection.ConnectionState;
         _service.CatalogChanged += OnCatalogChanged;
         _service.ReadingsUpdated += OnReadingsUpdated;
-        _ = LoadCatalogAsync();
+        _service.ExtendedSensorStateChanged += OnExtendedStateChanged;
+        _connection.ConnectionStateChanged += OnConnectionStateChanged;
+        _ = LoadAsync();
     }
 
     /// <summary>
@@ -49,6 +58,12 @@ public sealed class SensorBoard : IDisposable
 
     /// <summary>センサーの窓口を取得する。</summary>
     public ISensorService Service => _service;
+
+    /// <summary>拡張センサー（PawnIO）の今の状態を取得する。</summary>
+    public ExtendedSensorState ExtendedState { get; private set; } = ExtendedSensorState.NotInstalled;
+
+    /// <summary>Helper との今の接続の状態を取得する。</summary>
+    public HelperConnectionState ConnectionState { get; private set; }
 
     /// <summary>
     /// 表示の状態を取得する。
@@ -84,15 +99,19 @@ public sealed class SensorBoard : IDisposable
     {
         _service.CatalogChanged -= OnCatalogChanged;
         _service.ReadingsUpdated -= OnReadingsUpdated;
+        _service.ExtendedSensorStateChanged -= OnExtendedStateChanged;
+        _connection.ConnectionStateChanged -= OnConnectionStateChanged;
     }
 
-    private async System.Threading.Tasks.Task LoadCatalogAsync()
+    private async System.Threading.Tasks.Task LoadAsync()
     {
         var catalog = await _service.GetCatalogAsync();
         if (_catalog.Count == 0 && catalog.Count > 0)
         {
             ApplyCatalog(catalog);
         }
+
+        ApplyExtendedState(await _service.GetExtendedSensorStateAsync());
     }
 
     private void OnCatalogChanged(object? sender, IReadOnlyList<SensorDescriptor> catalog) =>
@@ -100,6 +119,24 @@ public sealed class SensorBoard : IDisposable
 
     private void OnReadingsUpdated(object? sender, IReadOnlyList<SensorReading> readings) =>
         _uiContext.Post(_ => ApplyReadings(readings), null);
+
+    private void OnExtendedStateChanged(object? sender, ExtendedSensorState state) =>
+        _uiContext.Post(_ => ApplyExtendedState(state), null);
+
+    private void OnConnectionStateChanged(object? sender, HelperConnectionState state) =>
+        _uiContext.Post(
+            _ =>
+            {
+                ConnectionState = state;
+                Updated?.Invoke(this, EventArgs.Empty);
+            },
+            null);
+
+    private void ApplyExtendedState(ExtendedSensorState state)
+    {
+        ExtendedState = state;
+        Updated?.Invoke(this, EventArgs.Empty);
+    }
 
     private void ApplyCatalog(IReadOnlyList<SensorDescriptor> catalog)
     {

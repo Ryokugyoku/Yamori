@@ -13,7 +13,7 @@ public sealed class AppSession : IDisposable
 {
     private readonly AppServices _services;
     private readonly MainWindow _window;
-    /// <summary>終了するときに、センサーの記録が止まるのを待つ最長の時間。</summary>
+    /// <summary>終了するときに、Helper との接続と代わりの表示が止まるのを待つ最長の時間。</summary>
     private static readonly TimeSpan SensorsStopTimeout = TimeSpan.FromSeconds(2);
 
     private readonly CancellationTokenSource _monitorCancellation = new();
@@ -45,7 +45,7 @@ public sealed class AppSession : IDisposable
         _ = login.InitializeAsync();    }
 
     /// <summary>
-    /// 使用率とセンサーの記録を止め、イベントの購読を解除する。ためていたセンサーの値を書き込んでから、ストアを閉じる。
+    /// 使用率の記録と、Helper との接続を止め、イベントの購読を解除する。センサーの記録は Helper が続ける。
     /// </summary>
     public void Dispose()
     {
@@ -61,10 +61,7 @@ public sealed class AppSession : IDisposable
         }
 
         _main?.Dispose();
-        if (_sensorsRun is null || _sensorsRun.IsCompleted)
-        {
-            _services.Sensors.Dispose();
-        }
+        _services.Sensors.Dispose();
 
         _monitorCancellation.Dispose();
     }

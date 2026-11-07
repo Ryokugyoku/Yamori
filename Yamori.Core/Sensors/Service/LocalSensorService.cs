@@ -9,10 +9,11 @@ using Yamori.Core.Sensors.TimeSeries;
 namespace Yamori.Core.Sensors.Service;
 
 /// <summary>
-/// 収集とストアを同じプロセスの中で動かす <see cref="ISensorService"/>。Helper ができるまでの間、GUI のプロセスで使う。
+/// 収集とストアを同じプロセスの中で動かす <see cref="ISensorService"/>。
+/// Helper のプロセスでは記録ありで使い、GUI のプロセスでは Helper が動いていない間の代わりの表示として、記録なしで使う。
 /// </summary>
 /// <remarks>
-/// 収集と永続化は <see cref="RunAsync"/> を呼んでいる間だけ行う。永続化（時系列・マスタ）が使えない場合（ほかのプロセスが開いているなど）は、
+/// 収集と永続化は <see cref="RunAsync"/> を呼んでいる間だけ行う。永続化（時系列・マスタ）がない場合は、
 /// 最新値と直近の履歴（Hot ストア）だけで動く。
 /// </remarks>
 public sealed class LocalSensorService : ISensorService, IDisposable
@@ -21,9 +22,11 @@ public sealed class LocalSensorService : ISensorService, IDisposable
     private readonly IHotStore _hotStore;
     private readonly SensorCollectionLoop _loop;
     private readonly SensorPersistence? _persistence;
-    private readonly ExtendedSensorState _initialExtendedState;
+    private readonly IExtendedSensorControl _extended;
     private readonly TimeProvider _timeProvider;
     private readonly IReadOnlyList<IDisposable> _ownedResources;
+    private readonly Lock _stateLock = new();
+    private ExtendedSensorState _lastExtendedState;
 
     /// <summary>
     /// 部品を指定して作る。
@@ -31,8 +34,8 @@ public sealed class LocalSensorService : ISensorService, IDisposable
     /// <param name="registry">センサーの統合。</param>
     /// <param name="hotStore">最新値と直近の履歴のストア。</param>
     /// <param name="loop">収集の繰り返し。</param>
-    /// <param name="persistence">永続化。使えない場合は null。</param>
-    /// <param name="extendedState">起動時の拡張センサーの状態。</param>
+    /// <param name="persistence">永続化。記録しない場合は null。</param>
+    /// <param name="extended">拡張センサーの判断と同意の扱い。</param>
     /// <param name="timeProvider">現在時刻の提供元。</param>
     /// <param name="ownedResources">破棄するときに一緒に破棄するもの（Provider、ストア、通知の登録）。</param>
     /// <exception cref="ArgumentNullException"><paramref name="persistence"/> 以外の引数が null。</exception>
@@ -41,13 +44,14 @@ public sealed class LocalSensorService : ISensorService, IDisposable
         IHotStore hotStore,
         SensorCollectionLoop loop,
         SensorPersistence? persistence,
-        ExtendedSensorState extendedState,
+        IExtendedSensorControl extended,
         TimeProvider timeProvider,
         IReadOnlyList<IDisposable> ownedResources)
     {
         ArgumentNullException.ThrowIfNull(registry);
         ArgumentNullException.ThrowIfNull(hotStore);
         ArgumentNullException.ThrowIfNull(loop);
+        ArgumentNullException.ThrowIfNull(extended);
         ArgumentNullException.ThrowIfNull(timeProvider);
         ArgumentNullException.ThrowIfNull(ownedResources);
 
@@ -55,12 +59,14 @@ public sealed class LocalSensorService : ISensorService, IDisposable
         _hotStore = hotStore;
         _loop = loop;
         _persistence = persistence;
-        _initialExtendedState = extendedState;
+        _extended = extended;
         _timeProvider = timeProvider;
         _ownedResources = ownedResources;
+        _lastExtendedState = CurrentExtendedState();
 
         _hotStore.Appended += OnAppended;
         _registry.CatalogChanged += OnCatalogChanged;
+        _extended.ConsentChanged += OnConsentChanged;
     }
 
     /// <inheritdoc />
@@ -68,6 +74,9 @@ public sealed class LocalSensorService : ISensorService, IDisposable
 
     /// <inheritdoc />
     public event EventHandler<IReadOnlyList<SensorDescriptor>>? CatalogChanged;
+
+    /// <inheritdoc />
+    public event EventHandler<ExtendedSensorState>? ExtendedSensorStateChanged;
 
     /// <inheritdoc />
     public int ContractVersion => SensorContract.Version;
@@ -112,9 +121,7 @@ public sealed class LocalSensorService : ISensorService, IDisposable
 
     /// <inheritdoc />
     public Task<ExtendedSensorState> GetExtendedSensorStateAsync(CancellationToken cancellationToken = default) =>
-        Task.FromResult(ExtendedSensorStatusResolver.AfterDiscovery(
-            _initialExtendedState,
-            _registry.FailedProviderIds.Contains(SensorProviderIds.PawnIo)));
+        Task.FromResult(CurrentExtendedState());
 
     /// <inheritdoc />
     public Task<IReadOnlyList<SensorHistoryPoint>> GetHistoryAsync(
@@ -130,11 +137,23 @@ public sealed class LocalSensorService : ISensorService, IDisposable
         Task.Run(() => _persistence?.GetLogPolicy(key), cancellationToken);
 
     /// <inheritdoc />
-    public Task<bool> SetLogPolicyAsync(SensorKey key, SensorLogPolicy policy, CancellationToken cancellationToken = default)
+    public Task<SensorSettingResult> SetLogPolicyAsync(SensorKey key, SensorLogPolicy policy, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(policy);
-        return Task.Run(() => _persistence?.SetLogPolicy(key, policy) ?? false, cancellationToken);
+        return Task.Run(
+            () => _persistence is null ? SensorSettingResult.Unavailable
+                : _persistence.SetLogPolicy(key, policy) ? SensorSettingResult.Applied
+                : SensorSettingResult.NotFound,
+            cancellationToken);
     }
+
+    /// <inheritdoc />
+    public Task<bool> GetPawnIoConsentAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(_extended.IsConsented);
+
+    /// <inheritdoc />
+    public Task<SensorSettingResult> SetPawnIoConsentAsync(bool enabled, CancellationToken cancellationToken = default) =>
+        Task.Run(() => _extended.SetConsent(enabled), cancellationToken);
 
     /// <summary>
     /// イベントの購読を解除し、持っている Provider やストアなどを破棄する。<see cref="RunAsync"/> を止めてから呼ぶこと。
@@ -143,12 +162,16 @@ public sealed class LocalSensorService : ISensorService, IDisposable
     {
         _hotStore.Appended -= OnAppended;
         _registry.CatalogChanged -= OnCatalogChanged;
+        _extended.ConsentChanged -= OnConsentChanged;
         _loop.Dispose();
         foreach (var resource in _ownedResources)
         {
             resource.Dispose();
         }
     }
+
+    private ExtendedSensorState CurrentExtendedState() =>
+        _extended.GetState(_registry.FailedProviderIds.Contains(SensorProviderIds.PawnIo));
 
     private void OnAppended(object? sender, IReadOnlyList<SensorReading> readings)
     {
@@ -168,5 +191,24 @@ public sealed class LocalSensorService : ISensorService, IDisposable
         }
 
         CatalogChanged?.Invoke(this, catalog);
+        RaiseExtendedStateIfChanged();
+    }
+
+    private void OnConsentChanged(object? sender, EventArgs e) => RaiseExtendedStateIfChanged();
+
+    private void RaiseExtendedStateIfChanged()
+    {
+        var state = CurrentExtendedState();
+        lock (_stateLock)
+        {
+            if (state == _lastExtendedState)
+            {
+                return;
+            }
+
+            _lastExtendedState = state;
+        }
+
+        ExtendedSensorStateChanged?.Invoke(this, state);
     }
 }

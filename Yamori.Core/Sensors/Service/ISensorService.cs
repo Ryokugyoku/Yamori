@@ -1,11 +1,12 @@
 using Yamori.Core.Sensors.Extended;
+using Yamori.Core.Sensors.Ipc.Client;
 using Yamori.Core.Sensors.TimeSeries;
 
 namespace Yamori.Core.Sensors.Service;
 
 /// <summary>
-/// GUI から見たセンサーの窓口。GUI はこれだけを使い、ストアのファイルを直接開かない。
-/// 将来は Helper（サービス）への IPC で実装し、今は同じ形のまま GUI のプロセスの中で動かす（<see cref="LocalSensorService"/>）。
+/// センサーの窓口。GUI はこれだけを使い、ストアのファイルを直接開かない。
+/// Helper（サービス）の中では <see cref="LocalSensorService"/> が収集と記録を行い、GUI はそれに IPC でつなぐ（<see cref="RemoteSensorService"/>）。
 /// </summary>
 public interface ISensorService
 {
@@ -21,6 +22,11 @@ public interface ISensorService
     /// 利用可能なセンサーの一覧が変わったときに発生する。引数は新しい一覧。UI スレッド以外から発生する。
     /// </summary>
     event EventHandler<IReadOnlyList<SensorDescriptor>>? CatalogChanged;
+
+    /// <summary>
+    /// 拡張センサー（PawnIO）の状態が変わったときに発生する。引数は新しい状態。UI スレッド以外から発生する。
+    /// </summary>
+    event EventHandler<ExtendedSensorState>? ExtendedSensorStateChanged;
 
     /// <summary>
     /// 利用可能なセンサーの一覧を取得する。
@@ -83,6 +89,21 @@ public interface ISensorService
     /// <param name="key">センサーのキー。</param>
     /// <param name="policy">新しい設定。</param>
     /// <param name="cancellationToken">中止の合図。</param>
-    /// <returns>変えられたら true。マスタにないか、記録が使えない場合は false。</returns>
-    Task<bool> SetLogPolicyAsync(SensorKey key, SensorLogPolicy policy, CancellationToken cancellationToken = default);
+    /// <returns>結果。マスタにない場合は <see cref="SensorSettingResult.NotFound"/>、記録が使えない場合は <see cref="SensorSettingResult.Unavailable"/>。</returns>
+    Task<SensorSettingResult> SetLogPolicyAsync(SensorKey key, SensorLogPolicy policy, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// PawnIO の利用にユーザーが同意しているかどうかを取得する。同意は Helper 側に保存する。
+    /// </summary>
+    /// <param name="cancellationToken">中止の合図。</param>
+    /// <returns>同意していれば true。Helper が動いていない場合は false。</returns>
+    Task<bool> GetPawnIoConsentAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// PawnIO の利用の同意を変える。同意すると、次の宣言から PawnIO のセンサーが使われる。
+    /// </summary>
+    /// <param name="enabled">同意するなら true、取り消すなら false。</param>
+    /// <param name="cancellationToken">中止の合図。</param>
+    /// <returns>結果。管理者でない場合は <see cref="SensorSettingResult.AccessDenied"/>、Helper が動いていない場合は <see cref="SensorSettingResult.Unavailable"/>。</returns>
+    Task<SensorSettingResult> SetPawnIoConsentAsync(bool enabled, CancellationToken cancellationToken = default);
 }

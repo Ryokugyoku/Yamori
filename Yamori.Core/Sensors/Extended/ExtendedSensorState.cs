@@ -22,4 +22,7 @@ public enum ExtendedSensorState
 
     /// <summary>使えるはずだが、今は読めない（Helper の停止、宣言の失敗など）。</summary>
     Unavailable = 4,
+
+    /// <summary>PawnIO の公式版が入っていて Helper も動いているが、利用に同意していないため使わない。</summary>
+    ConsentRequired = 5,
 }

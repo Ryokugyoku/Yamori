@@ -736,7 +736,7 @@
     <value>PawnIO no está instalado. Solo se muestran los sensores disponibles mediante las API estándar de Windows.</value>
   </data>
   <data name="Extended_HelperRequired" xml:space="preserve">
-    <value>PawnIO está instalado, pero el servicio Yamori Helper que lo lee aún no se está ejecutando. Solo se muestran los sensores estándar.</value>
+    <value>PawnIO está instalado, pero el servicio Yamori Helper que lo lee no se está ejecutando. Solo se muestran los sensores estándar.</value>
   </data>
   <data name="Extended_UnsupportedEdition" xml:space="preserve">
     <value>El PawnIO instalado no es la edición oficial firmada, por lo que Yamori no lo usa.</value>
@@ -746,5 +746,59 @@
   </data>
   <data name="Extended_Unavailable" xml:space="preserve">
     <value>Los sensores ampliados no están disponibles temporalmente. Se muestran los sensores estándar.</value>
+  </data>
+  <data name="Extended_ConsentRequired" xml:space="preserve">
+    <value>PawnIO está instalado, pero no ha permitido que Yamori lo use. Solo se muestran los sensores estándar.</value>
+  </data>
+  <data name="Helper_Title" xml:space="preserve">
+    <value>Yamori Helper</value>
+  </data>
+  <data name="Helper_Connecting" xml:space="preserve">
+    <value>Conectando con el servicio Yamori Helper…</value>
+  </data>
+  <data name="Helper_NotRunning" xml:space="preserve">
+    <value>El servicio Yamori Helper no se está ejecutando. Solo se muestran los sensores estándar y no se registra nada. Yamori se volverá a conectar automáticamente.</value>
+  </data>
+  <data name="Helper_Incompatible" xml:space="preserve">
+    <value>La versión de Yamori Helper en ejecución no es compatible. Actualice Yamori. Solo se muestran los sensores estándar.</value>
+  </data>
+  <data name="Consent_Enable" xml:space="preserve">
+    <value>Usar PawnIO…</value>
+  </data>
+  <data name="Consent_Disable" xml:space="preserve">
+    <value>Dejar de usar PawnIO…</value>
+  </data>
+  <data name="Consent_DialogTitle" xml:space="preserve">
+    <value>¿Usar PawnIO para los sensores ampliados?</value>
+  </data>
+  <data name="Consent_DialogBody" xml:space="preserve">
+    <value>El servicio Yamori Helper usará el controlador PawnIO para leer las temperaturas, la potencia y las frecuencias efectivas de la CPU. Solo lee valores; nunca escribe en el hardware (sin control de ventiladores ni overclocking). Para cambiar este ajuste, ejecute Yamori como administrador.</value>
+  </data>
+  <data name="Consent_DialogDisableBody" xml:space="preserve">
+    <value>Yamori dejará de usar PawnIO y mostrará solo los sensores estándar. Para cambiar este ajuste, ejecute Yamori como administrador.</value>
+  </data>
+  <data name="Consent_DialogConfirmEnable" xml:space="preserve">
+    <value>Usar PawnIO</value>
+  </data>
+  <data name="Consent_DialogConfirmDisable" xml:space="preserve">
+    <value>Dejar de usar</value>
+  </data>
+  <data name="Consent_DialogCancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="Consent_ErrorTitle" xml:space="preserve">
+    <value>No se cambió el ajuste</value>
+  </data>
+  <data name="Consent_ErrorClose" xml:space="preserve">
+    <value>Cerrar</value>
+  </data>
+  <data name="Consent_Result_NotFound" xml:space="preserve">
+    <value>No se encontró el ajuste.</value>
+  </data>
+  <data name="Consent_Result_AccessDenied" xml:space="preserve">
+    <value>Solo un administrador puede cambiar este ajuste. Ejecute Yamori como administrador e inténtelo de nuevo.</value>
+  </data>
+  <data name="Consent_Result_Unavailable" xml:space="preserve">
+    <value>El servicio Yamori Helper no se está ejecutando, por lo que no se puede cambiar el ajuste ahora.</value>
   </data>
 </root>

@@ -736,7 +736,7 @@
     <value>PawnIO が入っていないため、Windows の標準 API で読めるセンサーだけを表示しています。</value>
   </data>
   <data name="Extended_HelperRequired" xml:space="preserve">
-    <value>PawnIO は入っていますが、読み取りを行う Yamori Helper（サービス）がまだ動いていないため、標準のセンサーだけを表示しています。</value>
+    <value>PawnIO は入っていますが、読み取りを行う Yamori Helper（サービス）が動いていないため、標準のセンサーだけを表示しています。</value>
   </data>
   <data name="Extended_UnsupportedEdition" xml:space="preserve">
     <value>入っている PawnIO が署名済みの公式版ではないため、Yamori は使いません。</value>
@@ -746,5 +746,59 @@
   </data>
   <data name="Extended_Unavailable" xml:space="preserve">
     <value>拡張センサーが一時的に使えないため、標準のセンサーを表示しています。</value>
+  </data>
+  <data name="Extended_ConsentRequired" xml:space="preserve">
+    <value>PawnIO は入っていますが、Yamori での利用が許可されていないため、標準のセンサーだけを表示しています。</value>
+  </data>
+  <data name="Helper_Title" xml:space="preserve">
+    <value>Yamori Helper</value>
+  </data>
+  <data name="Helper_Connecting" xml:space="preserve">
+    <value>Yamori Helper（サービス）に接続しています…</value>
+  </data>
+  <data name="Helper_NotRunning" xml:space="preserve">
+    <value>Yamori Helper（サービス）が動いていません。標準のセンサーだけを表示していて、記録はしていません。動き始めたら自動でつなぎ直します。</value>
+  </data>
+  <data name="Helper_Incompatible" xml:space="preserve">
+    <value>動いている Yamori Helper の版が合わないため、使えません。Yamori を更新してください。標準のセンサーだけを表示しています。</value>
+  </data>
+  <data name="Consent_Enable" xml:space="preserve">
+    <value>PawnIO を使う…</value>
+  </data>
+  <data name="Consent_Disable" xml:space="preserve">
+    <value>PawnIO の利用をやめる…</value>
+  </data>
+  <data name="Consent_DialogTitle" xml:space="preserve">
+    <value>拡張センサーに PawnIO を使いますか？</value>
+  </data>
+  <data name="Consent_DialogBody" xml:space="preserve">
+    <value>Yamori Helper（サービス）が PawnIO のドライバーを使って、CPU の温度・電力・実クロックを読みます。読み取りだけを行い、ハードウェアには書き込みません（ファンの制御やオーバークロックはしません）。この設定を変えるには、Yamori を管理者として実行してください。</value>
+  </data>
+  <data name="Consent_DialogDisableBody" xml:space="preserve">
+    <value>PawnIO の利用をやめ、標準のセンサーだけを表示します。この設定を変えるには、Yamori を管理者として実行してください。</value>
+  </data>
+  <data name="Consent_DialogConfirmEnable" xml:space="preserve">
+    <value>使う</value>
+  </data>
+  <data name="Consent_DialogConfirmDisable" xml:space="preserve">
+    <value>やめる</value>
+  </data>
+  <data name="Consent_DialogCancel" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="Consent_ErrorTitle" xml:space="preserve">
+    <value>設定を変えられませんでした</value>
+  </data>
+  <data name="Consent_ErrorClose" xml:space="preserve">
+    <value>閉じる</value>
+  </data>
+  <data name="Consent_Result_NotFound" xml:space="preserve">
+    <value>設定が見つかりませんでした。</value>
+  </data>
+  <data name="Consent_Result_AccessDenied" xml:space="preserve">
+    <value>この設定は管理者だけが変えられます。Yamori を管理者として実行してから、もう一度お試しください。</value>
+  </data>
+  <data name="Consent_Result_Unavailable" xml:space="preserve">
+    <value>Yamori Helper（サービス）が動いていないため、今は変えられません。</value>
   </data>
 </root>
