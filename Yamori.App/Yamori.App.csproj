@@ -2,7 +2,8 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <!-- Packaged services (desktop6:Service, the Helper) need Windows 10 1903 or later. -->
+    <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
     <RootNamespace>Yamori</RootNamespace>
     <AssemblyName>Yamori</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -44,6 +45,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Yamori.Core\Yamori.Core.csproj" />
+    <!-- The Helper (Windows service) ships inside this MSIX; its exe, runtimeconfig, deps and PawnIO module are copied next to Yamori.exe. -->
+    <ProjectReference Include="..\Yamori.Helper\Yamori.Helper.csproj" />
   </ItemGroup>
 
   <!--

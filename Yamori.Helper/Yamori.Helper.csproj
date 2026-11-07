@@ -9,7 +9,8 @@
     <!-- x64 only: the RocksDB package ships a native DLL for win-x64 only. -->
     <Platforms>x64</Platforms>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <SelfContained>false</SelfContained>
+    <!-- Self-contained to match Yamori.App: both run from the same package folder and share its .NET runtime files. -->
+    <SelfContained>true</SelfContained>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Emit XML docs; missing public documentation becomes a build warning (CS1591). -->
@@ -30,6 +31,8 @@
     <None Include="PawnIoModules\IntelMSR.bin" CopyToOutputDirectory="PreserveNewest" />
     <None Include="PawnIoModules\COPYING" CopyToOutputDirectory="PreserveNewest" />
     <None Include="PawnIoModules\NOTICE.txt" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Development only (sc.exe registration); not copied into the package. -->
+    <None Include="DevService.ps1" CopyToOutputDirectory="Never" />
   </ItemGroup>
 
 </Project>
