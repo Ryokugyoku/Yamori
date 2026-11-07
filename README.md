@@ -27,10 +27,11 @@ Yamoriは、PCのハードウェアを一つの画面で管理し、限界に近
 ## 基本方針
 
 1. **完全オフライン**：外部APIは一切呼ばない。テレメトリ、分析、クラウド連携もなし。データは既定でPCの中に留まる。
-   - 記録の保存先は、設定で **OneDrive フォルダー** や **指定したフォルダー** にも変えられる（任意）。Yamori はフォルダーにファイルを書くだけで、同期は OneDrive アプリが行う。Yamori 自身が通信することはない。
+   - CPU・メモリ使用率の記録（CSV）の保存先は、設定で **OneDrive フォルダー** や **指定したフォルダー** にも変えられる（任意）。センサーの時系列は PC の中（Helper のデータフォルダー）にだけ置く。Yamori はフォルダーにファイルを書くだけで、同期は OneDrive アプリが行う。Yamori 自身が通信することはない。
    - サインインは **Windows アカウント**（Windows Hello）で、PCの中だけで行う。
 2. **オープンソース**：「通信しない」という主張を、誰でもコードで確認できる。
-3. **カーネルドライバを使わない**：Windowsが提供する仕組み（WMI、パフォーマンスカウンター、S.M.A.R.T.、GPUメーカーのAPI）だけを使う。WinRing0のような脆弱なドライバは使わない。
+3. **ドライバーを同梱しない・標準の仕組みが基本**：基本の機能は Windows が提供する仕組み（WMI、パフォーマンスカウンター、S.M.A.R.T.、GPUメーカーのAPI）だけで動く。Yamori はカーネルドライバーを同梱も自作もしない。WinRing0 のような脆弱なドライバーは使わない。
+   - **拡張センサー（任意）**：ユーザーが自分で [PawnIO](https://pawnio.eu) を入れ、Yamori の画面で利用に同意したときだけ使う。その場合も、公式版（Microsoft のドライバー署名つきの `PawnIO Official Build`）であることを確かめてから、決まった MSR の**読み取りだけ**を行う（書き込み、ファンの制御、オーバークロックはしない）。PawnIO を開くのは Helper（下記）だけで、画面のプロセスは開かない。
 4. **誠実な表示**：事実とわかりやすい説明だけを示す。不安をあおる警告や「問題が○件見つかりました。直すには有料版へ」のような表示はしない。
 5. **数値には説明をつける**：すべての数値に「何を意味するか」「気にするべきか」を添える。
 
@@ -40,7 +41,7 @@ Yamoriは、PCのハードウェアを一つの画面で管理し、限界に近
 
 ### v1 — ハードウェアの一元管理と、次のPCの基準
 - ハードウェア情報の一覧（CPU、メモリ、ストレージ、GPU、バッテリー）
-- バックグラウンドで常に監視し、履歴をPCの中に保存
+- バックグラウンドで常に監視し、履歴をPCの中に保存（常駐の Windows サービス `Yamori.Helper` が担当）
 - **負荷時間の分析**：一時的な負荷の山ではなく、各部品が一定の使用率（例：50%超、80%超）を超えていた時間の割合を見る
 - **原因アプリの特定**：どのアプリがどの部品をどれだけ使っているか
 - 長期的な劣化の傾向（SSDの寿命、バッテリー容量など）
@@ -70,15 +71,31 @@ Yamoriは、PCのハードウェアを一つの画面で管理し、限界に近
 - **言語**：C# / .NET 10
 - **対象OS**：Windows 10 / 11
 
+- **プラットフォーム**：x64 のみ（時系列の保存に使う RocksDB のネイティブ DLL が win-x64 だけのため）
+
 ```
 Yamori.slnx
-├─ Yamori.App          WinUI 3の画面
-├─ Yamori.Core         データ収集、集計、おすすめを出すロジック
+├─ Yamori.App          WinUI 3の画面（通常の権限で動く）
+├─ Yamori.Core         データ収集、記録、集計、おすすめを出すロジック
 ├─ Yamori.Core.Tests   Coreのテスト
-└─ Yamori.Guard        （v2）ファイアウォール制御用の補助プログラム（管理者権限）
+├─ Yamori.Helper       常駐の Windows サービス（LocalSystem）。センサーの収集・記録と PawnIO の利用を担当
+└─ Yamori.Guard        （v2・未作成）ファイアウォール制御用の補助プログラム（管理者権限）
 ```
 
-### データの取得元（v1はドライバも管理者権限も不要）
+### 画面と Helper の分担
+- **Yamori.Helper**：MSIX のパッケージ サービス（サービス名 `YamoriHelper`、自動起動、LocalSystem）として動き、センサーを集めて記録する。画面を閉じていても動き続ける。
+- **やり取り**：名前付きパイプ `\\.\pipe\Yamori.Helper.Sensors`。SYSTEM・Administrators と、対話的にサインインしているユーザーだけがつなげる。ネットワークからの接続は拒否する。
+- **管理者だけができる操作**：記録の設定の変更と、PawnIO の利用の同意の変更。画面から同意を変えるときは、`Yamori.Helper.exe --pawnio-consent on|off` を UAC の承認つきで起動し、そのコマンドが Helper に依頼する。
+- **Helper が動いていないとき**：画面は標準 API だけを読んで表示する（記録はせず、拡張センサーも使わない）。
+- **Helper のデータフォルダー**：パッケージのマシン共通フォルダー（なければ `%ProgramData%\Yamori`）の `sensors\`。アクセス権は SYSTEM と Administrators だけ。
+
+### センサーの記録（Helper）
+- 時系列は **RocksDB**（`timeseries\`）、センサー・ハードウェアの一覧とイベントは **SQLite**（`master.db`）に保存する
+- 既定の記録間隔は 10 秒。変化が小さいとき（デッドバンド以内）は書かない。スレッド・GPU エンジン・コアごとの細かい値や回数・速さの値は、既定では記録しない
+- 1 分・1 時間の集計を作る。保持期間は、生データ 7 日、1 分集計 90 日、1 時間集計は無期限
+- 同じセンサーを複数の取得元が出すときの優先順は `sensor-priority.json` で変えられる
+
+### データの取得元（画面のプロセスはドライバーも管理者権限も不要）
 - WMI / CIM
 - Windowsのパフォーマンスカウンター（GPUエンジンのカウンターを含む）
 - Windowsが提供するストレージのS.M.A.R.T.・健康状態の情報
@@ -86,6 +103,7 @@ Yamori.slnx
 - DirectX の DXCore（GPU の正確なビデオメモリと、内蔵 GPU かどうか）
 - ディスクへの属性の問い合わせ（`\\.\PhysicalDriveN` をアクセス権 0 で開き、`IOCTL_STORAGE_QUERY_PROPERTY` でストレージの温度を読む。ディスクの中身は読めない開き方なので管理者権限は不要）
 - 使える場合はGPUメーカーのAPI
+- **（任意）PawnIO の IntelMSR モジュール**：Helper の中だけで使う。Intel の CPU のパッケージ・コアの温度、RAPL の電力（パッケージ・コア・DRAM）、APERF/MPERF による実クロック（コアごと・平均）を読む。PawnIO 本体（ドライバーと `PawnIOLib.dll`）は同梱せず、署名済みのモジュール `IntelMSR.bin`（PawnIO.Modules 0.2.11、LGPL-2.1、無改変）だけを同梱する
 
 ---
 
@@ -97,6 +115,19 @@ Yamori.slnx
 dotnet build Yamori.App -p:Platform=x64
 dotnet test Yamori.Core.Tests
 ```
+
+### 開発中の Helper
+Debug ビルドでは、パッケージ サービスの宣言（`Package.appxmanifest` の `release-only` の部分）を外す。代わりに `Yamori.Helper\DevService.ps1` で、Helper を別名のサービス `YamoriHelperDev` として登録して動かす。
+
+```powershell
+.\Yamori.Helper\DevService.ps1 -Action Install     # 管理者で 1 回だけ
+# 以降は Debug ビルドのたびに Sync が自動で呼ばれ、変わったファイルをコピーして再起動する
+# （YamoriSkipDevServiceSync=true で止められる）
+.\Yamori.Helper\DevService.ps1 -Action Uninstall   # 使い終わったら管理者で
+```
+
+- 登録したアカウントは、UAC なしに SYSTEM で動くコードを差し替えられるようになる。開発用の PC だけで使い、使い終わったら Uninstall すること。
+- Release のパッケージの `YamoriHelper` と同じパイプを使うため、両方を同時には動かせない。
 
 ---
 
@@ -130,6 +161,8 @@ dotnet test Yamori.Core.Tests
 
 検討中：**GPLv3**（ソースを閉じた派生版を作られにくい）か、**Apache-2.0**（企業に導入してもらいやすい）。
 
+同梱している `Yamori.Helper\PawnIoModules\IntelMSR.bin` は PawnIO.Modules（namazso）のもので、**LGPL-2.1** です（同じフォルダーの `COPYING` と `NOTICE.txt` を参照）。
+
 **「Yamori」**という名前とロゴは、コードのライセンスとは別に商標として守る予定です。派生版は別の名前を使ってください。
 
 ---
@@ -157,7 +190,11 @@ dotnet test Yamori.Core.Tests
   - **電源ユニット**：今の電源、電力量計（CPU の RAPL）、GPU の消費電力、バッテリーの残量・残り時間・充放電の速さ
   - **ファン**：GPU のファンの回転数、ACPI 温度センサーと熱による制限
   - **アプリ**：CPU・GPU・読み書き（入出力）のそれぞれで多く使っているアプリの上位 5 件（同じ名前のプロセスはまとめて集計。保護されたプロセスも含む）
-- [x] CPU・メモリ使用率の記録（10秒ごと、既定では `%LOCALAPPDATA%\Yamori\history` に日ごとのCSVで保存）
+- [x] 常駐サービス（Yamori.Helper）によるセンサーの収集と記録（画面を閉じていても記録する。詳しくは「センサーの記録」）
+  - センサーの一覧（ツリー表示）と、概要画面のまとめのカード
+  - Helper が動いていないときは、標準 API だけで表示を続ける
+- [x] 拡張センサー（任意・PawnIO・Intel の CPU のみ）：CPU のパッケージ・コアの温度、電力（パッケージ・コア・DRAM）、実クロック。公式版の確認と、管理者の同意（UAC）が必要
+- [x] CPU・メモリ使用率の記録（画面のプロセスが 10秒ごと、既定では `%LOCALAPPDATA%\Yamori\history` に日ごとのCSVで保存）
 - [x] 負荷時間の分析と、次のPCのおすすめ（CPUのスレッド数、メモリ容量）
 - [x] メモリを多く使っているアプリの一覧（同じアプリの複数プロセスはまとめて集計）
 - [x] Windows アカウントでのサインイン（Windows Hello。未設定のPCではサインイン中のアカウントのまま続行）
@@ -166,14 +203,15 @@ dotnet test Yamori.Core.Tests
 - [x] Windows のライト／ダーク モードへの追従（開いたままでも切り替わる）
 
 ### まだできないこと
-- [ ] アプリを閉じている間の記録（今はYamoriを開いている間だけ記録する）
+- [ ] 負荷時間の分析と次のPCのおすすめを、Helper の時系列から作ること（今は画面のプロセスが記録する CSV を使っているため、画面を開いている間の記録だけが対象）
 - [ ] アプリごとのCPU使用率の履歴と、それに基づく原因アプリの特定（今のアプリごとの使用量はリアルタイム表示で見られるが、記録はまだしない）
 - [ ] GPU・ストレージ・ネットワークの使用率、SSD寿命の長期的な傾向
 - [ ] アプリごとの通信量（v1.5）
 - [ ] ローカル通知
 
 既知の制限：
-- マザーボードにつながったファンの回転数と CPU の温度は、カーネルドライバーなしでは Windows から読めないため表示しない（基本方針 3）。GPU のファン・温度は、ドライバーが Windows に報告している場合だけ表示する。
+- CPU の温度は、拡張センサー（PawnIO）を使う Intel の CPU でだけ表示する。AMD の CPU と、マザーボードにつながったファンの回転数にはまだ対応していない（標準 API では読めない）。GPU のファン・温度は、ドライバーが Windows に報告している場合だけ表示する。
+- 拡張センサーの電力・実クロックは前回との差から求めるため、使い始めた直後の 1 回は値が出ない。
 - デスクトップ PC の電源ユニットの多くは出力を Windows に報告しないため、PC 全体の消費電力は表示できない（CPU・GPU が自分で測っている値だけを表示する）。
 - 自作 PC 用の電源ユニットの多くは容量（W）をマザーボードに伝えないため、表示できないことが多い。
 - DXCore がない古い Windows 10（2004 より前）では、GPU のビデオメモリが 4GB を超えると正しく表示されないことがある。
@@ -190,7 +228,8 @@ dotnet test Yamori.Core.Tests
 | `Hardware/` | 部品の情報のモデル（CPU・マザーボード・メモリ・GPU・ストレージ・ファン・電源ユニット・ネットワーク）と、それを読み取る処理（`Readers/` に部品ごとに1クラス）。情報源は `Wmi/`、`Smbios/`（ファームウェアのテーブル）、`Graphics/`（DXCore）、`Topology/`（P コア・E コア）、`DeviceIo/`（ディスクへの IOCTL。ストレージの温度） |
 | `Monitoring/` | 使用率を測るセンサーと、定期的に記録する監視処理 |
 | `Realtime/` | リアルタイム表示用の測定。`Counters/`（PDH のパフォーマンスカウンターと、インスタンス名の読み解き）、`Gpu/`（D3DKMT の GPU センサー）、`Sources/`（Win32 API・WMI）、`Collectors/`（部品ごと・アプリごとに 1 クラス） |
-| `Storage/` | 履歴の保存（CSV）と、保存先（このPC／OneDrive／指定フォルダー）の切り替え |
+| `Sensors/` | センサーの基盤。`Providers/`（取得元。`WindowsStandard/` は標準 API、`PawnIo/` は拡張センサー）、`Registry/`（取得元の優先順）、`Collection/`（収集の繰り返しとハードウェアの変化の検知）、`Hot/`（直近の値のメモリ上の保存）、`TimeSeries/`（RocksDB の時系列・集計・保持期間）、`Master/`（SQLite のマスタ）、`Persistence/`、`Ipc/`（Helper と画面の間のパイプ。`Server/`・`Client/`）、`Service/`、`Extended/`（PawnIO の状態・同意・署名の確認）、`Display/`（ツリー表示とまとめのカード） |
+| `Storage/` | 使用率の履歴の保存（CSV）と、保存先（このPC／OneDrive／指定フォルダー）の切り替え。Helper のデータフォルダーの場所とアクセス権 |
 | `Settings/` | ユーザー設定（保存先、表示言語）と、その保存（`%LOCALAPPDATA%\Yamori\settings.json`） |
 | `Localization/`, `Resources/` | 表示文字列（`*.resx`。英語が既定、`.ja`・`.es` が翻訳） |
 | `Processes/` | プロセスの使用量（メモリ、CPU・GPU・入出力）の取得と、アプリ単位の集計 |
