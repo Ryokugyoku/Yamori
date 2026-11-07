@@ -772,10 +772,10 @@
     <value>Use PawnIO for extended sensors?</value>
   </data>
   <data name="Consent_DialogBody" xml:space="preserve">
-    <value>The Yamori Helper service will use the PawnIO driver to read CPU temperatures, power and effective clocks. It only reads values; it never writes to the hardware (no fan control or overclocking). Changing this setting requires running Yamori as an administrator.</value>
+    <value>The Yamori Helper service will use the PawnIO driver to read CPU temperatures, power and effective clocks. It only reads values; it never writes to the hardware (no fan control or overclocking). Windows will ask an administrator to approve this change; Yamori itself keeps running without administrator rights.</value>
   </data>
   <data name="Consent_DialogDisableBody" xml:space="preserve">
-    <value>Yamori will stop using PawnIO and show only standard sensors. Changing this setting requires running Yamori as an administrator.</value>
+    <value>Yamori will stop using PawnIO and show only standard sensors. Windows will ask an administrator to approve this change.</value>
   </data>
   <data name="Consent_DialogConfirmEnable" xml:space="preserve">
     <value>Use PawnIO</value>
@@ -796,7 +796,7 @@
     <value>The setting was not found.</value>
   </data>
   <data name="Consent_Result_AccessDenied" xml:space="preserve">
-    <value>Only an administrator can change this setting. Run Yamori as an administrator and try again.</value>
+    <value>Administrator approval was not granted, so the setting was not changed.</value>
   </data>
   <data name="Consent_Result_Unavailable" xml:space="preserve">
     <value>The Yamori Helper service is not running, so the setting cannot be changed now.</value>

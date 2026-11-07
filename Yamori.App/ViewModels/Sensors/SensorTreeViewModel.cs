@@ -8,6 +8,7 @@ using Yamori.Core.Sensors.Display;
 using Yamori.Core.Sensors.Service;
 using Yamori.Presentation.Realtime;
 using Yamori.Presentation.Sensors;
+using Yamori.Services;
 
 namespace Yamori.ViewModels.Sensors;
 
@@ -18,17 +19,21 @@ namespace Yamori.ViewModels.Sensors;
 public sealed class SensorTreeViewModel : ObservableObject, IDisposable
 {
     private readonly SensorBoard _board;
+    private readonly IElevatedConsentChanger _elevated;
     private SensorNotice _notice = SensorNotice.Empty;
 
     /// <summary>
     /// 共有の状態を指定して作る。UI スレッドから呼ぶこと。
     /// </summary>
     /// <param name="board">センサーの今の状態。</param>
-    /// <exception cref="ArgumentNullException"><paramref name="board"/> が null。</exception>
-    public SensorTreeViewModel(SensorBoard board)
+    /// <param name="elevated">管理者の承認を得て同意を変える処理。</param>
+    /// <exception cref="ArgumentNullException">いずれかの引数が null。</exception>
+    public SensorTreeViewModel(SensorBoard board, IElevatedConsentChanger elevated)
     {
         ArgumentNullException.ThrowIfNull(board);
+        ArgumentNullException.ThrowIfNull(elevated);
         _board = board;
+        _elevated = elevated;
         _board.Updated += OnUpdated;
         Refresh();
     }
@@ -55,14 +60,19 @@ public sealed class SensorTreeViewModel : ObservableObject, IDisposable
     public bool? ConsentAction => _notice.ConsentAction;
 
     /// <summary>
-    /// PawnIO の利用の同意を変える。
+    /// PawnIO の利用の同意を変える。管理者でない場合は、Windows の管理者の承認（UAC）を得て、その変更だけを管理者の権限で行う。
     /// </summary>
     /// <param name="enabled">同意するなら true。</param>
-    /// <returns>変えられなかった場合は、その理由の説明。変えられた場合は null。</returns>
+    /// <returns>変えられなかった場合は、その理由の説明。変えられた場合と、承認の画面で取り消された場合は null。</returns>
     public async Task<string?> ApplyConsentAsync(bool enabled)
     {
-        var result = await _board.Service.SetPawnIoConsentAsync(enabled);
-        return result == SensorSettingResult.Applied ? null : SensorTexts.ConsentResult(result);
+        SensorSettingResult? result = await _board.Service.SetPawnIoConsentAsync(enabled);
+        if (result == SensorSettingResult.AccessDenied)
+        {
+            result = await _elevated.SetPawnIoConsentAsync(enabled);
+        }
+
+        return result is null or SensorSettingResult.Applied ? null : SensorTexts.ConsentResult(result.Value);
     }
 
     /// <summary>

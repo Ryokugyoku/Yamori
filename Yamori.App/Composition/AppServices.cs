@@ -155,7 +155,7 @@ public sealed class AppServices
     /// <returns>新しいビューモデル。</returns>
     public RealtimePageViewModel CreateRealtimeViewModel() =>
         new(
-            new SensorTreeViewModel(GetBoard()),
+            new SensorTreeViewModel(GetBoard(), new HelperElevatedConsentChanger()),
             new RealtimeViewModel(
                 () => RealtimeSnapshotService.CreateDefault(new ManagementWmiQueryExecutor(), TimeProvider.System),
                 RealtimeSectionsPresenter.CreateDefault(),
