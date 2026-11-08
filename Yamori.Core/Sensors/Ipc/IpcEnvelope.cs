@@ -23,6 +23,12 @@ public sealed record IpcEnvelope
     /// <summary>接続を受け入れたかどうかを取得する（<see cref="IpcMessageKind.HelloReply"/>）。</summary>
     public bool Accepted { get; init; }
 
+    /// <summary>
+    /// 受け取りたい通知の種類を取得する（<see cref="IpcMessageKind.Hello"/>。版 3 から）。
+    /// <see cref="SensorNotificationTopics.All"/>（送らない場合）はすべてを受け取る。
+    /// </summary>
+    public SensorNotificationTopics Topics { get; init; }
+
     /// <summary>依頼する操作を取得する（<see cref="IpcMessageKind.Request"/>）。</summary>
     public SensorOperation Operation { get; init; }
 

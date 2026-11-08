@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 using System.IO.Pipes;
+using Yamori.Core.Anomalies;
+using Yamori.Core.Anomalies.Service;
 using Yamori.Core.AppUsage.Service;
 using Yamori.Core.Sensors.Extended;
 using Yamori.Core.Sensors.Ipc.Messages;
@@ -8,14 +10,15 @@ using Yamori.Core.Sensors.Service;
 namespace Yamori.Core.Sensors.Ipc.Server;
 
 /// <summary>
-/// Helper の中で動く、センサーの名前付きパイプのサーバー。複数のクライアント（サインインしている複数のユーザーの GUI）が同時につなげる。
-/// 最新値・カタログ・拡張センサーの状態の変化は、つないでいるすべてのクライアントに通知する。
+/// Helper の中で動く、センサーの名前付きパイプのサーバー。複数のクライアント（サインインしている複数のユーザーの GUI、通知専用の常駐プログラム）が
+/// 同時につなげる。最新値・カタログ・拡張センサーの状態の変化・異常の知らせは、つないでいるクライアントのうち、その種類を選んだものに通知する。
 /// </summary>
 public sealed class SensorPipeServer
 {
     private static readonly TimeSpan BusyRetryDelay = TimeSpan.FromMilliseconds(500);
 
     private readonly ISensorService _service;
+    private readonly IAnomalyService? _anomalies;
     private readonly SensorPipeServerOptions _options;
     private readonly SensorRequestHandler _handler;
     private readonly ConcurrentDictionary<SensorPipeSession, Task> _sessions = new();
@@ -26,14 +29,16 @@ public sealed class SensorPipeServer
     /// <param name="service">センサーの窓口（Helper の中の <see cref="LocalSensorService"/>）。</param>
     /// <param name="options">設定。</param>
     /// <param name="appUsage">アプリごとの使用率の記録の窓口。null なら常に記録なしを返す。</param>
+    /// <param name="anomalies">異常の一覧と設定の窓口。null なら一覧は空で、異常の知らせは送らない。</param>
     /// <exception cref="ArgumentNullException"><paramref name="service"/> か <paramref name="options"/> が null。</exception>
-    public SensorPipeServer(ISensorService service, SensorPipeServerOptions options, IAppUsageService? appUsage = null)
+    public SensorPipeServer(ISensorService service, SensorPipeServerOptions options, IAppUsageService? appUsage = null, IAnomalyService? anomalies = null)
     {
         ArgumentNullException.ThrowIfNull(service);
         ArgumentNullException.ThrowIfNull(options);
         _service = service;
+        _anomalies = anomalies;
         _options = options;
-        _handler = new SensorRequestHandler(service, appUsage);
+        _handler = new SensorRequestHandler(service, appUsage, anomalies);
     }
 
     /// <summary>今つないでいるクライアントの数を取得する。</summary>
@@ -51,6 +56,11 @@ public sealed class SensorPipeServer
         _service.ReadingsUpdated += OnReadingsUpdated;
         _service.CatalogChanged += OnCatalogChanged;
         _service.ExtendedSensorStateChanged += OnExtendedStateChanged;
+        if (_anomalies is not null)
+        {
+            _anomalies.AnomalyChanged += OnAnomalyChanged;
+        }
+
         try
         {
             var first = true;
@@ -93,6 +103,11 @@ public sealed class SensorPipeServer
             _service.ReadingsUpdated -= OnReadingsUpdated;
             _service.CatalogChanged -= OnCatalogChanged;
             _service.ExtendedSensorStateChanged -= OnExtendedStateChanged;
+            if (_anomalies is not null)
+            {
+                _anomalies.AnomalyChanged -= OnAnomalyChanged;
+            }
+
             await Task.WhenAll(_sessions.Values).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         }
     }
@@ -134,37 +149,41 @@ public sealed class SensorPipeServer
                 _options.Security);
     }
 
-    private void Broadcast(SensorNotificationKind kind, System.Text.Json.JsonElement payload)
+    /// <summary>
+    /// 通知を、その種類を選んだ接続に送る。選んだ接続がなければ本文を作らない（毎秒の値の変換を省くため）。
+    /// </summary>
+    private void Broadcast(SensorNotificationKind kind, Func<System.Text.Json.JsonElement> createPayload)
     {
-        if (_sessions.IsEmpty)
+        var targets = _sessions.Keys.Where(s => s.Wants(kind)).ToArray();
+        if (targets.Length == 0)
         {
             return;
         }
 
-        var envelope = new IpcEnvelope { Kind = IpcMessageKind.Notification, Notification = kind, Payload = payload };
-        foreach (var session in _sessions.Keys)
+        var envelope = new IpcEnvelope { Kind = IpcMessageKind.Notification, Notification = kind, Payload = createPayload() };
+        foreach (var session in targets)
         {
             session.Enqueue(envelope);
         }
     }
 
-    private void OnReadingsUpdated(object? sender, IReadOnlyList<SensorReading> readings)
-    {
-        if (!_sessions.IsEmpty)
-        {
-            Broadcast(
-                SensorNotificationKind.ReadingsUpdated,
-                IpcConnection.ToPayload(readings.Select(SensorDtoMapper.ToDto).ToArray(), SensorIpcJsonContext.Default.SensorReadingDtoArray));
-        }
-    }
+    private void OnReadingsUpdated(object? sender, IReadOnlyList<SensorReading> readings) =>
+        Broadcast(
+            SensorNotificationKind.ReadingsUpdated,
+            () => IpcConnection.ToPayload(readings.Select(SensorDtoMapper.ToDto).ToArray(), SensorIpcJsonContext.Default.SensorReadingDtoArray));
 
     private void OnCatalogChanged(object? sender, IReadOnlyList<SensorDescriptor> catalog) =>
         Broadcast(
             SensorNotificationKind.CatalogChanged,
-            IpcConnection.ToPayload(catalog.Select(SensorDtoMapper.ToDto).ToArray(), SensorIpcJsonContext.Default.SensorDescriptorDtoArray));
+            () => IpcConnection.ToPayload(catalog.Select(SensorDtoMapper.ToDto).ToArray(), SensorIpcJsonContext.Default.SensorDescriptorDtoArray));
 
     private void OnExtendedStateChanged(object? sender, ExtendedSensorState state) =>
         Broadcast(
             SensorNotificationKind.ExtendedSensorStateChanged,
-            IpcConnection.ToPayload(new ExtendedStateMessage(state), SensorIpcJsonContext.Default.ExtendedStateMessage));
+            () => IpcConnection.ToPayload(new ExtendedStateMessage(state), SensorIpcJsonContext.Default.ExtendedStateMessage));
+
+    private void OnAnomalyChanged(object? sender, AnomalyNotice notice) =>
+        Broadcast(
+            SensorNotificationKind.AnomalyChanged,
+            () => IpcConnection.ToPayload(AnomalyDtoMapper.ToDto(notice), SensorIpcJsonContext.Default.AnomalyNoticeDto));
 }

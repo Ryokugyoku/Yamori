@@ -7,11 +7,31 @@ namespace Yamori.Core.Sensors.TimeSeries;
 public interface ITimeSeriesStore
 {
     /// <summary>
+    /// 点をまとめて書き込む（1 回の書き込みにまとめる）。同じセンサー・同じ時刻の点は上書きする。
+    /// </summary>
+    /// <param name="resolution">点を置く解像度（<see cref="TimeSeriesResolutions.IsPointResolution"/> が true のもの）。</param>
+    /// <param name="points">書き込む点。</param>
+    /// <exception cref="ArgumentNullException"><paramref name="points"/> が null。</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="resolution"/> が集計の解像度。</exception>
+    void WritePoints(TimeSeriesResolution resolution, IReadOnlyCollection<TimeSeriesPoint> points);
+
+    /// <summary>
+    /// センサー 1 つの点を、時刻の範囲で古い順に読む。
+    /// </summary>
+    /// <param name="resolution">点を置く解像度（<see cref="TimeSeriesResolutions.IsPointResolution"/> が true のもの）。</param>
+    /// <param name="sensorId">センサーの番号。</param>
+    /// <param name="fromMs">範囲の始まり（含む）。</param>
+    /// <param name="toMsExclusive">範囲の終わり（含まない）。</param>
+    /// <returns>範囲内の点。</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="resolution"/> が集計の解像度。</exception>
+    IReadOnlyList<TimeSeriesPoint> ReadPoints(TimeSeriesResolution resolution, uint sensorId, long fromMs, long toMsExclusive);
+
+    /// <summary>
     /// 生データをまとめて書き込む（1 回の書き込みにまとめる）。同じセンサー・同じ時刻の点は上書きする。
     /// </summary>
     /// <param name="points">書き込む点。</param>
     /// <exception cref="ArgumentNullException"><paramref name="points"/> が null。</exception>
-    void WriteRaw(IReadOnlyCollection<TimeSeriesPoint> points);
+    void WriteRaw(IReadOnlyCollection<TimeSeriesPoint> points) => WritePoints(TimeSeriesResolution.Raw, points);
 
     /// <summary>
     /// 集計をまとめて書き込む。同じセンサー・同じ区間の集計は上書きする（集計のやり直しに使う）。
@@ -29,7 +49,8 @@ public interface ITimeSeriesStore
     /// <param name="fromMs">範囲の始まり（含む）。</param>
     /// <param name="toMsExclusive">範囲の終わり（含まない）。</param>
     /// <returns>範囲内の点。</returns>
-    IReadOnlyList<TimeSeriesPoint> ReadRaw(uint sensorId, long fromMs, long toMsExclusive);
+    IReadOnlyList<TimeSeriesPoint> ReadRaw(uint sensorId, long fromMs, long toMsExclusive) =>
+        ReadPoints(TimeSeriesResolution.Raw, sensorId, fromMs, toMsExclusive);
 
     /// <summary>
     /// センサー 1 つの集計を、区間の始まりの範囲で古い順に読む。

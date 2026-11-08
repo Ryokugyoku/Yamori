@@ -50,6 +50,36 @@ public static class MasterSchema
 
         CREATE INDEX ix_event_log_ts ON event_log(ts_ms);
         """,
+
+        // 2: 異常の一覧と、異常の設定（しきい値・通知のオン・オフ）。
+        //    ended_ms は続いている間は NULL。last_seen_ms は最後に異常を確かめた時刻（Helper が止まったときの終わりの時刻に使う）。
+        //    evidence_json は判断の理由の数値（名前と値の組）。dismissed_ms は「これは正常」とした時刻、notified_ms は通知を出した時刻。
+        //    manual_threshold は NULL なら自動（TjMax などから決める）。
+        """
+        CREATE TABLE anomaly (
+            anomaly_id    INTEGER PRIMARY KEY AUTOINCREMENT,
+            kind          INTEGER NOT NULL,
+            hardware_key  TEXT    NOT NULL,
+            hardware_kind INTEGER NOT NULL,
+            hardware_name TEXT    NOT NULL,
+            started_ms    INTEGER NOT NULL,
+            last_seen_ms  INTEGER NOT NULL,
+            ended_ms      INTEGER,
+            severity      INTEGER NOT NULL,
+            evidence_json TEXT    NOT NULL,
+            dismissed_ms  INTEGER,
+            notified_ms   INTEGER
+        );
+
+        CREATE INDEX ix_anomaly_started ON anomaly(started_ms);
+        CREATE INDEX ix_anomaly_target ON anomaly(kind, hardware_key, notified_ms);
+
+        CREATE TABLE anomaly_setting (
+            kind             INTEGER PRIMARY KEY,
+            notify_enabled   INTEGER NOT NULL,
+            manual_threshold REAL
+        );
+        """,
     ];
 
     /// <summary>今のコードが扱うスキーマの版を取得する。</summary>

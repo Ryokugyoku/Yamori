@@ -34,4 +34,14 @@ public static class UnitConversions
     /// <param name="bitsPerSecond">ビット毎秒の値。</param>
     /// <returns>バイト毎秒の値。</returns>
     public static double? BitsToBytesPerSecond(double? bitsPerSecond) => bitsPerSecond / 8;
+
+    /// <summary>オン・オフを、印の値（1 か 0）に変換する。</summary>
+    /// <param name="on">オンなら true。</param>
+    /// <returns>オンなら 1、オフなら 0。</returns>
+    public static double? ToFlag(bool? on) => on switch
+    {
+        true => 1,
+        false => 0,
+        null => null,
+    };
 }

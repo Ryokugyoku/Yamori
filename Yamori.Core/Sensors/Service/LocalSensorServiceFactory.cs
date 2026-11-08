@@ -1,5 +1,7 @@
 using Microsoft.Data.Sqlite;
 using RocksDbSharp;
+using Yamori.Core.Anomalies;
+using Yamori.Core.Anomalies.Detection;
 using Yamori.Core.Hardware.Wmi;
 using Yamori.Core.Sensors.Collection;
 using Yamori.Core.Sensors.Extended;
@@ -30,6 +32,7 @@ public static class LocalSensorServiceFactory
     /// <param name="extended">拡張センサーの判断と同意の扱い。</param>
     /// <param name="extendedProvider">拡張センサーの Provider。使わない場合は null。同意の有無は Provider の中で確かめること。</param>
     /// <param name="timeProvider">現在時刻とタイマーの提供元。</param>
+    /// <param name="anomalyRules">異常の判定の規則。マスタを開けたときだけ、異常を見張る（一覧と設定はマスタに置く）。</param>
     /// <returns>新しいサービス。使い終わったら破棄すること。</returns>
     /// <exception cref="ArgumentNullException"><paramref name="extendedProvider"/> 以外の引数が null。</exception>
     public static LocalSensorService CreateForHelper(
@@ -38,13 +41,15 @@ public static class LocalSensorServiceFactory
         string dataDirectory,
         IExtendedSensorControl extended,
         ISensorProvider? extendedProvider,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        IReadOnlyList<IAnomalyRule> anomalyRules)
     {
         ArgumentNullException.ThrowIfNull(wmi);
         ArgumentNullException.ThrowIfNull(priorityFilePath);
         ArgumentNullException.ThrowIfNull(dataDirectory);
         ArgumentNullException.ThrowIfNull(extended);
         ArgumentNullException.ThrowIfNull(timeProvider);
+        ArgumentNullException.ThrowIfNull(anomalyRules);
 
         var owned = new List<IDisposable>();
         var standard = WindowsStandardProviderFactory.Create(wmi, timeProvider);
@@ -59,8 +64,9 @@ public static class LocalSensorServiceFactory
             }
         }
 
-        var persistence = TryCreatePersistence(dataDirectory, providers.Select(p => p.ProviderId).ToArray(), timeProvider, owned);
-        return Assemble(providers, priorityFilePath, persistence, extended, timeProvider, owned);
+        var (persistence, master) = TryCreatePersistence(dataDirectory, providers.Select(p => p.ProviderId).ToArray(), timeProvider, owned);
+        var anomalies = master is null ? null : AnomalyMonitoring.Create(master, anomalyRules, timeProvider);
+        return Assemble(providers, priorityFilePath, persistence, anomalies, extended, timeProvider, owned);
     }
 
     /// <summary>
@@ -81,13 +87,14 @@ public static class LocalSensorServiceFactory
         var standard = WindowsStandardProviderFactory.Create(wmi, timeProvider);
         owned.Add(standard);
         var extended = new OutsideHelperExtendedSensorControl(new RegistryPawnIoInstallationProbe());
-        return Assemble([standard], priorityFilePath, persistence: null, extended, timeProvider, owned);
+        return Assemble([standard], priorityFilePath, persistence: null, anomalies: null, extended, timeProvider, owned);
     }
 
     private static LocalSensorService Assemble(
         IReadOnlyList<ISensorProvider> providers,
         string priorityFilePath,
         SensorPersistence? persistence,
+        AnomalyMonitoring? anomalies,
         IExtendedSensorControl extended,
         TimeProvider timeProvider,
         List<IDisposable> owned)
@@ -104,10 +111,10 @@ public static class LocalSensorServiceFactory
 
         // 通知を先に止めてから、Provider とストアを閉じる。
         owned.Reverse();
-        return new LocalSensorService(registry, hotStore, loop, persistence, extended, timeProvider, owned);
+        return new LocalSensorService(registry, hotStore, loop, persistence, extended, timeProvider, owned, anomalies);
     }
 
-    private static SensorPersistence? TryCreatePersistence(
+    private static (SensorPersistence? Persistence, MasterDatabase? Master) TryCreatePersistence(
         string dataDirectory,
         IReadOnlyCollection<string> providerIds,
         TimeProvider timeProvider,
@@ -126,7 +133,7 @@ public static class LocalSensorServiceFactory
             // ほかのプロセスが開いている、ディスクに書けないなど。記録なしで動く。
             store?.Dispose();
             master?.Dispose();
-            return null;
+            return (null, null);
         }
 
         owned.Add(master);
@@ -134,9 +141,11 @@ public static class LocalSensorServiceFactory
 
         var sensors = new SqliteSensorRepository(master);
         var retention = RetentionPolicy.Default;
-        return new SensorPersistence(
+        var persistence = new SensorPersistence(
             store,
             new TimeSeriesRecorder(store, new LogDecisionFilter()),
+            new TimeSeriesRecorder(store, new LogDecisionFilter(), TimeSeriesResolution.OneSecond),
+            new FineSeriesSelection(),
             new SensorCatalogSynchronizer(new SqliteHardwareRepository(master), sensors, new SqliteSourceRepository(master)),
             sensors,
             new SqliteEventLogRepository(master),
@@ -144,5 +153,6 @@ public static class LocalSensorServiceFactory
             new RetentionJob(store, retention),
             providerIds,
             timeProvider);
+        return (persistence, master);
     }
 }

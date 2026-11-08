@@ -1,4 +1,6 @@
 using System.Text.Json;
+using Yamori.Core.Anomalies;
+using Yamori.Core.Anomalies.Service;
 using Yamori.Core.AppUsage.Analysis;
 using Yamori.Core.AppUsage.Service;
 using Yamori.Core.Sensors.Extended;
@@ -16,7 +18,7 @@ namespace Yamori.Core.Sensors.Ipc.Client;
 /// つながっていない間の操作は例外を投げず、空の結果（最新値は <see cref="SensorStatus.TemporarilyUnavailable"/>、設定の変更は
 /// <see cref="SensorSettingResult.Unavailable"/>）を返す。
 /// </remarks>
-public sealed class RemoteSensorService : ISensorService, IHelperConnection, IAppUsageService
+public sealed class RemoteSensorService : ISensorService, IHelperConnection, IAppUsageService, IAnomalyService
 {
     private readonly Func<CancellationToken, Task<Stream>> _connect;
     private readonly TimeProvider _timeProvider;
@@ -51,6 +53,9 @@ public sealed class RemoteSensorService : ISensorService, IHelperConnection, IAp
 
     /// <inheritdoc />
     public event EventHandler<HelperConnectionState>? ConnectionStateChanged;
+
+    /// <inheritdoc />
+    public event EventHandler<AnomalyNotice>? AnomalyChanged;
 
     /// <inheritdoc />
     public int ContractVersion => SensorContract.Version;
@@ -206,6 +211,64 @@ public sealed class RemoteSensorService : ISensorService, IHelperConnection, IAp
         return AppUsageDtoMapper.FromDto(IpcConnection.FromPayload(response?.Payload, SensorIpcJsonContext.Default.AppCpuUsageResponse));
     }
 
+    /// <inheritdoc />
+    /// <remarks>Helper につながっていない場合や、Helper が古くこの操作を知らない場合は空。</remarks>
+    public async Task<IReadOnlyList<AnomalyRecord>> GetAnomaliesAsync(
+        DateTimeOffset fromUtc,
+        DateTimeOffset toUtc,
+        bool includeDismissed,
+        int limit,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(limit);
+        if (limit == 0 || toUtc <= fromUtc)
+        {
+            return [];
+        }
+
+        var payload = IpcConnection.ToPayload(
+            new AnomaliesRequest(fromUtc, toUtc, includeDismissed, Math.Min(limit, LocalAnomalyService.MaxLimit)),
+            SensorIpcJsonContext.Default.AnomaliesRequest);
+        var response = await TryRequestAsync(SensorOperation.GetAnomalies, payload, cancellationToken).ConfigureAwait(false);
+        var dtos = IpcConnection.FromPayload(response?.Payload, SensorIpcJsonContext.Default.AnomalyDtoArray) ?? [];
+        return dtos.Where(d => d is not null).Select(AnomalyDtoMapper.FromDto).OfType<AnomalyRecord>().ToArray();
+    }
+
+    /// <inheritdoc />
+    public async Task<SensorSettingResult> SetDismissedAsync(long anomalyId, bool dismissed, CancellationToken cancellationToken = default)
+    {
+        var payload = IpcConnection.ToPayload(new AnomalyDismissRequest(anomalyId, dismissed), SensorIpcJsonContext.Default.AnomalyDismissRequest);
+        var response = await TryRequestAsync(SensorOperation.SetAnomalyDismissed, payload, cancellationToken).ConfigureAwait(false);
+        return ToSettingResult(response);
+    }
+
+    /// <inheritdoc />
+    public async Task<SensorSettingResult> MarkNotifiedAsync(long anomalyId, CancellationToken cancellationToken = default)
+    {
+        var payload = IpcConnection.ToPayload(new AnomalyIdRequest(anomalyId), SensorIpcJsonContext.Default.AnomalyIdRequest);
+        var response = await TryRequestAsync(SensorOperation.MarkAnomalyNotified, payload, cancellationToken).ConfigureAwait(false);
+        return ToSettingResult(response);
+    }
+
+    /// <inheritdoc />
+    /// <remarks>Helper につながっていない場合や、Helper が古くこの操作を知らない場合は空。</remarks>
+    public async Task<IReadOnlyList<AnomalySetting>> GetSettingsAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await TryRequestAsync(SensorOperation.GetAnomalySettings, null, cancellationToken).ConfigureAwait(false);
+        var dtos = IpcConnection.FromPayload(response?.Payload, SensorIpcJsonContext.Default.AnomalySettingDtoArray) ?? [];
+        return dtos.Where(d => d is not null).Select(AnomalyDtoMapper.FromDto).OfType<AnomalySetting>().ToArray();
+    }
+
+    /// <inheritdoc />
+    public async Task<SensorSettingResult> SetSettingAsync(AnomalySetting setting, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(setting);
+
+        var payload = IpcConnection.ToPayload(AnomalyDtoMapper.ToDto(setting), SensorIpcJsonContext.Default.AnomalySettingDto);
+        var response = await TryRequestAsync(SensorOperation.SetAnomalySetting, payload, cancellationToken).ConfigureAwait(false);
+        return ToSettingResult(response);
+    }
+
     private static SensorSettingResult ToSettingResult(IpcEnvelope? response) =>
         IpcConnection.FromPayload(response?.Payload, SensorIpcJsonContext.Default.SettingResultResponse)?.Result ?? SensorSettingResult.Unavailable;
 
@@ -218,7 +281,7 @@ public sealed class RemoteSensorService : ISensorService, IHelperConnection, IAp
     private async Task<SensorPipeClient> ConnectAsync(CancellationToken cancellationToken)
     {
         var stream = await _connect(cancellationToken).ConfigureAwait(false);
-        return await SensorPipeClient.ConnectAsync(stream, _options.HandshakeTimeout, cancellationToken).ConfigureAwait(false);
+        return await SensorPipeClient.ConnectAsync(stream, _options.HandshakeTimeout, cancellationToken, _options.Topics).ConfigureAwait(false);
     }
 
     private async Task RunConnectedAsync(SensorPipeClient client, CancellationToken cancellationToken)
@@ -230,10 +293,17 @@ public sealed class RemoteSensorService : ISensorService, IHelperConnection, IAp
         try
         {
             // つないだ直後に今の状態をそろえる（切れていた間の変化を取りこぼさないため）。
-            var catalog = await GetCatalogAsync(cancellationToken).ConfigureAwait(false);
-            CatalogChanged?.Invoke(this, catalog);
-            var state = await GetExtendedSensorStateAsync(cancellationToken).ConfigureAwait(false);
-            ExtendedSensorStateChanged?.Invoke(this, state);
+            if (_options.Topics.Includes(SensorNotificationKind.CatalogChanged))
+            {
+                var catalog = await GetCatalogAsync(cancellationToken).ConfigureAwait(false);
+                CatalogChanged?.Invoke(this, catalog);
+            }
+
+            if (_options.Topics.Includes(SensorNotificationKind.ExtendedSensorStateChanged))
+            {
+                var state = await GetExtendedSensorStateAsync(cancellationToken).ConfigureAwait(false);
+                ExtendedSensorStateChanged?.Invoke(this, state);
+            }
 
             await client.Completion.WaitAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         }
@@ -272,6 +342,12 @@ public sealed class RemoteSensorService : ISensorService, IHelperConnection, IAp
 
     private void OnNotification(object? sender, IpcEnvelope notification)
     {
+        if (!_options.Topics.Includes(notification.Notification))
+        {
+            // 選んでいない種類（選べない版 2 までの Helper が送ってきたもの）は流さない。
+            return;
+        }
+
         switch (notification.Notification)
         {
             case SensorNotificationKind.ReadingsUpdated:
@@ -294,6 +370,14 @@ public sealed class RemoteSensorService : ISensorService, IHelperConnection, IAp
                 if (IpcConnection.FromPayload(notification.Payload, SensorIpcJsonContext.Default.ExtendedStateMessage) is { } state)
                 {
                     ExtendedSensorStateChanged?.Invoke(this, state.State);
+                }
+
+                break;
+            case SensorNotificationKind.AnomalyChanged:
+                if (IpcConnection.FromPayload(notification.Payload, SensorIpcJsonContext.Default.AnomalyNoticeDto) is { } dto
+                    && AnomalyDtoMapper.FromDto(dto) is { } notice)
+                {
+                    AnomalyChanged?.Invoke(this, notice);
                 }
 
                 break;

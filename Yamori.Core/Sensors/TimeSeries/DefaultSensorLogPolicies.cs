@@ -45,6 +45,7 @@ public static class DefaultSensorLogPolicies
         SensorType.Data => 1024 * 1024,                                     // 1 MiB
         SensorType.Throughput => 1024,                                      // 1 KiB/s
         SensorType.Energy => 0.1,                                           // Wh
+        SensorType.Flag => 0.5,                                             // 0 と 1 が入れ替わったときだけ
         _ => 0,
     };
 }

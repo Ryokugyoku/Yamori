@@ -5,7 +5,7 @@ using Yamori.Core.Sensors.Service;
 namespace Yamori.Core.Sensors.Ipc.Server;
 
 /// <summary>
-/// クライアント 1 つとの接続。版を確かめてから、依頼に返事をし、通知を送る。
+/// クライアント 1 つとの接続。版と受け取りたい通知の種類を確かめてから、依頼に返事をし、選ばれた種類の通知だけを送る。
 /// </summary>
 internal sealed class SensorPipeSession
 {
@@ -17,6 +17,7 @@ internal sealed class SensorPipeSession
     private readonly Channel<IpcEnvelope> _notifications;
     private readonly SemaphoreSlim _requestSlots = new(MaxConcurrentRequests, MaxConcurrentRequests);
     private volatile bool _accepted;
+    private volatile int _topics;
 
     /// <summary>
     /// 接続済みのパイプと、依頼の処理を指定して作る。
@@ -37,12 +38,19 @@ internal sealed class SensorPipeSession
     }
 
     /// <summary>
-    /// 通知を送る順番に並べる。版を確かめ終わる前の通知は捨てる。遅いクライアントの通知は古いものから捨てる。
+    /// この接続が、指定した種類の通知を受け取りたいかどうかを調べる（版を確かめ終わる前は false）。
+    /// </summary>
+    /// <param name="kind">通知の種類。</param>
+    /// <returns>受け取りたいなら true。</returns>
+    public bool Wants(SensorNotificationKind kind) => _accepted && ((SensorNotificationTopics)_topics).Includes(kind);
+
+    /// <summary>
+    /// 通知を送る順番に並べる。版を確かめ終わる前の通知と、相手が選ばなかった種類の通知は捨てる。遅いクライアントの通知は古いものから捨てる。
     /// </summary>
     /// <param name="notification">通知。</param>
     public void Enqueue(IpcEnvelope notification)
     {
-        if (_accepted)
+        if (Wants(notification.Notification))
         {
             _notifications.Writer.TryWrite(notification);
         }
@@ -101,6 +109,7 @@ internal sealed class SensorPipeSession
         }
 
         var accepted = SensorContract.IsCompatible(hello.Version);
+        _topics = (int)hello.Topics;
         await connection.SendAsync(
             new IpcEnvelope { Kind = IpcMessageKind.HelloReply, Version = SensorContract.Version, Accepted = accepted },
             timeout.Token).ConfigureAwait(false);

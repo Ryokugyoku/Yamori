@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Yamori.Core.Anomalies.Service;
 using Yamori.Core.AppUsage.Service;
 using Yamori.Core.Sensors.Ipc.Messages;
 using Yamori.Core.Sensors.Service;
@@ -6,8 +7,9 @@ using Yamori.Core.Sensors.Service;
 namespace Yamori.Core.Sensors.Ipc.Server;
 
 /// <summary>
-/// パイプで受けた依頼を、決まった操作（<see cref="SensorOperation"/>）だけ <see cref="ISensorService"/> に渡して返事を作る。
-/// 設定の変更（記録の設定、PawnIO の同意）は、管理者からの依頼だけを受け付ける。
+/// パイプで受けた依頼を、決まった操作（<see cref="SensorOperation"/>）だけ <see cref="ISensorService"/> などに渡して返事を作る。
+/// 設定の変更のうち、記録の設定と PawnIO の同意は管理者からの依頼だけを受け付ける。異常の設定と「これは正常」は、
+/// 安全に関わらないため管理者でなくても受け付ける。
 /// </summary>
 public sealed class SensorRequestHandler
 {
@@ -16,23 +18,29 @@ public sealed class SensorRequestHandler
     /// <summary>アプリごとの使用率のまとめで、1 回に頼める最長の期間。</summary>
     private static readonly TimeSpan MaxAppUsageRange = TimeSpan.FromDays(100);
 
+    /// <summary>異常の一覧で、1 回に頼める最長の期間。</summary>
+    private static readonly TimeSpan MaxAnomalyRange = TimeSpan.FromDays(400);
+
     /// <summary>アプリごとの使用率のまとめで、1 回に返せる上位の数の上限。</summary>
     private const int MaxAppUsageTop = 50;
 
     private readonly ISensorService _service;
     private readonly IAppUsageService _appUsage;
+    private readonly IAnomalyService _anomalies;
 
     /// <summary>
     /// 依頼を渡す先を指定して作る。
     /// </summary>
     /// <param name="service">センサーの窓口（Helper の中の <see cref="LocalSensorService"/>）。</param>
     /// <param name="appUsage">アプリごとの使用率の記録の窓口。null なら常に記録なしを返す。</param>
+    /// <param name="anomalies">異常の一覧と設定の窓口。null なら一覧は空、変更は <see cref="SensorSettingResult.Unavailable"/> を返す。</param>
     /// <exception cref="ArgumentNullException"><paramref name="service"/> が null。</exception>
-    public SensorRequestHandler(ISensorService service, IAppUsageService? appUsage = null)
+    public SensorRequestHandler(ISensorService service, IAppUsageService? appUsage = null, IAnomalyService? anomalies = null)
     {
         ArgumentNullException.ThrowIfNull(service);
         _service = service;
         _appUsage = appUsage ?? new LocalAppUsageService(null);
+        _anomalies = anomalies ?? new LocalAnomalyService(null, null, null, TimeProvider.System);
     }
 
     /// <summary>
@@ -67,6 +75,11 @@ public sealed class SensorRequestHandler
                 SensorOperation.GetPawnIoConsent => await GetConsentAsync(cancellationToken).ConfigureAwait(false),
                 SensorOperation.SetPawnIoConsent => await SetConsentAsync(request, callerIsAdministrator, cancellationToken).ConfigureAwait(false),
                 SensorOperation.GetAppCpuUsage => await GetAppCpuUsageAsync(request, cancellationToken).ConfigureAwait(false),
+                SensorOperation.GetAnomalies => await GetAnomaliesAsync(request, cancellationToken).ConfigureAwait(false),
+                SensorOperation.SetAnomalyDismissed => await SetAnomalyDismissedAsync(request, cancellationToken).ConfigureAwait(false),
+                SensorOperation.MarkAnomalyNotified => await MarkAnomalyNotifiedAsync(request, cancellationToken).ConfigureAwait(false),
+                SensorOperation.GetAnomalySettings => await GetAnomalySettingsAsync(cancellationToken).ConfigureAwait(false),
+                SensorOperation.SetAnomalySetting => await SetAnomalySettingAsync(request, cancellationToken).ConfigureAwait(false),
                 _ => null,
             };
 
@@ -210,6 +223,68 @@ public sealed class SensorRequestHandler
             .GetCpuUsageAsync(args.FromUtc, args.ToUtc, args.HighLoadThresholdPercent, args.Top, cancellationToken)
             .ConfigureAwait(false);
         return IpcConnection.ToPayload(AppUsageDtoMapper.ToDto(summary), SensorIpcJsonContext.Default.AppCpuUsageResponse);
+    }
+
+    private async Task<JsonElement?> GetAnomaliesAsync(IpcEnvelope request, CancellationToken cancellationToken)
+    {
+        var args = IpcConnection.FromPayload(request.Payload, SensorIpcJsonContext.Default.AnomaliesRequest);
+        if (args is null
+            || args.ToUtc < args.FromUtc
+            || args.ToUtc - args.FromUtc > MaxAnomalyRange
+            || args.Limit is <= 0 or > LocalAnomalyService.MaxLimit)
+        {
+            return null;
+        }
+
+        var anomalies = await _anomalies
+            .GetAnomaliesAsync(args.FromUtc, args.ToUtc, args.IncludeDismissed, args.Limit, cancellationToken)
+            .ConfigureAwait(false);
+        return IpcConnection.ToPayload(anomalies.Select(AnomalyDtoMapper.ToDto).ToArray(), SensorIpcJsonContext.Default.AnomalyDtoArray);
+    }
+
+    private async Task<JsonElement?> SetAnomalyDismissedAsync(IpcEnvelope request, CancellationToken cancellationToken)
+    {
+        var args = IpcConnection.FromPayload(request.Payload, SensorIpcJsonContext.Default.AnomalyDismissRequest);
+        if (args is null || args.AnomalyId <= 0)
+        {
+            return null;
+        }
+
+        var result = await _anomalies.SetDismissedAsync(args.AnomalyId, args.Dismissed, cancellationToken).ConfigureAwait(false);
+        return IpcConnection.ToPayload(new SettingResultResponse(result), SensorIpcJsonContext.Default.SettingResultResponse);
+    }
+
+    private async Task<JsonElement?> MarkAnomalyNotifiedAsync(IpcEnvelope request, CancellationToken cancellationToken)
+    {
+        var args = IpcConnection.FromPayload(request.Payload, SensorIpcJsonContext.Default.AnomalyIdRequest);
+        if (args is null || args.AnomalyId <= 0)
+        {
+            return null;
+        }
+
+        var result = await _anomalies.MarkNotifiedAsync(args.AnomalyId, cancellationToken).ConfigureAwait(false);
+        return IpcConnection.ToPayload(new SettingResultResponse(result), SensorIpcJsonContext.Default.SettingResultResponse);
+    }
+
+    private async Task<JsonElement?> GetAnomalySettingsAsync(CancellationToken cancellationToken)
+    {
+        var settings = await _anomalies.GetSettingsAsync(cancellationToken).ConfigureAwait(false);
+        return IpcConnection.ToPayload(settings.Select(AnomalyDtoMapper.ToDto).ToArray(), SensorIpcJsonContext.Default.AnomalySettingDtoArray);
+    }
+
+    private async Task<JsonElement?> SetAnomalySettingAsync(IpcEnvelope request, CancellationToken cancellationToken)
+    {
+        var args = IpcConnection.FromPayload(request.Payload, SensorIpcJsonContext.Default.AnomalySettingDto);
+        if (args is null)
+        {
+            return null;
+        }
+
+        // 知らない種類や範囲の外の値は、変えずに Invalid を返す（画面に理由を出せるように）。
+        var result = AnomalyDtoMapper.FromDto(args) is { } setting
+            ? await _anomalies.SetSettingAsync(setting, cancellationToken).ConfigureAwait(false)
+            : SensorSettingResult.Invalid;
+        return IpcConnection.ToPayload(new SettingResultResponse(result), SensorIpcJsonContext.Default.SettingResultResponse);
     }
 
     private static JsonElement ToPayload(IReadOnlyList<SensorReading> readings) =>

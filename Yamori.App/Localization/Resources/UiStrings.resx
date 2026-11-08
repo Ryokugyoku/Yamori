@@ -684,6 +684,12 @@
   <data name="SensorGroup_cores" xml:space="preserve">
     <value>Cores</value>
   </data>
+  <data name="SensorGroup_flag" xml:space="preserve">
+    <value>State</value>
+  </data>
+  <data name="SensorGroup_throttling" xml:space="preserve">
+    <value>Performance limits</value>
+  </data>
   <data name="Extended_Title" xml:space="preserve">
     <value>Extended sensors (PawnIO)</value>
   </data>

@@ -31,15 +31,24 @@ public static class TimeSeriesResolutions
     /// Column Family の名前を取得する。
     /// </summary>
     /// <param name="resolution">解像度。</param>
-    /// <returns><c>raw</c>、<c>rollup_1m</c>、<c>rollup_1h</c> のいずれか。</returns>
+    /// <returns><c>raw</c>、<c>rollup_1m</c>、<c>rollup_1h</c>、<c>fine_1s</c> のいずれか。</returns>
     /// <exception cref="ArgumentOutOfRangeException">定義されていない値。</exception>
     public static string ColumnFamilyName(TimeSeriesResolution resolution) => resolution switch
     {
         TimeSeriesResolution.Raw => "raw",
         TimeSeriesResolution.OneMinute => "rollup_1m",
         TimeSeriesResolution.OneHour => "rollup_1h",
+        TimeSeriesResolution.OneSecond => "fine_1s",
         _ => throw new ArgumentOutOfRangeException(nameof(resolution), resolution, "定義されていない解像度です。"),
     };
+
+    /// <summary>
+    /// 集計ではなく、1 つずつの点（<see cref="TimeSeriesPoint"/>）を置く解像度かどうかを調べる。
+    /// </summary>
+    /// <param name="resolution">解像度。</param>
+    /// <returns>生データか 1 秒ごとの値なら true。</returns>
+    public static bool IsPointResolution(TimeSeriesResolution resolution) =>
+        resolution is TimeSeriesResolution.Raw or TimeSeriesResolution.OneSecond;
 
     /// <summary>
     /// 時刻を、その区間の始まりに切り下げる。

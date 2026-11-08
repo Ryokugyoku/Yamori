@@ -10,6 +10,7 @@ namespace Yamori.Core.Sensors.Providers.WindowsStandard.Mappers;
 /// </remarks>
 public sealed class ThermalZoneSensorMapper : ISnapshotSensorMapper
 {
+
     /// <inheritdoc />
     public IEnumerable<SensorSample> Map(RealtimeSnapshot snapshot)
     {
@@ -21,6 +22,7 @@ public sealed class ThermalZoneSensorMapper : ISnapshotSensorMapper
             samples.AddRange(new SensorSampleBuilder(HardwareKind.ThermalZone, HardwareIds.FromPersistentId("acpi-tz:" + zone.Name), zone.Name)
                 .Add(SensorType.Temperature, "zone", "Temperature", zone.TemperatureCelsius)
                 .Add(SensorType.Level, "passive-limit", "Passive Limit", zone.PassiveLimitPercent)
+                .Add(SensorType.Flag, "throttling", "Throttling", UnitConversions.ToFlag(zone.IsThrottling), SensorGroups.Throttling)
                 .Samples);
         }
 

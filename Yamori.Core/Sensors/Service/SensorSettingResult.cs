@@ -19,4 +19,7 @@ public enum SensorSettingResult
 
     /// <summary>今は変えられない（Helper が動いていない、記録が使えないなど）。</summary>
     Unavailable = 3,
+
+    /// <summary>値が受け付けられる範囲の外（異常のしきい値など。版 3 から）。</summary>
+    Invalid = 4,
 }

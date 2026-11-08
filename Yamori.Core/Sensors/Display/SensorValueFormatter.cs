@@ -11,6 +11,12 @@ public static class SensorValueFormatter
     /// <summary>値がないときの表示。</summary>
     public const string Unavailable = "—";
 
+    /// <summary>オン・オフの印がオンのときの表示。</summary>
+    public const string FlagOn = "On";
+
+    /// <summary>オン・オフの印がオフのときの表示。</summary>
+    public const string FlagOff = "Off";
+
     /// <summary>
     /// 値を単位つきの文字列にする。
     /// </summary>
@@ -42,6 +48,7 @@ public static class SensorValueFormatter
             SensorUnit.Count => v.ToString("N0", culture),
             SensorUnit.Second => FormatSeconds(v, culture),
             SensorUnit.WattHour => v.ToString("0.#", culture) + " Wh",
+            SensorUnit.Flag => v != 0 ? FlagOn : FlagOff,
             _ => v.ToString("G4", culture),
         };
     }

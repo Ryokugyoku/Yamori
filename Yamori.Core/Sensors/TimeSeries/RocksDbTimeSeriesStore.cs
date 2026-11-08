@@ -55,15 +55,15 @@ public sealed class RocksDbTimeSeriesStore : ITimeSeriesStore, IDisposable
     }
 
     /// <inheritdoc />
-    public void WriteRaw(IReadOnlyCollection<TimeSeriesPoint> points)
+    public void WritePoints(TimeSeriesResolution resolution, IReadOnlyCollection<TimeSeriesPoint> points)
     {
         ArgumentNullException.ThrowIfNull(points);
+        var family = PointFamily(resolution);
         if (points.Count == 0)
         {
             return;
         }
 
-        var family = _families[TimeSeriesResolution.Raw];
         using var batch = new WriteBatch();
         foreach (var point in points)
         {
@@ -75,6 +75,13 @@ public sealed class RocksDbTimeSeriesStore : ITimeSeriesStore, IDisposable
 
         _db.Write(batch);
     }
+
+    /// <inheritdoc />
+    public void WriteRaw(IReadOnlyCollection<TimeSeriesPoint> points) => WritePoints(TimeSeriesResolution.Raw, points);
+
+    /// <inheritdoc />
+    public IReadOnlyList<TimeSeriesPoint> ReadRaw(uint sensorId, long fromMs, long toMsExclusive) =>
+        ReadPoints(TimeSeriesResolution.Raw, sensorId, fromMs, toMsExclusive);
 
     /// <inheritdoc />
     public void WriteRollups(TimeSeriesResolution resolution, IReadOnlyCollection<RollupPoint> points)
@@ -96,8 +103,8 @@ public sealed class RocksDbTimeSeriesStore : ITimeSeriesStore, IDisposable
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<TimeSeriesPoint> ReadRaw(uint sensorId, long fromMs, long toMsExclusive) =>
-        Scan(_families[TimeSeriesResolution.Raw], sensorId, fromMs, toMsExclusive, (id, ts, value) =>
+    public IReadOnlyList<TimeSeriesPoint> ReadPoints(TimeSeriesResolution resolution, uint sensorId, long fromMs, long toMsExclusive) =>
+        Scan(PointFamily(resolution), sensorId, fromMs, toMsExclusive, (id, ts, value) =>
         {
             var (v, source) = TimeSeriesValueCodec.DecodeRaw(value);
             return new TimeSeriesPoint(id, ts, v, source);
@@ -155,6 +162,11 @@ public sealed class RocksDbTimeSeriesStore : ITimeSeriesStore, IDisposable
         _ = TimeSeriesResolutions.BucketMs(resolution);
         return _families[resolution];
     }
+
+    private ColumnFamilyHandle PointFamily(TimeSeriesResolution resolution) =>
+        TimeSeriesResolutions.IsPointResolution(resolution)
+            ? _families[resolution]
+            : throw new ArgumentOutOfRangeException(nameof(resolution), resolution, "点を置く解像度ではありません。");
 
     private List<T> Scan<T>(ColumnFamilyHandle family, uint sensorId, long fromMs, long toMsExclusive, Func<uint, long, byte[], T> decode)
     {

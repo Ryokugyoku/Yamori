@@ -684,6 +684,12 @@
   <data name="SensorGroup_cores" xml:space="preserve">
     <value>Núcleos</value>
   </data>
+  <data name="SensorGroup_flag" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="SensorGroup_throttling" xml:space="preserve">
+    <value>Límites de rendimiento</value>
+  </data>
   <data name="Extended_Title" xml:space="preserve">
     <value>Sensores ampliados (PawnIO)</value>
   </data>

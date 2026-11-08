@@ -45,6 +45,7 @@ public static class SensorKeyTokens
         [SensorType.Duration] = "duration",
         [SensorType.Level] = "level",
         [SensorType.Energy] = "energy",
+        [SensorType.Flag] = "flag",
     };
 
     private static readonly Dictionary<string, HardwareKind> HardwareKindsByToken =

@@ -40,12 +40,17 @@ public sealed class SensorPipeClient : IAsyncDisposable
     /// <param name="stream">接続済みのパイプ。失敗した場合は閉じる。</param>
     /// <param name="handshakeTimeout">版の返事を待つ最長の時間。</param>
     /// <param name="cancellationToken">中止の合図。</param>
+    /// <param name="topics">受け取りたい通知の種類。省略時はすべて。版 2 までの Helper は選べず、すべてを送ってくる。</param>
     /// <returns>つないだクライアント。</returns>
     /// <exception cref="ArgumentNullException"><paramref name="stream"/> が null。</exception>
     /// <exception cref="SensorContractMismatchException">サーバーの版とやり取りできない。</exception>
     /// <exception cref="IOException">返事が来る前に接続が切れた。</exception>
     /// <exception cref="TimeoutException">返事が来なかった。</exception>
-    public static async Task<SensorPipeClient> ConnectAsync(Stream stream, TimeSpan handshakeTimeout, CancellationToken cancellationToken)
+    public static async Task<SensorPipeClient> ConnectAsync(
+        Stream stream,
+        TimeSpan handshakeTimeout,
+        CancellationToken cancellationToken,
+        SensorNotificationTopics topics = SensorNotificationTopics.All)
     {
         ArgumentNullException.ThrowIfNull(stream);
 
@@ -58,7 +63,7 @@ public sealed class SensorPipeClient : IAsyncDisposable
             IpcEnvelope? reply;
             try
             {
-                await connection.SendAsync(new IpcEnvelope { Kind = IpcMessageKind.Hello, Version = SensorContract.Version }, timeout.Token).ConfigureAwait(false);
+                await connection.SendAsync(new IpcEnvelope { Kind = IpcMessageKind.Hello, Version = SensorContract.Version, Topics = topics }, timeout.Token).ConfigureAwait(false);
                 reply = await connection.ReceiveAsync(timeout.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)

@@ -65,7 +65,7 @@ public sealed class CoolingRealtimeCollector
                 x.Name,
                 Math.Round(x.Kelvin!.Value - KelvinOffset, 1),
                 passive.TryGetValue(x.Name, out var limit) ? limit : null,
-                reasons.TryGetValue(x.Name, out var flags) ? flags != 0 : null))
+                reasons.TryGetValue(x.Name, out var flags) && double.IsFinite(flags) && flags >= 0 ? (uint)flags : null))
             .ToArray();
     }
 }

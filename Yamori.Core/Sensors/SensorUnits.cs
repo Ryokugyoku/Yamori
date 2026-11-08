@@ -28,6 +28,7 @@ public static class SensorUnits
         SensorType.Duration => SensorUnit.Second,
         SensorType.Level => SensorUnit.Percent,
         SensorType.Energy => SensorUnit.WattHour,
+        SensorType.Flag => SensorUnit.Flag,
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, "定義されていない量の種類です。"),
     };
 }

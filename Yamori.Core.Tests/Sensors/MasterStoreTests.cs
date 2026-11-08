@@ -25,9 +25,30 @@ public sealed class MasterStoreTests : IDisposable
 
         Assert.Equal(MasterSchema.CurrentVersion, db.SchemaVersion);
         Assert.Equal("wal", db.Execute(c => Scalar(c, "PRAGMA journal_mode;")));
+        Assert.Equal(2, MasterSchema.CurrentVersion);
         Assert.Equal(
-            ["event_log", "hardware", "sensor", "source"],
+            ["anomaly", "anomaly_setting", "event_log", "hardware", "sensor", "source"],
             db.Execute(c => Strings(c, "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name;")));
+    }
+
+    [Fact]
+    public void VersionOneDatabaseIsMigratedAndKeepsItsRows()
+    {
+        // 版 1 のファイルを作る（今のコードが出る前のマスタ）。
+        using (var connection = new SqliteConnection($"Data Source={DbPath};Pooling=False"))
+        {
+            connection.Open();
+            using var command = connection.CreateCommand();
+            command.CommandText = MasterSchema.Migrations[0]
+                + "\nINSERT INTO source (provider_id) VALUES ('win-std');\nPRAGMA user_version = 1;";
+            command.ExecuteNonQuery();
+        }
+
+        using var db = MasterDatabase.Open(DbPath);
+
+        Assert.Equal(2, db.SchemaVersion);
+        Assert.Equal((ushort)1, new SqliteSourceRepository(db).GetAll()["win-std"]);
+        Assert.Contains("anomaly", db.Execute(c => Strings(c, "SELECT name FROM sqlite_master WHERE type = 'table';")));
     }
 
     [Fact]

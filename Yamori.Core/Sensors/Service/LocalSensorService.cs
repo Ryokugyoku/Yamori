@@ -1,3 +1,5 @@
+using Yamori.Core.Anomalies;
+using Yamori.Core.Anomalies.Service;
 using Yamori.Core.Sensors.Collection;
 using Yamori.Core.Sensors.Extended;
 using Yamori.Core.Sensors.Hot;
@@ -22,6 +24,7 @@ public sealed class LocalSensorService : ISensorService, IDisposable
     private readonly IHotStore _hotStore;
     private readonly SensorCollectionLoop _loop;
     private readonly SensorPersistence? _persistence;
+    private readonly AnomalyMonitoring? _anomalies;
     private readonly IExtendedSensorControl _extended;
     private readonly TimeProvider _timeProvider;
     private readonly IReadOnlyList<IDisposable> _ownedResources;
@@ -38,7 +41,8 @@ public sealed class LocalSensorService : ISensorService, IDisposable
     /// <param name="extended">拡張センサーの判断と同意の扱い。</param>
     /// <param name="timeProvider">現在時刻の提供元。</param>
     /// <param name="ownedResources">破棄するときに一緒に破棄するもの（Provider、ストア、通知の登録）。</param>
-    /// <exception cref="ArgumentNullException"><paramref name="persistence"/> 以外の引数が null。</exception>
+    /// <param name="anomalies">異常の見張り。見張らない場合は null。</param>
+    /// <exception cref="ArgumentNullException"><paramref name="persistence"/> と <paramref name="anomalies"/> 以外の引数が null。</exception>
     public LocalSensorService(
         SensorRegistry registry,
         IHotStore hotStore,
@@ -46,7 +50,8 @@ public sealed class LocalSensorService : ISensorService, IDisposable
         SensorPersistence? persistence,
         IExtendedSensorControl extended,
         TimeProvider timeProvider,
-        IReadOnlyList<IDisposable> ownedResources)
+        IReadOnlyList<IDisposable> ownedResources,
+        AnomalyMonitoring? anomalies = null)
     {
         ArgumentNullException.ThrowIfNull(registry);
         ArgumentNullException.ThrowIfNull(hotStore);
@@ -59,6 +64,8 @@ public sealed class LocalSensorService : ISensorService, IDisposable
         _hotStore = hotStore;
         _loop = loop;
         _persistence = persistence;
+        _anomalies = anomalies;
+        Anomalies = anomalies?.Service ?? new LocalAnomalyService(null, null, null, timeProvider);
         _extended = extended;
         _timeProvider = timeProvider;
         _ownedResources = ownedResources;
@@ -84,15 +91,24 @@ public sealed class LocalSensorService : ISensorService, IDisposable
     /// <summary>時系列とマスタへの記録が使えるかどうかを取得する。</summary>
     public bool IsPersistenceAvailable => _persistence is not null;
 
+    /// <summary>異常の見張りが使えるかどうかを取得する。</summary>
+    public bool IsAnomalyMonitoringAvailable => _anomalies is not null;
+
+    /// <summary>異常の一覧と設定の窓口を取得する。見張らない構成では、空の一覧を返す窓口。</summary>
+    public IAnomalyService Anomalies { get; }
+
     /// <summary>
-    /// キャンセルされるまで収集と永続化を続ける。
+    /// キャンセルされるまで収集と永続化（と異常の見張り）を続ける。
     /// </summary>
     /// <param name="cancellationToken">停止の合図。</param>
     /// <returns>停止したときに完了するタスク。キャンセルによる停止では例外を投げない。</returns>
-    public Task RunAsync(CancellationToken cancellationToken) =>
-        _persistence is null
+    public Task RunAsync(CancellationToken cancellationToken)
+    {
+        _anomalies?.Start();
+        return _persistence is null
             ? _loop.RunAsync(cancellationToken)
             : Task.WhenAll(_loop.RunAsync(cancellationToken), _persistence.RunAsync(cancellationToken));
+    }
 
     /// <inheritdoc />
     public Task<IReadOnlyList<SensorDescriptor>> GetCatalogAsync(CancellationToken cancellationToken = default) =>
@@ -176,6 +192,9 @@ public sealed class LocalSensorService : ISensorService, IDisposable
     private void OnAppended(object? sender, IReadOnlyList<SensorReading> readings)
     {
         _persistence?.OnReadings(readings);
+
+        // 保存を待たずに、読んだその場で判定する（検出の仕組みは例外を投げない）。
+        _anomalies?.OnReadings(readings);
         ReadingsUpdated?.Invoke(this, readings);
     }
 
@@ -189,6 +208,8 @@ public sealed class LocalSensorService : ISensorService, IDisposable
         {
             // マスタに書けなくても、収集と表示は止めない（記録の対象は前のまま）。
         }
+
+        _anomalies?.OnCatalogChanged(catalog);
 
         CatalogChanged?.Invoke(this, catalog);
         RaiseExtendedStateIfChanged();

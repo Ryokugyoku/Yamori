@@ -684,6 +684,12 @@
   <data name="SensorGroup_cores" xml:space="preserve">
     <value>コア</value>
   </data>
+  <data name="SensorGroup_flag" xml:space="preserve">
+    <value>状態</value>
+  </data>
+  <data name="SensorGroup_throttling" xml:space="preserve">
+    <value>性能の制限</value>
+  </data>
   <data name="Extended_Title" xml:space="preserve">
     <value>拡張センサー（PawnIO）</value>
   </data>

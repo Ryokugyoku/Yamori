@@ -16,4 +16,10 @@ public enum TimeSeriesResolution
 
     /// <summary>1 時間ごとの集計（Column Family <c>rollup_1h</c>）。</summary>
     OneHour = 2,
+
+    /// <summary>
+    /// 1 秒ごとの値（Column Family <c>fine_1s</c>）。異常の検出と分析に使う一部のセンサーだけを、記録の設定とは別に毎秒残す（版 3 から）。
+    /// 集計ではなく、生データと同じ形の点。
+    /// </summary>
+    OneSecond = 3,
 }

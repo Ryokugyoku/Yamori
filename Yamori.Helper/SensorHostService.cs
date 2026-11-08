@@ -43,6 +43,11 @@ public sealed class SensorHostService : BackgroundService
             _logger.LogWarning("時系列とマスタを開けなかったため、記録せずに動きます。");
         }
 
+        if (!_sensors.IsAnomalyMonitoringAvailable)
+        {
+            _logger.LogWarning("マスタを開けなかったため、異常の見張りはしません。");
+        }
+
         if (!_appUsage.IsAvailable)
         {
             _logger.LogWarning("アプリごとの使用率の記録を開けなかったため、アプリごとの記録はしません。");

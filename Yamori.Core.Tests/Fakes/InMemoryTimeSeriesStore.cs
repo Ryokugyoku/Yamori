@@ -7,7 +7,11 @@ namespace Yamori.Core.Tests.Fakes;
 /// </summary>
 internal sealed class InMemoryTimeSeriesStore : ITimeSeriesStore
 {
-    private readonly SortedDictionary<(uint, long), TimeSeriesPoint> _raw = [];
+    private readonly Dictionary<TimeSeriesResolution, SortedDictionary<(uint, long), TimeSeriesPoint>> _points = new()
+    {
+        [TimeSeriesResolution.Raw] = [],
+        [TimeSeriesResolution.OneSecond] = [],
+    };
     private readonly Dictionary<TimeSeriesResolution, SortedDictionary<(uint, long), RollupPoint>> _rollups = new()
     {
         [TimeSeriesResolution.OneMinute] = [],
@@ -19,7 +23,7 @@ internal sealed class InMemoryTimeSeriesStore : ITimeSeriesStore
 
     public bool ThrowOnWrite { get; set; }
 
-    public void WriteRaw(IReadOnlyCollection<TimeSeriesPoint> points)
+    public void WritePoints(TimeSeriesResolution resolution, IReadOnlyCollection<TimeSeriesPoint> points)
     {
         if (ThrowOnWrite)
         {
@@ -28,9 +32,11 @@ internal sealed class InMemoryTimeSeriesStore : ITimeSeriesStore
 
         foreach (var p in points)
         {
-            _raw[(p.SensorId, p.TimestampMs)] = p;
+            _points[resolution][(p.SensorId, p.TimestampMs)] = p;
         }
     }
+
+    public void WriteRaw(IReadOnlyCollection<TimeSeriesPoint> points) => WritePoints(TimeSeriesResolution.Raw, points);
 
     public void WriteRollups(TimeSeriesResolution resolution, IReadOnlyCollection<RollupPoint> points)
     {
@@ -40,8 +46,11 @@ internal sealed class InMemoryTimeSeriesStore : ITimeSeriesStore
         }
     }
 
+    public IReadOnlyList<TimeSeriesPoint> ReadPoints(TimeSeriesResolution resolution, uint sensorId, long fromMs, long toMsExclusive) =>
+        _points[resolution].Values.Where(p => p.SensorId == sensorId && p.TimestampMs >= fromMs && p.TimestampMs < toMsExclusive).ToArray();
+
     public IReadOnlyList<TimeSeriesPoint> ReadRaw(uint sensorId, long fromMs, long toMsExclusive) =>
-        _raw.Values.Where(p => p.SensorId == sensorId && p.TimestampMs >= fromMs && p.TimestampMs < toMsExclusive).ToArray();
+        ReadPoints(TimeSeriesResolution.Raw, sensorId, fromMs, toMsExclusive);
 
     public IReadOnlyList<RollupPoint> ReadRollups(TimeSeriesResolution resolution, uint sensorId, long fromMs, long toMsExclusive) =>
         _rollups[resolution].Values.Where(p => p.SensorId == sensorId && p.BucketStartMs >= fromMs && p.BucketStartMs < toMsExclusive).ToArray();
@@ -49,11 +58,11 @@ internal sealed class InMemoryTimeSeriesStore : ITimeSeriesStore
     public void DeleteBefore(TimeSeriesResolution resolution, IReadOnlyCollection<uint> sensorIds, long cutoffMs)
     {
         Deletes.Add((resolution, cutoffMs, sensorIds.ToArray()));
-        if (resolution == TimeSeriesResolution.Raw)
+        if (_points.TryGetValue(resolution, out var points))
         {
-            foreach (var key in _raw.Keys.Where(k => sensorIds.Contains(k.Item1) && k.Item2 < cutoffMs).ToArray())
+            foreach (var key in points.Keys.Where(k => sensorIds.Contains(k.Item1) && k.Item2 < cutoffMs).ToArray())
             {
-                _raw.Remove(key);
+                points.Remove(key);
             }
         }
         else

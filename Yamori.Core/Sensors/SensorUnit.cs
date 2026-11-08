@@ -46,4 +46,7 @@ public enum SensorUnit
 
     /// <summary>ワット時。</summary>
     WattHour = 12,
+
+    /// <summary>オン・オフ（0 ならオフ、それ以外ならオン）。</summary>
+    Flag = 13,
 }

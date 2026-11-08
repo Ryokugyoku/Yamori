@@ -8,6 +8,7 @@ public sealed class TimeSeriesRecorder
 {
     private readonly ITimeSeriesStore _store;
     private readonly LogDecisionFilter _filter;
+    private readonly TimeSeriesResolution _resolution;
     private readonly Lock _lock = new();
     private List<TimeSeriesPoint> _pending = [];
     private IReadOnlyDictionary<SensorKey, SensorLogTarget> _targets = new Dictionary<SensorKey, SensorLogTarget>();
@@ -18,13 +19,21 @@ public sealed class TimeSeriesRecorder
     /// </summary>
     /// <param name="store">書き込み先。</param>
     /// <param name="filter">記録するかどうかの決め方。</param>
-    /// <exception cref="ArgumentNullException">いずれかの引数が null。</exception>
-    public TimeSeriesRecorder(ITimeSeriesStore store, LogDecisionFilter filter)
+    /// <param name="resolution">書き込む先の解像度。省略時は生データ。1 秒ごとの記録には <see cref="TimeSeriesResolution.OneSecond"/> を使う。</param>
+    /// <exception cref="ArgumentNullException"><paramref name="store"/> か <paramref name="filter"/> が null。</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="resolution"/> が集計の解像度。</exception>
+    public TimeSeriesRecorder(ITimeSeriesStore store, LogDecisionFilter filter, TimeSeriesResolution resolution = TimeSeriesResolution.Raw)
     {
         ArgumentNullException.ThrowIfNull(store);
         ArgumentNullException.ThrowIfNull(filter);
+        if (!TimeSeriesResolutions.IsPointResolution(resolution))
+        {
+            throw new ArgumentOutOfRangeException(nameof(resolution), resolution, "点を置く解像度ではありません。");
+        }
+
         _store = store;
         _filter = filter;
+        _resolution = resolution;
     }
 
     /// <summary>まだ書き込んでいない点の数を取得する。</summary>
@@ -99,7 +108,7 @@ public sealed class TimeSeriesRecorder
 
         try
         {
-            _store.WriteRaw(points);
+            _store.WritePoints(_resolution, points);
         }
         catch
         {

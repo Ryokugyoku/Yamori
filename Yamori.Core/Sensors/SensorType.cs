@@ -52,4 +52,7 @@ public enum SensorType
 
     /// <summary>エネルギー量（Wh）。キーの表記は <c>energy</c>。</summary>
     Energy = 14,
+
+    /// <summary>オン・オフの印（0 か 1。熱や電力による制限がかかっているかなど）。キーの表記は <c>flag</c>。</summary>
+    Flag = 15,
 }

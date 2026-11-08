@@ -37,4 +37,19 @@ public enum SensorOperation
 
     /// <summary>アプリごとの CPU 使用率の記録のまとめの取得（版 2 から）。</summary>
     GetAppCpuUsage = 9,
+
+    /// <summary>異常の一覧の取得（版 3 から）。</summary>
+    GetAnomalies = 10,
+
+    /// <summary>「これは正常」の印を付ける・外す（版 3 から。管理者でなくてもよい）。</summary>
+    SetAnomalyDismissed = 11,
+
+    /// <summary>異常の通知を出したことの知らせ（版 3 から。管理者でなくてもよい）。</summary>
+    MarkAnomalyNotified = 12,
+
+    /// <summary>異常の設定の取得（版 3 から）。</summary>
+    GetAnomalySettings = 13,
+
+    /// <summary>異常の設定の変更（版 3 から。管理者でなくてもよい）。</summary>
+    SetAnomalySetting = 14,
 }

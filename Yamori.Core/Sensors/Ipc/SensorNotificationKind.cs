@@ -16,4 +16,7 @@ public enum SensorNotificationKind
 
     /// <summary>拡張センサーの状態が変わった。</summary>
     ExtendedSensorStateChanged = 2,
+
+    /// <summary>異常が始まった・重くなった・終わった、または「これは正常」の印が変わった（版 3 から）。</summary>
+    AnomalyChanged = 3,
 }

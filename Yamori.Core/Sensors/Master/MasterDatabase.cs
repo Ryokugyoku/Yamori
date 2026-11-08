@@ -3,7 +3,7 @@ using Microsoft.Data.Sqlite;
 namespace Yamori.Core.Sensors.Master;
 
 /// <summary>
-/// マスタ（ハードウェア・センサー・取得元・イベント）の SQLite データベース。WAL モードで開き、開くときにスキーマを最新の版へ移行する。
+/// マスタ（ハードウェア・センサー・取得元・イベント・異常とその設定）の SQLite データベース。WAL モードで開き、開くときにスキーマを最新の版へ移行する。
 /// </summary>
 /// <remarks>
 /// 書き込むのは 1 つのプロセスだけ（シングルライター）。接続は 1 本を共有し、<see cref="Execute{T}"/> で 1 つずつ使う。スレッドセーフ。
