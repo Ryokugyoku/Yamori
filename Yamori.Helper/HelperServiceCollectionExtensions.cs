@@ -1,4 +1,5 @@
 using Yamori.Core.Anomalies.Detection;
+using Yamori.Core.Anomalies.Detection.Throttling;
 using Yamori.Core.AppUsage;
 using Yamori.Core.Hardware.Wmi;
 using Yamori.Core.Sensors.Extended;
@@ -55,9 +56,9 @@ public static class HelperServiceCollectionExtensions
     }
 
     /// <summary>
-    /// 異常の判定の規則を作る。規則の中身（サーマルスロットリングなど）は段階 2 以降で足す。今は仕組みだけを動かす。
+    /// 異常の判定の規則を作る。今はサーマルスロットリングだけ（「ふだんより悪い」は段階 5 で足す）。
     /// </summary>
-    private static IReadOnlyList<IAnomalyRule> CreateAnomalyRules() => [];
+    private static IReadOnlyList<IAnomalyRule> CreateAnomalyRules() => [new ThermalThrottlingRule()];
 
     /// <summary>
     /// PawnIO の Provider を作る。PawnIO を開くのは、同意があって最初に宣言するときだけ。

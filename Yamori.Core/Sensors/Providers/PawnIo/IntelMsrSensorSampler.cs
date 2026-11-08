@@ -36,6 +36,9 @@ public sealed class IntelMsrSensorSampler
     /// <summary>CPU が報告している TjMax（熱で性能を落とし始める上限の温度）のキー。</summary>
     public static readonly SensorKey TjMaxKey = SensorKey.Create(HardwareKind.Cpu, CpuId, SensorType.Temperature, "tjmax");
 
+    /// <summary>熱制御（TCC）が働き始める温度（TjMax から作動温度のずれを引いたもの）のキー。</summary>
+    public static readonly SensorKey ThrottleTemperatureKey = SensorKey.Create(HardwareKind.Cpu, CpuId, SensorType.Temperature, "throttle-target");
+
     /// <summary>パッケージが熱で性能を落としているかの印のキー。</summary>
     public static readonly SensorKey PackageThermalThrottlingKey = SensorKey.Create(HardwareKind.Cpu, CpuId, SensorType.Flag, "thermal-throttling");
 
@@ -87,6 +90,7 @@ public sealed class IntelMsrSensorSampler
     private readonly List<CpuCore> _thermalCores = [];
     private double _packageTjMax = IntelMsrDecoder.FallbackTjMax;
     private double? _reportedTjMax;
+    private double? _throttleTemperature;
     private bool _hasPackageTemperature;
 
     /// <summary>
@@ -123,6 +127,7 @@ public sealed class IntelMsrSensorSampler
         _thermalCores.Clear();
         _hasPackageTemperature = false;
         _reportedTjMax = null;
+        _throttleTemperature = null;
 
         var descriptors = new List<SensorDescriptor>();
         var packageCore = _cores.Count > 0 ? _cores[0] : null;
@@ -133,11 +138,13 @@ public sealed class IntelMsrSensorSampler
         {
             _packageTjMax = IntelMsrDecoder.TjMax(two[0]);
             _reportedTjMax = IntelMsrDecoder.ReportedTjMax(two[0]);
+            _throttleTemperature = IntelMsrDecoder.ThrottleTemperature(two[0]);
             _hasPackageTemperature = true;
             descriptors.Add(Describe(PackageTemperatureKey, "CPU Package", CpuHardwareName, "temperature", providerId));
             if (_reportedTjMax is not null)
             {
                 descriptors.Add(Describe(TjMaxKey, "TjMax", CpuHardwareName, "temperature", providerId));
+                descriptors.Add(Describe(ThrottleTemperatureKey, "Throttle Temperature (TCC)", CpuHardwareName, "temperature", providerId));
             }
 
             descriptors.AddRange(PackageFlags.Select(f => Describe(f.Key, f.Name, CpuHardwareName, SensorGroups.Throttling, providerId)));
@@ -273,6 +280,11 @@ public sealed class IntelMsrSensorSampler
             values[TjMaxKey] = tjMax;
         }
 
+        if (requested.Contains(ThrottleTemperatureKey) && _throttleTemperature is { } throttle)
+        {
+            values[ThrottleTemperatureKey] = throttle;
+        }
+
         if (!requested.Contains(PackageTemperatureKey) && !PackageFlags.Any(f => requested.Contains(f.Key)))
         {
             return;
@@ -359,6 +371,7 @@ public sealed class IntelMsrSensorSampler
     private bool IsDeclared(SensorKey key) =>
         (key == PackageTemperatureKey && _hasPackageTemperature)
         || (key == TjMaxKey && _reportedTjMax is not null)
+        || (key == ThrottleTemperatureKey && _throttleTemperature is not null)
         || (_hasPackageTemperature && PackageFlags.Any(f => f.Key == key))
         || (_thermalCores.Count > 0 && CoreFlags.Any(f => f.Key == key))
         || _energy.ContainsKey(key)

@@ -217,12 +217,15 @@ public sealed class AnomalyDetector
         var name = _hardwareNames.GetValueOrDefault(finding.HardwareKey, finding.HardwareKey);
         var record = _repository.Insert(new AnomalyRecord(
             0, kind, finding.HardwareKey, finding.HardwareKind, name, started, now, null, finding.Severity, finding.Evidence, null, null));
-        _open[(kind, finding.HardwareKey)] = new OpenAnomaly(record, now);
-        notices.Add(new AnomalyNotice(AnomalyChange.Started, record, ShouldNotify(kind, record, now)));
+        _open[(kind, finding.HardwareKey)] = new OpenAnomaly(record, now, finding.Notifiable);
+        notices.Add(new AnomalyNotice(AnomalyChange.Started, record, finding.Notifiable && ShouldNotify(kind, record, now)));
     }
 
     private void Continue(AnomalyKind kind, OpenAnomaly open, AnomalyFinding finding, DateTimeOffset now, List<AnomalyNotice> notices)
     {
+        // 通知の対象でなかった異常が対象になったときも、重くなったときと同じく知らせる（通知を出す機会にする）。
+        var becameNotifiable = finding.Notifiable && !open.Notifiable;
+        open.Notifiable |= finding.Notifiable;
         var escalated = finding.Severity > open.Record.Severity;
         open.Record = open.Record with
         {
@@ -237,9 +240,9 @@ public sealed class AnomalyDetector
             open.PersistedUtc = now;
         }
 
-        if (escalated)
+        if (escalated || becameNotifiable)
         {
-            notices.Add(new AnomalyNotice(AnomalyChange.Escalated, open.Record, ShouldNotify(kind, open.Record, now)));
+            notices.Add(new AnomalyNotice(AnomalyChange.Escalated, open.Record, open.Notifiable && ShouldNotify(kind, open.Record, now)));
         }
     }
 

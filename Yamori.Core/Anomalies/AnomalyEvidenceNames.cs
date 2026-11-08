@@ -24,6 +24,24 @@ public static class AnomalyEvidenceNames
     /// <summary>続いた時間（秒）。</summary>
     public const string DurationSeconds = "durationSeconds";
 
+    /// <summary>異常の間の平均のクロック（Hz）。</summary>
+    public const string ClockHertz = "clockHertz";
+
+    /// <summary>異常が始まる前 10 分間の最も高いクロック（Hz。クロックの下がり方の基準）。</summary>
+    public const string BaselineClockHertz = "baselineClockHertz";
+
+    /// <summary>熱による制限の印（熱・PROCHOT・危険な温度・温度ゾーンの制限）がオンだった時間（秒）。</summary>
+    public const string ThermalLimitSeconds = "thermalLimitSeconds";
+
+    /// <summary>温度が注意の温度以上だった時間（秒）。</summary>
+    public const string AboveThresholdSeconds = "aboveThresholdSeconds";
+
+    /// <summary>電力の制限（電力の上限、Windows の性能の制限）がかかっていた時間（秒）。</summary>
+    public const string PowerLimitSeconds = "powerLimitSeconds";
+
+    /// <summary>電流の制限（電流の上限、ほかのドメインにつられた制限）がかかっていた時間（秒）。</summary>
+    public const string CurrentLimitSeconds = "currentLimitSeconds";
+
     /// <summary>比べた「ふだん」の値（℃ など、異常の種類による）。</summary>
     public const string BaselineValue = "baselineValue";
 

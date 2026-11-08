@@ -145,6 +145,28 @@ public sealed class AnomalyDetectorTests : IDisposable
     }
 
     [Fact]
+    public void AnomaliesOutsideTheNotificationScopeStayInTheListUntilTheyBecomeNotifiable()
+    {
+        _rule.Findings.Add(Finding(AnomalySeverity.Notice) with { Notifiable = false });
+        Tick(0);
+        Tick(1);
+
+        Assert.Equal(AnomalyChange.Started, Assert.Single(_notices).Change);
+        Assert.False(_notices[0].ShouldNotify);
+
+        // 重さが同じでも、通知の対象になったら知らせる（1 回だけ）。
+        _rule.Findings[0] = Finding(AnomalySeverity.Notice);
+        Tick(2);
+        Tick(3);
+        _rule.Findings[0] = Finding(AnomalySeverity.Notice) with { Notifiable = false };
+        Tick(4);
+
+        Assert.Equal([AnomalyChange.Started, AnomalyChange.Escalated], _notices.Select(n => n.Change));
+        Assert.True(_notices[1].ShouldNotify);
+        Assert.Equal(_notices[0].Anomaly.AnomalyId, _notices[1].Anomaly.AnomalyId);
+    }
+
+    [Fact]
     public void AFailingRuleDoesNotStopDetectionOrEndAnomalies()
     {
         _rule.Findings.Add(Finding(AnomalySeverity.Notice));

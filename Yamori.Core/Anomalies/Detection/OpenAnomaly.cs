@@ -5,8 +5,12 @@ namespace Yamori.Core.Anomalies.Detection;
 /// </summary>
 /// <param name="record">今の異常。</param>
 /// <param name="persistedUtc">最後にマスタに書いた時刻。</param>
-internal sealed class OpenAnomaly(AnomalyRecord record, DateTimeOffset persistedUtc)
+/// <param name="notifiable">通知の対象かどうか。</param>
+internal sealed class OpenAnomaly(AnomalyRecord record, DateTimeOffset persistedUtc, bool notifiable)
 {
+    /// <summary>通知の対象かどうかを取得または設定する（一度 true になったら戻さない）。</summary>
+    public bool Notifiable { get; set; } = notifiable;
+
     /// <summary>今の異常を取得または設定する。</summary>
     public AnomalyRecord Record { get; set; } = record;
 

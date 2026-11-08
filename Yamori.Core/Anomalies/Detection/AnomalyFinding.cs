@@ -13,9 +13,14 @@ namespace Yamori.Core.Anomalies.Detection;
 /// 異常の状態が始まった時刻（続いた時間の下限を待ってから返す場合の、待ち始めの時刻）。null なら判定した時刻を始まりにする。
 /// 新しい異常の始まりの時刻にだけ使う。
 /// </param>
+/// <param name="Notifiable">
+/// 通知の対象にするかどうか。false なら一覧にだけ残す（電力・電流の制限だけでクロックも下がっていない場合など）。
+/// 続いている間に true になったら、その時点で通知の対象になる。
+/// </param>
 public sealed record AnomalyFinding(
     string HardwareKey,
     HardwareKind HardwareKind,
     AnomalySeverity Severity,
     IReadOnlyDictionary<string, double> Evidence,
-    DateTimeOffset? SinceUtc = null);
+    DateTimeOffset? SinceUtc = null,
+    bool Notifiable = true);

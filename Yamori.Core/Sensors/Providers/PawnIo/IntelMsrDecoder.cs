@@ -30,6 +30,21 @@ public static class IntelMsrDecoder
     }
 
     /// <summary>
+    /// IA32_TEMPERATURE_TARGET から、熱制御（TCC）の作動温度の TjMax からのずれを読む。
+    /// </summary>
+    /// <param name="temperatureTarget">IA32_TEMPERATURE_TARGET の値。</param>
+    /// <returns>ずれ（℃。ビット 29:24。0〜63）。熱制御は TjMax からこの分だけ低い温度で働き始める。</returns>
+    public static double TccActivationOffset(ulong temperatureTarget) => (temperatureTarget >> 24) & 0x3F;
+
+    /// <summary>
+    /// IA32_TEMPERATURE_TARGET から、熱制御（TCC）が働き始める温度を読む。
+    /// </summary>
+    /// <param name="temperatureTarget">IA32_TEMPERATURE_TARGET の値。</param>
+    /// <returns>TjMax からずれを引いた温度（℃）。TjMax が報告されていない場合は null。</returns>
+    public static double? ThrottleTemperature(ulong temperatureTarget) =>
+        ReportedTjMax(temperatureTarget) is { } tjMax ? Math.Max(0, tjMax - TccActivationOffset(temperatureTarget)) : null;
+
+    /// <summary>
     /// IA32_THERM_STATUS（コア）から温度を読む。
     /// </summary>
     /// <param name="thermStatus">IA32_THERM_STATUS の値。</param>
