@@ -82,7 +82,7 @@
     <value>Los componentes de este PC y su estado.</value>
   </data>
   <data name="Apps_Description" xml:space="preserve">
-    <value>Aplicaciones que más memoria usan ahora. Los procesos de una misma aplicación se suman. La CPU, la GPU y las lecturas y escrituras por aplicación están en la página En tiempo real.</value>
+    <value>Aplicaciones que más CPU usaron, según los registros del servicio de Yamori, y las que más memoria usan ahora. La CPU, la GPU y las lecturas y escrituras actuales por aplicación están en la página En tiempo real.</value>
   </data>
   <data name="Privacy_Local" xml:space="preserve">
     <value>Yamori no se comunica con el exterior. El servicio en segundo plano guarda sus registros solo en este PC.</value>
@@ -529,7 +529,7 @@
     <value>Nada destacable ahora mismo</value>
   </data>
   <data name="Rt_Apps_ReadWrite" xml:space="preserve">
-    <value>{0} (lectura {1}, escritura {2})</value>
+    <value>Lectura {0}, escritura {1}</value>
   </data>
   <data name="Rt_Apps_Note" xml:space="preserve">
     <value>Los procesos con el mismo nombre se suman como una sola aplicación; el número entre paréntesis es cuántos procesos tiene. La CPU es una parte del total del equipo según el tiempo de CPU (% Processor Time), por lo que puede salir más baja que en el Administrador de tareas con el turbo activo. La GPU es el motor más usado por cada proceso. Las lecturas y escrituras incluyen archivos, dispositivos y red, así que no coinciden con la columna Disco del Administrador de tareas. Los procesos protegidos también se cuentan: estos valores vienen de los contadores de rendimiento y no hace falta abrir los procesos.</value>
@@ -857,5 +857,89 @@
   </data>
   <data name="RecSource_None" xml:space="preserve">
     <value>Todavía no hay registros del servicio en segundo plano o la app no está conectada a él. Las recomendaciones solo usan sus registros.</value>
+  </data>
+  <data name="Apps_CpuHistoryHeader" xml:space="preserve">
+    <value>Uso de CPU por aplicación (registrado)</value>
+  </data>
+  <data name="Apps_MemoryHeader" xml:space="preserve">
+    <value>Uso de memoria por aplicación (ahora)</value>
+  </data>
+  <data name="Apps_Period_Day" xml:space="preserve">
+    <value>24 horas</value>
+  </data>
+  <data name="Apps_Period_Week" xml:space="preserve">
+    <value>7 días</value>
+  </data>
+  <data name="Apps_Period_Quarter" xml:space="preserve">
+    <value>90 días</value>
+  </data>
+  <data name="Apps_CpuHistorySummary" xml:space="preserve">
+    <value>Se registraron {0}. La CPU de todo el equipo superó el {1}% durante {2} de ese tiempo.</value>
+  </data>
+  <data name="Apps_CpuHistoryNoData" xml:space="preserve">
+    <value>Todavía no hay registros de este periodo o la aplicación no está conectada al servicio de Yamori. Mientras el servicio funciona, registra el uso de CPU por aplicación cada 10 segundos, aunque esta ventana esté cerrada.</value>
+  </data>
+  <data name="Apps_CpuHistoryDescription" xml:space="preserve">
+    <value>Uso medio de CPU de cada aplicación en el periodo (100% = todo el equipo). «Con carga alta» es la media solo mientras la CPU de todo el equipo superaba el {0}%, y muestra qué la usaba cuando no daba abasto. Los procesos de una misma aplicación se suman.</value>
+  </data>
+  <data name="Apps_CpuAverage" xml:space="preserve">
+    <value>Media {0:0.0}%</value>
+  </data>
+  <data name="Apps_CpuHighLoad" xml:space="preserve">
+    <value>Con carga alta {0:0.0}%</value>
+  </data>
+  <data name="Highlight_data_used" xml:space="preserve">
+    <value>En uso</value>
+  </data>
+  <data name="Highlight_data_available" xml:space="preserve">
+    <value>Disponible</value>
+  </data>
+  <data name="Highlight_data_committed" xml:space="preserve">
+    <value>Confirmada</value>
+  </data>
+  <data name="Highlight_data_dedicated-used" xml:space="preserve">
+    <value>Memoria dedicada</value>
+  </data>
+  <data name="Highlight_data_free" xml:space="preserve">
+    <value>Espacio libre</value>
+  </data>
+  <data name="Highlight_data_total" xml:space="preserve">
+    <value>Capacidad</value>
+  </data>
+  <data name="Highlight_throughput_read" xml:space="preserve">
+    <value>Lectura</value>
+  </data>
+  <data name="Highlight_throughput_write" xml:space="preserve">
+    <value>Escritura</value>
+  </data>
+  <data name="Highlight_throughput_received" xml:space="preserve">
+    <value>Recibido</value>
+  </data>
+  <data name="Highlight_throughput_sent" xml:space="preserve">
+    <value>Enviado</value>
+  </data>
+  <data name="Highlight_load_active-time" xml:space="preserve">
+    <value>Tiempo activo</value>
+  </data>
+  <data name="Highlight_load_link" xml:space="preserve">
+    <value>Uso del enlace</value>
+  </data>
+  <data name="Highlight_count_processes" xml:space="preserve">
+    <value>Procesos</value>
+  </data>
+  <data name="Highlight_count_threads" xml:space="preserve">
+    <value>Hilos</value>
+  </data>
+  <data name="Highlight_duration_uptime" xml:space="preserve">
+    <value>Tiempo encendido</value>
+  </data>
+  <data name="Highlight_duration_remaining" xml:space="preserve">
+    <value>Tiempo restante</value>
+  </data>
+  <data name="Highlight_level_charge" xml:space="preserve">
+    <value>Carga</value>
+  </data>
+  <data name="Highlight_level_passive-limit" xml:space="preserve">
+    <value>Límite térmico</value>
   </data>
 </root>

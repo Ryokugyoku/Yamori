@@ -1,5 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
@@ -153,27 +155,58 @@ public sealed class SensorTreeViewModel : ObservableObject, IDisposable
         item.Glyph = SensorGlyphs.For(data.Kind);
         item.Title = data.Name;
         item.KindName = SensorTexts.KindName(data.Kind);
-        KeyedCollectionSync.Sync(item.Groups, data.Groups, g => g.Key, d => d.Key, d => FillGroup(new SensorGroupItem(d.Key), d), (g, d) => FillGroup(g, d));
+
+        var highlights = SensorHighlightSelector.Select(data);
+        KeyedCollectionSync.Sync(
+            item.Highlights,
+            highlights,
+            h => h.Id,
+            d => d.Key.ToString(),
+            d => FillHighlight(new SummaryCardItem(d.Key.ToString()), d),
+            (h, d) => FillHighlight(h, d));
+        item.HasHighlights = item.Highlights.Count > 0;
+        var headline = item.Highlights.Count > 0 ? item.Highlights[0] : null;
+        item.HeadlineText = headline?.ValueText ?? string.Empty;
+        item.HeadlinePercent = headline?.Percent ?? 0;
+        item.HasHeadlinePercent = headline?.HasPercent ?? false;
+
+        var panels = data.Groups.SelectMany(SensorPanelBuilder.Build).ToArray();
+        KeyedCollectionSync.Sync(item.Groups, panels, g => g.Key, d => d.Key, d => FillGroup(new SensorGroupItem(d.Key), d), (g, d) => FillGroup(g, d));
         return item;
     }
 
-    private SensorGroupItem FillGroup(SensorGroupItem item, SensorTreeGroup data)
+    private SummaryCardItem FillHighlight(SummaryCardItem item, SensorDescriptor descriptor)
     {
-        item.Title = SensorTexts.GroupName(data.Group);
+        item.Glyph = SensorGlyphs.For(descriptor.HardwareKind);
+        item.Title = SensorTexts.HighlightTitle(descriptor);
+        item.Source = descriptor.DisplayName;
+        SensorCardFiller.Fill(item, _board, descriptor);
+        return item;
+    }
+
+    private SensorGroupItem FillGroup(SensorGroupItem item, SensorPanel data)
+    {
+        var title = SensorTexts.GroupName(data.Group);
+        item.Title = data.SplitType is { } type ? title + " · " + SensorTexts.GroupName(SensorKeyTokens.ToToken(type)) : title;
+        item.Note = data.CommonSuffix;
+        item.CountText = data.Sensors.Count.ToString(CultureInfo.CurrentCulture);
+        item.IsDense = data.IsDense;
+        var rows = data.Sensors.Select((d, i) => (Descriptor: d, Label: data.Labels[i])).ToArray();
         KeyedCollectionSync.Sync(
             item.Rows,
-            data.Sensors,
+            rows,
             r => r.Key,
-            d => d.Key.ToString(),
-            d => FillRow(new SensorRowItem(d.Key.ToString()), d),
-            (r, d) => FillRow(r, d));
+            d => d.Descriptor.Key.ToString(),
+            d => FillRow(new SensorRowItem(d.Descriptor.Key.ToString()), d.Descriptor, d.Label),
+            (r, d) => FillRow(r, d.Descriptor, d.Label));
         return item;
     }
 
-    private SensorRowItem FillRow(SensorRowItem item, SensorDescriptor descriptor)
+    private SensorRowItem FillRow(SensorRowItem item, SensorDescriptor descriptor, string label)
     {
         var (text, percent, opacity) = SensorRowFiller.Describe(descriptor, _board.GetLatest(descriptor.Key), _board.GetState(descriptor.Key));
-        item.Label = descriptor.DisplayName;
+        item.Label = label;
+        item.FullLabel = descriptor.DisplayName;
         item.ValueText = text;
         item.Percent = percent ?? 0;
         item.HasPercent = percent is not null;

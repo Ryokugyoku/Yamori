@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.IO.Pipes;
+using Yamori.Core.AppUsage.Service;
 using Yamori.Core.Sensors.Extended;
 using Yamori.Core.Sensors.Ipc.Messages;
 using Yamori.Core.Sensors.Service;
@@ -24,14 +25,15 @@ public sealed class SensorPipeServer
     /// </summary>
     /// <param name="service">センサーの窓口（Helper の中の <see cref="LocalSensorService"/>）。</param>
     /// <param name="options">設定。</param>
-    /// <exception cref="ArgumentNullException">いずれかの引数が null。</exception>
-    public SensorPipeServer(ISensorService service, SensorPipeServerOptions options)
+    /// <param name="appUsage">アプリごとの使用率の記録の窓口。null なら常に記録なしを返す。</param>
+    /// <exception cref="ArgumentNullException"><paramref name="service"/> か <paramref name="options"/> が null。</exception>
+    public SensorPipeServer(ISensorService service, SensorPipeServerOptions options, IAppUsageService? appUsage = null)
     {
         ArgumentNullException.ThrowIfNull(service);
         ArgumentNullException.ThrowIfNull(options);
         _service = service;
         _options = options;
-        _handler = new SensorRequestHandler(service);
+        _handler = new SensorRequestHandler(service, appUsage);
     }
 
     /// <summary>今つないでいるクライアントの数を取得する。</summary>

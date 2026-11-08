@@ -150,10 +150,26 @@ public sealed partial class Sparkline : UserControl
     /// <summary>
     /// 縦軸の範囲を決める。指定がなければ値の最小・最大に少し余白を足す。範囲の幅は 0 にしない。
     /// </summary>
+    /// <remarks>
+    /// 一覧の部品が別の項目に使い回されると、下限・上限・値が 1 つずつ書き換わり、途中で下限が上限を超えることがある
+    /// （割合の 0〜100 から、GB の値に変わるときなど）。そのときは指定を使わず、値から決める。
+    /// </remarks>
     private (double Low, double High) Range(IReadOnlyList<double> values)
     {
-        var low = Minimum;
-        var high = Maximum;
+        var (low, high) = RangeFrom(values, Minimum, Maximum);
+        if (low > high)
+        {
+            (low, high) = RangeFrom(values, double.NaN, double.NaN);
+        }
+
+        return high - low < 1e-9 ? (low - 1, high + 1) : (low, high);
+    }
+
+    /// <summary>
+    /// 指定された下限・上限を使い、指定のない側（NaN）は値の最小・最大に少し余白を足して決める。
+    /// </summary>
+    private static (double Low, double High) RangeFrom(IReadOnlyList<double> values, double low, double high)
+    {
         if (double.IsNaN(low) || double.IsNaN(high))
         {
             var min = double.MaxValue;
@@ -169,7 +185,7 @@ public sealed partial class Sparkline : UserControl
             high = double.IsNaN(high) ? max + margin : high;
         }
 
-        return high - low < 1e-9 ? (low - 1, high + 1) : (low, high);
+        return (low, high);
     }
 
     private static PathGeometry Geometry(Point start, PolyLineSegment segment, bool isClosed)

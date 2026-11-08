@@ -41,12 +41,14 @@ public sealed class NextPcAdvisor
     /// <param name="inventory">今の PC のハードウェア一覧。</param>
     /// <param name="samplesByComponent">部品ごとの使用率の履歴。含まれない部品は履歴なしとして扱う。</param>
     /// <param name="topApps">資源を多く使っているアプリ。</param>
+    /// <param name="recordedCauses">部品ごとの、記録から求めた高負荷の時間に多く使っていたアプリ。含まれない部品は記録なしとして扱う。</param>
     /// <returns>判定方針の順に並んだおすすめ。</returns>
-    /// <exception cref="ArgumentNullException">いずれかの引数が null。</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="recordedCauses"/> 以外の引数が null。</exception>
     public IReadOnlyList<HardwareRecommendation> Advise(
         HardwareInventory inventory,
         IReadOnlyDictionary<HardwareComponent, IReadOnlyList<UsageSample>> samplesByComponent,
-        IReadOnlyList<ProcessUsage> topApps)
+        IReadOnlyList<ProcessUsage> topApps,
+        IReadOnlyDictionary<HardwareComponent, IReadOnlyList<string>>? recordedCauses = null)
     {
         ArgumentNullException.ThrowIfNull(inventory);
         ArgumentNullException.ThrowIfNull(samplesByComponent);
@@ -56,7 +58,10 @@ public sealed class NextPcAdvisor
             .Select(p => p.Evaluate(new RecommendationInput(
                 inventory,
                 samplesByComponent.TryGetValue(p.Component, out var samples) ? samples : [],
-                topApps)))
+                topApps)
+            {
+                RecordedCauses = recordedCauses is not null && recordedCauses.TryGetValue(p.Component, out var causes) ? causes : [],
+            }))
             .ToArray();
     }
 }

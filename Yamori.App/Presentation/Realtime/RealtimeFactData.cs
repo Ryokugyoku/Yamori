@@ -7,4 +7,5 @@ namespace Yamori.Presentation.Realtime;
 /// <param name="Label">項目名。</param>
 /// <param name="Value">値の表示。</param>
 /// <param name="Percent">棒グラフで示す割合（0〜100）。棒グラフを出さない項目は null。</param>
-public sealed record RealtimeFactData(string Key, string Label, string Value, double? Percent);
+/// <param name="Detail">項目名の下に小さく出す補足（読み書きの内訳など）。なければ null。</param>
+public sealed record RealtimeFactData(string Key, string Label, string Value, double? Percent, string? Detail = null);

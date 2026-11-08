@@ -1,6 +1,7 @@
 using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Yamori.Services;
 using Yamori.ViewModels;
 
 namespace Yamori.Views;
@@ -28,14 +29,22 @@ public sealed partial class HelperStatusIndicator : UserControl
     /// <summary>
     /// サービスを起動する。起動できなければ、理由を札の下に出す。
     /// </summary>
+    /// <remarks>ボタンの処理（async void）で例外が出るとアプリが落ちるため、ここで止めて書き残す。</remarks>
     private async void OnStartClick(object sender, RoutedEventArgs e)
     {
-        ErrorText.Visibility = Visibility.Collapsed;
-        var error = await ViewModel.StartAsync();
-        if (error is not null)
+        try
         {
-            ErrorText.Text = error;
-            ErrorText.Visibility = Visibility.Visible;
+            ErrorText.Visibility = Visibility.Collapsed;
+            var error = await ViewModel.StartAsync();
+            if (error is not null)
+            {
+                ErrorText.Text = error;
+                ErrorText.Visibility = Visibility.Visible;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorLog.Write(nameof(HelperStatusIndicator), ex);
         }
     }
 }

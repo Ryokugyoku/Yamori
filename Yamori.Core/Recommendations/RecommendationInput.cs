@@ -13,4 +13,10 @@ namespace Yamori.Core.Recommendations;
 public sealed record RecommendationInput(
     HardwareInventory Inventory,
     IReadOnlyList<UsageSample> Samples,
-    IReadOnlyList<ProcessUsage> TopApps);
+    IReadOnlyList<ProcessUsage> TopApps)
+{
+    /// <summary>
+    /// 記録から求めた、その部品の高負荷の時間に多く使っていたアプリの名前（多い順）を取得する。記録がなければ空。
+    /// </summary>
+    public IReadOnlyList<string> RecordedCauses { get; init; } = [];
+}

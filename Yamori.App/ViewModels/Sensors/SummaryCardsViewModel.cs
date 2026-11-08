@@ -73,19 +73,9 @@ public sealed class SummaryCardsViewModel : IDisposable
 
     private void Fill(SummaryCardItem item, SensorKey key, SensorDescriptor descriptor)
     {
-        var (text, percent, opacity) = SensorRowFiller.Describe(descriptor, _board.GetLatest(key), _board.GetState(key));
         item.Glyph = SensorGlyphs.ForCard(key);
         item.Title = SensorTexts.CardTitle(item.Id);
         item.Source = descriptor.HardwareName;
-        item.ValueText = text;
-        item.Percent = percent ?? 0;
-        item.HasPercent = percent is not null;
-        item.Opacity = opacity;
-
-        // 割合の値は 0〜100 の目盛りで描く（小さな揺れを大きく見せて不安をあおらないよう、目盛りを値に合わせて広げない）。
-        var isPercent = percent is not null;
-        item.TrendMinimum = isPercent ? 0 : double.NaN;
-        item.TrendMaximum = isPercent ? 100 : double.NaN;
-        item.Trend = _board.GetTrend(key);
+        SensorCardFiller.Fill(item, _board, descriptor);
     }
 }

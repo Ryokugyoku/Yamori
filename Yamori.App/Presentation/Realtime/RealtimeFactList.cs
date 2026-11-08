@@ -16,12 +16,13 @@ public sealed class RealtimeFactList
     /// <param name="label">項目名。</param>
     /// <param name="value">値の表示。</param>
     /// <param name="percent">棒グラフで示す割合（0〜100）。出さない場合は null。</param>
+    /// <param name="detail">項目名の下に小さく出す補足。出さない場合は null。</param>
     /// <returns>このインスタンス。</returns>
-    public RealtimeFactList AddLabeled(string key, string label, string? value, double? percent = null)
+    public RealtimeFactList AddLabeled(string key, string label, string? value, double? percent = null, string? detail = null)
     {
         if (!string.IsNullOrWhiteSpace(value))
         {
-            _facts.Add(new RealtimeFactData(key, label, value, percent));
+            _facts.Add(new RealtimeFactData(key, label, value, percent, detail));
         }
 
         return this;

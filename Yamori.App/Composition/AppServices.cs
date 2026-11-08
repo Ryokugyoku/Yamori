@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using Yamori.Accounts;
 using Yamori.Core.Analysis.History;
+using Yamori.Core.AppUsage.Service;
 using Yamori.Core.Formatting;
 using Yamori.Core.Hardware;
 using Yamori.Core.Hardware.Wmi;
@@ -39,6 +40,7 @@ public sealed class AppServices
         LanguageService languageService,
         IWindowsAccountProvider accountProvider,
         FailoverSensorService sensors,
+        IAppUsageService appUsage,
         NextPcReportService reportService,
         NextPcReportPresenter presenter,
         HardwareSectionsPresenter hardwarePresenter)
@@ -47,6 +49,7 @@ public sealed class AppServices
         LanguageService = languageService;
         AccountProvider = accountProvider;
         Sensors = sensors;
+        AppUsage = appUsage;
         ReportService = reportService;
         Presenter = presenter;
         HardwarePresenter = hardwarePresenter;
@@ -63,6 +66,9 @@ public sealed class AppServices
 
     /// <summary>センサーの窓口を取得する。Helper に IPC でつなぎ、Helper が動いていない間は標準 API だけを読んで表示する（記録はしない）。</summary>
     public FailoverSensorService Sensors { get; }
+
+    /// <summary>アプリごとの使用率の記録の窓口を取得する（Helper へのパイプ。Helper が動いていない間は記録なし）。</summary>
+    public IAppUsageService AppUsage { get; }
 
     /// <summary>次の PC のレポートを作る処理を取得する。</summary>
     public NextPcReportService ReportService { get; }
@@ -86,22 +92,26 @@ public sealed class AppServices
         languageService.Apply(settings.Language);
 
         var timeProvider = TimeProvider.System;
+        var remote = new RemoteSensorService(SensorPipeConnector.Create(SensorPipeNames.Sensors, HelperConnectTimeout), timeProvider);
         var sensors = new FailoverSensorService(
-            new RemoteSensorService(SensorPipeConnector.Create(SensorPipeNames.Sensors, HelperConnectTimeout), timeProvider),
+            remote,
             () => LocalSensorServiceFactory.CreateDisplayOnly(new ManagementWmiQueryExecutor(), YamoriDataPaths.GetSensorPriorityFilePath(), timeProvider));
         // 記録は Helper だけが行う。負荷時間の分析も Helper の時系列（画面を閉じている間も含む）から作る。
         var reportService = new NextPcReportService(
             HardwareInventoryService.CreateDefault(new ManagementWmiQueryExecutor()),
             new SensorUsageHistoryReader(sensors),
             new SystemProcessSnapshotProvider(),
-            NextPcAdvisor.CreateDefault(),
-            timeProvider);
+            remote,
+            NextPcAdvisor.CreateDefault(RecommendationOptions.Default),
+            timeProvider,
+            RecommendationOptions.Default);
 
         return new AppServices(
             settingsStore,
             languageService,
             new CurrentWindowsAccountProvider(),
             sensors,
+            remote,
             reportService,
             new NextPcReportPresenter(new RecommendationTextFormatter()),
             HardwareSectionsPresenter.CreateDefault());
@@ -123,6 +133,7 @@ public sealed class AppServices
         new(
             ReportService,
             new SummaryCardsViewModel(GetBoard(), SummaryCardDefinitions.Default),
+            new AppCpuHistoryViewModel(AppUsage, new AppCpuHistoryPresenter(), RecommendationOptions.Default, TimeProvider.System),
             Presenter,
             HardwarePresenter,
             new SystemSpecPresenter(),

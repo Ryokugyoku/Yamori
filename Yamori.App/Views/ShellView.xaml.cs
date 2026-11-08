@@ -46,8 +46,20 @@ public sealed partial class ShellView : UserControl
             return;
         }
 
-        PageHost.Content = CreatePage(tag);
+        var page = CreatePage(tag);
+        ApplyScrolling(page is not ISelfScrollingPage);
+        PageHost.Content = page;
         PageScroller.ChangeView(null, 0, null, disableAnimation: true);
+    }
+
+    /// <summary>
+    /// 外側のスクロールを切り替える。止めると、画面は窓の高さに収まり、画面の中で自分でスクロールする。
+    /// </summary>
+    /// <param name="enabled">外側でスクロールするなら true。</param>
+    private void ApplyScrolling(bool enabled)
+    {
+        PageScroller.VerticalScrollMode = enabled ? ScrollMode.Auto : ScrollMode.Disabled;
+        PageScroller.VerticalScrollBarVisibility = enabled ? ScrollBarVisibility.Auto : ScrollBarVisibility.Disabled;
     }
 
     private UIElement CreatePage(string tag) =>

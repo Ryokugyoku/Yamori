@@ -1,5 +1,6 @@
 using Yamori.Core.Analysis;
 using Yamori.Core.Analysis.History;
+using Yamori.Core.AppUsage.Service;
 using Yamori.Core.Hardware;
 using Yamori.Core.Processes;
 using Yamori.Core.Recommendations;
@@ -21,11 +22,18 @@ public sealed class NextPcReportService
     /// </summary>
     public const int TopAppCount = 5;
 
+    /// <summary>
+    /// 高負荷の時間の CPU の原因として選ぶアプリの、高負荷の時間の平均の使用率の下限（%）。
+    /// </summary>
+    public const double MinimumCausePercent = 1;
+
     private readonly IHardwareInventoryProvider _inventoryProvider;
     private readonly IUsageHistoryReader _historyReader;
     private readonly IProcessSnapshotProvider _processProvider;
+    private readonly IAppUsageService _appUsage;
     private readonly NextPcAdvisor _advisor;
     private readonly TimeProvider _timeProvider;
+    private readonly RecommendationOptions _options;
 
     /// <summary>
     /// 材料の取得元とおすすめの判定処理を指定して作る。
@@ -33,27 +41,34 @@ public sealed class NextPcReportService
     /// <param name="inventoryProvider">ハードウェア一覧の取得元。</param>
     /// <param name="historyReader">使用率の履歴の読み取り元。</param>
     /// <param name="processProvider">プロセスの使用量の取得元。</param>
+    /// <param name="appUsage">アプリごとの使用率の記録の取得元（CPU の原因アプリに使う）。</param>
     /// <param name="advisor">おすすめの判定処理。</param>
     /// <param name="timeProvider">現在時刻の提供元。</param>
-    /// <exception cref="ArgumentNullException">いずれかの引数が null。</exception>
+    /// <param name="options">判定の基準値（原因アプリを探す高負荷のしきい値に使う）。<paramref name="advisor"/> と同じものを渡すこと。省略時は <see cref="RecommendationOptions.Default"/>。</param>
+    /// <exception cref="ArgumentNullException"><paramref name="options"/> 以外の引数が null。</exception>
     public NextPcReportService(
         IHardwareInventoryProvider inventoryProvider,
         IUsageHistoryReader historyReader,
         IProcessSnapshotProvider processProvider,
+        IAppUsageService appUsage,
         NextPcAdvisor advisor,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        RecommendationOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(inventoryProvider);
         ArgumentNullException.ThrowIfNull(historyReader);
         ArgumentNullException.ThrowIfNull(processProvider);
+        ArgumentNullException.ThrowIfNull(appUsage);
         ArgumentNullException.ThrowIfNull(advisor);
         ArgumentNullException.ThrowIfNull(timeProvider);
 
         _inventoryProvider = inventoryProvider;
         _historyReader = historyReader;
         _processProvider = processProvider;
+        _appUsage = appUsage;
         _advisor = advisor;
         _timeProvider = timeProvider;
+        _options = options ?? RecommendationOptions.Default;
     }
 
     /// <summary>
@@ -77,10 +92,19 @@ public sealed class NextPcReportService
             histories[component] = await _historyReader.ReadAsync(component, from, now, cancellationToken).ConfigureAwait(false);
         }
 
+        var cpuApps = await _appUsage
+            .GetCpuUsageAsync(from, now, _options.HighLoadThresholdPercent, TopAppCount, cancellationToken)
+            .ConfigureAwait(false);
+        var causes = new Dictionary<HardwareComponent, IReadOnlyList<string>>
+        {
+            [HardwareComponent.Cpu] = cpuApps.TopHighLoadApps(TopAppCount, MinimumCausePercent),
+        };
+
         var recommendations = _advisor.Advise(
             inventory,
             histories.ToDictionary(h => h.Key, h => h.Value.Samples),
-            topApps);
+            topApps,
+            causes);
         return new NextPcReport(
             inventory,
             recommendations,

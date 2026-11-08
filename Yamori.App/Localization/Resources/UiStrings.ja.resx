@@ -82,7 +82,7 @@
     <value>この PC の部品と、その状態です。</value>
   </data>
   <data name="Apps_Description" xml:space="preserve">
-    <value>今メモリを多く使っているアプリです。同じアプリの複数のプロセスはまとめて集計しています。アプリごとの CPU・GPU・読み書きは、リアルタイムの画面で見られます。</value>
+    <value>Yamori のサービスの記録から求めた CPU を多く使ったアプリと、今メモリを多く使っているアプリです。今のアプリごとの CPU・GPU・読み書きは、リアルタイムの画面で見られます。</value>
   </data>
   <data name="Privacy_Local" xml:space="preserve">
     <value>Yamori は外部と通信しません。記録は常駐サービスがこの PC の中だけに保存します。</value>
@@ -529,7 +529,7 @@
     <value>今は目立って使っているアプリはありません</value>
   </data>
   <data name="Rt_Apps_ReadWrite" xml:space="preserve">
-    <value>{0}（読み込み {1}・書き込み {2}）</value>
+    <value>読み込み {0}・書き込み {1}</value>
   </data>
   <data name="Rt_Apps_Note" xml:space="preserve">
     <value>同じ名前のプロセスは 1 つのアプリとしてまとめ、かっこの中にプロセスの数を示します。CPU は、動作時間（% Processor Time）を PC 全体に対する割合にしたものです。そのためブースト中は、タスク マネージャーより低く出ることがあります。GPU は、各プロセスが最も使っているエンジンの使用率です。読み書きにはファイルのほか、デバイスやネットワークとのやり取りも含まれるため、タスク マネージャーの「ディスク」の列とは一致しません。値はパフォーマンス カウンターから読むため、プロセスを開く必要がなく、保護されたプロセスも集計できます。</value>
@@ -857,5 +857,89 @@
   </data>
   <data name="RecSource_None" xml:space="preserve">
     <value>常駐サービスの記録がまだないか、常駐サービスにつながっていません。判定は常駐サービスの記録だけを使います。</value>
+  </data>
+  <data name="Apps_CpuHistoryHeader" xml:space="preserve">
+    <value>CPU を多く使ったアプリ（記録）</value>
+  </data>
+  <data name="Apps_MemoryHeader" xml:space="preserve">
+    <value>メモリを多く使っているアプリ（今）</value>
+  </data>
+  <data name="Apps_Period_Day" xml:space="preserve">
+    <value>24 時間</value>
+  </data>
+  <data name="Apps_Period_Week" xml:space="preserve">
+    <value>7 日</value>
+  </data>
+  <data name="Apps_Period_Quarter" xml:space="preserve">
+    <value>90 日</value>
+  </data>
+  <data name="Apps_CpuHistorySummary" xml:space="preserve">
+    <value>記録した時間は {0}。そのうち PC 全体の CPU 使用率が {1}% を超えていたのは {2} です。</value>
+  </data>
+  <data name="Apps_CpuHistoryNoData" xml:space="preserve">
+    <value>この期間の記録がまだないか、Yamori のサービスにつながっていません。サービスが動いていれば、画面を閉じていても 10 秒ごとにアプリごとの CPU 使用率を記録します。</value>
+  </data>
+  <data name="Apps_CpuHistoryDescription" xml:space="preserve">
+    <value>期間の中の、アプリごとの CPU 使用率の平均です（PC 全体を 100% とします）。「高負荷のとき」は、PC 全体の CPU 使用率が {0}% を超えていた時間だけの平均で、CPU が足りなかったときに何が使っていたかがわかります。同じアプリの複数のプロセスはまとめて集計しています。</value>
+  </data>
+  <data name="Apps_CpuAverage" xml:space="preserve">
+    <value>平均 {0:0.0}%</value>
+  </data>
+  <data name="Apps_CpuHighLoad" xml:space="preserve">
+    <value>高負荷のとき {0:0.0}%</value>
+  </data>
+  <data name="Highlight_data_used" xml:space="preserve">
+    <value>使用中</value>
+  </data>
+  <data name="Highlight_data_available" xml:space="preserve">
+    <value>使用可能</value>
+  </data>
+  <data name="Highlight_data_committed" xml:space="preserve">
+    <value>コミット済み</value>
+  </data>
+  <data name="Highlight_data_dedicated-used" xml:space="preserve">
+    <value>専用メモリ</value>
+  </data>
+  <data name="Highlight_data_free" xml:space="preserve">
+    <value>空き容量</value>
+  </data>
+  <data name="Highlight_data_total" xml:space="preserve">
+    <value>容量</value>
+  </data>
+  <data name="Highlight_throughput_read" xml:space="preserve">
+    <value>読み取り</value>
+  </data>
+  <data name="Highlight_throughput_write" xml:space="preserve">
+    <value>書き込み</value>
+  </data>
+  <data name="Highlight_throughput_received" xml:space="preserve">
+    <value>受信</value>
+  </data>
+  <data name="Highlight_throughput_sent" xml:space="preserve">
+    <value>送信</value>
+  </data>
+  <data name="Highlight_load_active-time" xml:space="preserve">
+    <value>アクティブな時間</value>
+  </data>
+  <data name="Highlight_load_link" xml:space="preserve">
+    <value>回線の使用率</value>
+  </data>
+  <data name="Highlight_count_processes" xml:space="preserve">
+    <value>プロセス</value>
+  </data>
+  <data name="Highlight_count_threads" xml:space="preserve">
+    <value>スレッド</value>
+  </data>
+  <data name="Highlight_duration_uptime" xml:space="preserve">
+    <value>起動してからの時間</value>
+  </data>
+  <data name="Highlight_duration_remaining" xml:space="preserve">
+    <value>残り時間</value>
+  </data>
+  <data name="Highlight_level_charge" xml:space="preserve">
+    <value>残量</value>
+  </data>
+  <data name="Highlight_level_passive-limit" xml:space="preserve">
+    <value>熱による制限</value>
   </data>
 </root>

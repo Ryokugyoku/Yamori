@@ -1,3 +1,4 @@
+using Yamori.Core.AppUsage;
 using Yamori.Core.Hardware.Wmi;
 using Yamori.Core.Sensors.Extended;
 using Yamori.Core.Sensors.Extended.Signing;
@@ -14,7 +15,7 @@ namespace Yamori.Helper;
 public static class HelperServiceCollectionExtensions
 {
     /// <summary>
-    /// Helper の部品（データフォルダー、拡張センサーの判断、収集と記録、パイプのサーバー、本体）を登録する。
+    /// Helper の部品（データフォルダー、拡張センサーの判断、収集と記録、アプリごとの使用率の記録、パイプのサーバー、本体）を登録する。
     /// </summary>
     /// <param name="services">登録先。</param>
     /// <returns><paramref name="services"/>。</returns>
@@ -39,7 +40,13 @@ public static class HelperServiceCollectionExtensions
             provider.GetRequiredService<IExtendedSensorControl>(),
             CreatePawnIoProvider(provider.GetRequiredService<IExtendedSensorControl>(), provider.GetRequiredService<TimeProvider>()),
             provider.GetRequiredService<TimeProvider>()));
-        services.AddSingleton(provider => new SensorPipeServer(provider.GetRequiredService<LocalSensorService>(), new SensorPipeServerOptions()));
+        services.AddSingleton(provider => AppUsageRecording.CreateForHelper(
+            MachineDataPaths.GetSensorDataDirectory(),
+            provider.GetRequiredService<TimeProvider>()));
+        services.AddSingleton(provider => new SensorPipeServer(
+            provider.GetRequiredService<LocalSensorService>(),
+            new SensorPipeServerOptions(),
+            provider.GetRequiredService<AppUsageRecording>().Service));
         services.AddHostedService<SensorHostService>();
         return services;
     }

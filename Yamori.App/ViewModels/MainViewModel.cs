@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -12,6 +12,7 @@ using Yamori.Core.Sensors.Ipc.Client;
 using Yamori.Localization;
 using Yamori.Presentation;
 using Yamori.Presentation.Hardware;
+using Yamori.Services;
 using Yamori.ViewModels.Sensors;
 
 namespace Yamori.ViewModels;
@@ -48,6 +49,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     /// </summary>
     /// <param name="reportService">レポートを作る処理。</param>
     /// <param name="summaryCards">概要画面のサマリーカード。このインスタンスが破棄する。</param>
+    /// <param name="cpuHistory">アプリ画面の、記録から求めた CPU を多く使ったアプリ。</param>
     /// <param name="presenter">レポートを表示用に変換する処理。</param>
     /// <param name="hardwarePresenter">ハードウェア一覧を部品の種類ごとの表示内容にする処理。</param>
     /// <param name="specPresenter">ハードウェア一覧から主な仕様を作る処理。</param>
@@ -61,6 +63,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public MainViewModel(
         NextPcReportService reportService,
         SummaryCardsViewModel summaryCards,
+        AppCpuHistoryViewModel cpuHistory,
         NextPcReportPresenter presenter,
         HardwareSectionsPresenter hardwarePresenter,
         SystemSpecPresenter specPresenter,
@@ -72,6 +75,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     {
         ArgumentNullException.ThrowIfNull(reportService);
         ArgumentNullException.ThrowIfNull(summaryCards);
+        ArgumentNullException.ThrowIfNull(cpuHistory);
         ArgumentNullException.ThrowIfNull(presenter);
         ArgumentNullException.ThrowIfNull(hardwarePresenter);
         ArgumentNullException.ThrowIfNull(specPresenter);
@@ -83,6 +87,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
         _reportService = reportService;
         SummaryCards = summaryCards;
+        CpuHistory = cpuHistory;
         _presenter = presenter;
         _hardwarePresenter = hardwarePresenter;
         _specPresenter = specPresenter;
@@ -103,6 +108,9 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     /// <summary>概要画面のサマリーカードを取得する。</summary>
     public SummaryCardsViewModel SummaryCards { get; }
+
+    /// <summary>アプリ画面の、記録から求めた CPU を多く使ったアプリを取得する。</summary>
+    public AppCpuHistoryViewModel CpuHistory { get; }
 
     /// <summary>ハードウェア一覧を、部品の種類ごとにまとめた表示内容を取得する。</summary>
     public ObservableCollection<HardwareSection> Hardware { get; } = [];
@@ -182,6 +190,21 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         UpdateGreeting();
         UpdateDataTexts();
         SummaryCards.Refresh();
+        return RequestRefresh();
+    }
+
+    /// <summary>
+    /// 表示を最新にする。更新の途中なら、同じ一覧を同時に書き換えないよう、終わってからもう一度更新する。UI スレッドから呼ぶこと。
+    /// </summary>
+    /// <returns>今回の更新が終わったときに完了するタスク。後回しにした場合はすぐに完了する。</returns>
+    private Task RequestRefresh()
+    {
+        if (RefreshCommand.IsRunning)
+        {
+            _refreshAgain = true;
+            return Task.CompletedTask;
+        }
+
         return RefreshCommand.ExecuteAsync(null);
     }
 
@@ -198,11 +221,19 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             Replace(TopApps, _presenter.BuildTopApps(report.TopApps));
             Replace(TopAppsPreview, TopApps.Take(TopAppsPreviewCount));
             Replace(Specs, _specPresenter.Build(report.Inventory));
+            await CpuHistory.RefreshAsync();
             UpdateGreeting();
             StatusText = UiText.Format("Status_LastUpdated", report.GeneratedAt.ToLocalTime().ToString("G"));
         }
         catch (IOException ex)
         {
+            StatusText = UiText.Format("Status_LoadFailed", ex.Message);
+        }
+        catch (Exception ex)
+        {
+            // WMI・DXCore・プロセスの一覧などは、PC の状態によってまれに想定外の例外を投げる。
+            // 更新ボタンから呼ばれるため、ここで止めないとアプリが落ちる。表示は前の内容のまま、失敗したことだけを示す。
+            ErrorLog.Write(nameof(MainViewModel), ex);
             StatusText = UiText.Format("Status_LoadFailed", ex.Message);
         }
         finally
@@ -240,19 +271,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             return;
         }
 
-        _uiContext.Post(
-            _ =>
-            {
-                if (RefreshCommand.IsRunning)
-                {
-                    _refreshAgain = true;
-                }
-                else
-                {
-                    _ = RefreshCommand.ExecuteAsync(null);
-                }
-            },
-            null);
+        _uiContext.Post(_ => _ = RequestRefresh(), null);
     }
 
     private static void Replace<T>(ObservableCollection<T> target, IEnumerable<T> items)

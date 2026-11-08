@@ -18,7 +18,99 @@
             RefreshCommand="{x:Bind ViewModel.RefreshCommand}"
             Title="{l:Loc Key=Nav_Apps}" />
 
-        <!-- メモリを多く使っている順のランキング -->
+        <!-- 記録から求めた、CPU を多く使った順のランキング（期間を選べる） -->
+        <Grid ColumnSpacing="16" RowSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock
+                VerticalAlignment="Center"
+                Style="{StaticResource SectionHeaderTextStyle}"
+                Text="{l:Loc Key=Apps_CpuHistoryHeader}" />
+            <RadioButtons
+                Grid.Column="1"
+                MaxColumns="3"
+                SelectedIndex="{x:Bind ViewModel.CpuHistory.SelectedPeriodIndex, Mode=TwoWay}">
+                <RadioButton Content="{l:Loc Key=Apps_Period_Day}" />
+                <RadioButton Content="{l:Loc Key=Apps_Period_Week}" />
+                <RadioButton Content="{l:Loc Key=Apps_Period_Quarter}" />
+            </RadioButtons>
+        </Grid>
+        <Border Padding="8" Style="{StaticResource CardStyle}">
+            <StackPanel Spacing="4">
+                <StackPanel Padding="12,8" Spacing="4">
+                    <TextBlock
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="{x:Bind ViewModel.CpuHistory.SummaryText, Mode=OneWay}"
+                        TextWrapping="Wrap" />
+                    <TextBlock
+                        Style="{StaticResource FootnoteTextStyle}"
+                        Text="{x:Bind ViewModel.CpuHistory.DescriptionText, Mode=OneWay}"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+                <ItemsControl ItemsSource="{x:Bind ViewModel.CpuHistory.Items}" Visibility="{x:Bind ViewModel.CpuHistory.HasItems, Mode=OneWay}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="2" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="presentation:AppCpuHistoryItem">
+                            <Grid
+                                Padding="12,10"
+                                ColumnSpacing="16"
+                                CornerRadius="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" MinWidth="160" />
+                                    <ColumnDefinition Width="2*" />
+                                    <ColumnDefinition Width="Auto" MinWidth="96" />
+                                </Grid.ColumnDefinitions>
+                                <Border Style="{StaticResource RankBadgeStyle}">
+                                    <TextBlock
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        FontWeight="Bold"
+                                        Text="{x:Bind Rank}" />
+                                </Border>
+                                <TextBlock
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                                    Text="{x:Bind Name}"
+                                    TextTrimming="CharacterEllipsis"
+                                    ToolTipService.ToolTip="{x:Bind Name}" />
+                                <ProgressBar
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    MinHeight="6"
+                                    Height="6"
+                                    CornerRadius="3"
+                                    Maximum="100"
+                                    Value="{x:Bind RelativeShare}" />
+                                <StackPanel Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <TextBlock
+                                        HorizontalAlignment="Right"
+                                        Style="{StaticResource TileValueTextStyle}"
+                                        FontSize="16"
+                                        Text="{x:Bind AverageText}" />
+                                    <TextBlock
+                                        HorizontalAlignment="Right"
+                                        Style="{StaticResource FootnoteTextStyle}"
+                                        Text="{x:Bind HighLoadText}" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <!-- メモリを多く使っている順のランキング（今） -->
+        <TextBlock Style="{StaticResource SectionHeaderTextStyle}" Text="{l:Loc Key=Apps_MemoryHeader}" />
         <Border Padding="8" Style="{StaticResource CardStyle}">
             <ItemsControl ItemsSource="{x:Bind ViewModel.TopApps}">
                 <ItemsControl.ItemsPanel>

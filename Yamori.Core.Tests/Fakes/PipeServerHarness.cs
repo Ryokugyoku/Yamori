@@ -24,6 +24,8 @@ internal sealed class PipeServerHarness : IAsyncDisposable
 
     public FakeSensorService Service { get; } = new();
 
+    public FakeAppUsageService AppUsage { get; } = new();
+
     public SensorPipeServerOptions Options { get; }
 
     public SensorPipeServer? Server { get; private set; }
@@ -41,7 +43,7 @@ internal sealed class PipeServerHarness : IAsyncDisposable
     public void Start()
     {
         _cancellation = new CancellationTokenSource();
-        Server = new SensorPipeServer(Service, Options);
+        Server = new SensorPipeServer(Service, Options, AppUsage);
         _run = Server.RunAsync(_cancellation.Token);
     }
 

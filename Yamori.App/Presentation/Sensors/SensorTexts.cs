@@ -38,6 +38,19 @@ public static class SensorTexts
     }
 
     /// <summary>
+    /// リアルタイム画面の主な値の見出しを取得する。センサーごとの名前がリソースにあればそれを（「使用中」「受信」など）、
+    /// なければ量の種類の名前（「使用率」「温度」など）を返す。
+    /// </summary>
+    /// <param name="descriptor">センサーの説明。</param>
+    /// <returns>見出し。</returns>
+    public static string HighlightTitle(SensorDescriptor descriptor)
+    {
+        var type = SensorKeyTokens.ToToken(descriptor.SensorType);
+        var text = UiText.Get("Highlight_" + type + "_" + descriptor.Key.Name);
+        return text.StartsWith('[') ? GroupName(type) : text;
+    }
+
+    /// <summary>
     /// 拡張センサーの状態の説明を取得する。
     /// </summary>
     /// <param name="state">拡張センサーの状態。</param>

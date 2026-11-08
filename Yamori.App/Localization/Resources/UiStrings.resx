@@ -82,7 +82,7 @@
     <value>The parts inside this PC and their condition.</value>
   </data>
   <data name="Apps_Description" xml:space="preserve">
-    <value>Apps using the most memory right now. Processes of the same app are combined. CPU, GPU and reads/writes per app are on the Live page.</value>
+    <value>Apps that used the most CPU, from the Yamori service&apos;s records, and apps using the most memory right now. Live CPU, GPU and reads/writes per app are on the Live page.</value>
   </data>
   <data name="Privacy_Local" xml:space="preserve">
     <value>Yamori does not communicate externally. The background service keeps its records only on this PC.</value>
@@ -529,7 +529,7 @@
     <value>Nothing noticeable right now</value>
   </data>
   <data name="Rt_Apps_ReadWrite" xml:space="preserve">
-    <value>{0} (read {1}, write {2})</value>
+    <value>Read {0}, write {1}</value>
   </data>
   <data name="Rt_Apps_Note" xml:space="preserve">
     <value>Processes with the same name are added up as one app; the number in parentheses is how many processes it has. CPU is a share of the whole PC based on CPU time (% Processor Time), so it can read lower than Task Manager while boosting. GPU is the busiest engine each process uses. Reads and writes include files, devices and network traffic, so they do not match Task Manager's Disk column. Protected processes are counted too: these values come from performance counters and need no access to the processes themselves.</value>
@@ -857,5 +857,89 @@
   </data>
   <data name="RecSource_None" xml:space="preserve">
     <value>There are no background service records yet, or the app is not connected to the service. Advice is based only on its records.</value>
+  </data>
+  <data name="Apps_CpuHistoryHeader" xml:space="preserve">
+    <value>CPU use by app (recorded)</value>
+  </data>
+  <data name="Apps_MemoryHeader" xml:space="preserve">
+    <value>Memory use by app (now)</value>
+  </data>
+  <data name="Apps_Period_Day" xml:space="preserve">
+    <value>24 hours</value>
+  </data>
+  <data name="Apps_Period_Week" xml:space="preserve">
+    <value>7 days</value>
+  </data>
+  <data name="Apps_Period_Quarter" xml:space="preserve">
+    <value>90 days</value>
+  </data>
+  <data name="Apps_CpuHistorySummary" xml:space="preserve">
+    <value>Recorded for {0}. The whole PC&apos;s CPU was above {1}% for {2} of that time.</value>
+  </data>
+  <data name="Apps_CpuHistoryNoData" xml:space="preserve">
+    <value>There is no record for this period yet, or the app is not connected to the Yamori service. While the service is running, it records CPU use by app every 10 seconds, even when this window is closed.</value>
+  </data>
+  <data name="Apps_CpuHistoryDescription" xml:space="preserve">
+    <value>Average CPU use of each app over the period (100% = the whole PC). &quot;When busy&quot; is the average only while the whole PC&apos;s CPU was above {0}%, which shows what was using the CPU when it was short. Processes of the same app are combined.</value>
+  </data>
+  <data name="Apps_CpuAverage" xml:space="preserve">
+    <value>Avg {0:0.0}%</value>
+  </data>
+  <data name="Apps_CpuHighLoad" xml:space="preserve">
+    <value>When busy {0:0.0}%</value>
+  </data>
+  <data name="Highlight_data_used" xml:space="preserve">
+    <value>In use</value>
+  </data>
+  <data name="Highlight_data_available" xml:space="preserve">
+    <value>Available</value>
+  </data>
+  <data name="Highlight_data_committed" xml:space="preserve">
+    <value>Committed</value>
+  </data>
+  <data name="Highlight_data_dedicated-used" xml:space="preserve">
+    <value>Dedicated memory</value>
+  </data>
+  <data name="Highlight_data_free" xml:space="preserve">
+    <value>Free space</value>
+  </data>
+  <data name="Highlight_data_total" xml:space="preserve">
+    <value>Capacity</value>
+  </data>
+  <data name="Highlight_throughput_read" xml:space="preserve">
+    <value>Read</value>
+  </data>
+  <data name="Highlight_throughput_write" xml:space="preserve">
+    <value>Write</value>
+  </data>
+  <data name="Highlight_throughput_received" xml:space="preserve">
+    <value>Received</value>
+  </data>
+  <data name="Highlight_throughput_sent" xml:space="preserve">
+    <value>Sent</value>
+  </data>
+  <data name="Highlight_load_active-time" xml:space="preserve">
+    <value>Active time</value>
+  </data>
+  <data name="Highlight_load_link" xml:space="preserve">
+    <value>Link usage</value>
+  </data>
+  <data name="Highlight_count_processes" xml:space="preserve">
+    <value>Processes</value>
+  </data>
+  <data name="Highlight_count_threads" xml:space="preserve">
+    <value>Threads</value>
+  </data>
+  <data name="Highlight_duration_uptime" xml:space="preserve">
+    <value>Uptime</value>
+  </data>
+  <data name="Highlight_duration_remaining" xml:space="preserve">
+    <value>Time remaining</value>
+  </data>
+  <data name="Highlight_level_charge" xml:space="preserve">
+    <value>Charge</value>
+  </data>
+  <data name="Highlight_level_passive-limit" xml:space="preserve">
+    <value>Thermal limit</value>
   </data>
 </root>

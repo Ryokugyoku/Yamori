@@ -23,4 +23,6 @@ namespace Yamori.Core.Sensors.Ipc;
 [JsonSerializable(typeof(SettingResultResponse))]
 [JsonSerializable(typeof(ExtendedStateMessage))]
 [JsonSerializable(typeof(ConsentMessage))]
+[JsonSerializable(typeof(AppCpuUsageRequest))]
+[JsonSerializable(typeof(AppCpuUsageResponse))]
 public sealed partial class SensorIpcJsonContext : JsonSerializerContext;

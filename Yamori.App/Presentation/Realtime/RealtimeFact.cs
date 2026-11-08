@@ -12,6 +12,7 @@ public sealed class RealtimeFact : ObservableObject
     private string _value;
     private double _percent;
     private bool _hasPercent;
+    private string _detail;
 
     /// <summary>
     /// 最初の表示内容を指定して作る。
@@ -26,6 +27,7 @@ public sealed class RealtimeFact : ObservableObject
         _value = data.Value;
         _percent = data.Percent ?? 0;
         _hasPercent = data.Percent is not null;
+        _detail = data.Detail ?? string.Empty;
     }
 
     /// <summary>同じ項目を見分けるためのキーを取得する。</summary>
@@ -59,6 +61,22 @@ public sealed class RealtimeFact : ObservableObject
         private set => SetProperty(ref _hasPercent, value);
     }
 
+    /// <summary>項目名の下に小さく出す補足を取得する。なければ空。</summary>
+    public string Detail
+    {
+        get => _detail;
+        private set
+        {
+            if (SetProperty(ref _detail, value))
+            {
+                OnPropertyChanged(nameof(HasDetail));
+            }
+        }
+    }
+
+    /// <summary>補足があるかどうかを取得する。</summary>
+    public bool HasDetail => Detail.Length > 0;
+
     /// <summary>
     /// 新しい表示内容で書き換える。
     /// </summary>
@@ -71,5 +89,6 @@ public sealed class RealtimeFact : ObservableObject
         Value = data.Value;
         Percent = data.Percent ?? 0;
         HasPercent = data.Percent is not null;
+        Detail = data.Detail ?? string.Empty;
     }
 }

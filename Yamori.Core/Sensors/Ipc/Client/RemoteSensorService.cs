@@ -1,4 +1,6 @@
 using System.Text.Json;
+using Yamori.Core.AppUsage.Analysis;
+using Yamori.Core.AppUsage.Service;
 using Yamori.Core.Sensors.Extended;
 using Yamori.Core.Sensors.Ipc.Messages;
 using Yamori.Core.Sensors.Service;
@@ -14,7 +16,7 @@ namespace Yamori.Core.Sensors.Ipc.Client;
 /// つながっていない間の操作は例外を投げず、空の結果（最新値は <see cref="SensorStatus.TemporarilyUnavailable"/>、設定の変更は
 /// <see cref="SensorSettingResult.Unavailable"/>）を返す。
 /// </remarks>
-public sealed class RemoteSensorService : ISensorService, IHelperConnection
+public sealed class RemoteSensorService : ISensorService, IHelperConnection, IAppUsageService
 {
     private readonly Func<CancellationToken, Task<Stream>> _connect;
     private readonly TimeProvider _timeProvider;
@@ -184,6 +186,24 @@ public sealed class RemoteSensorService : ISensorService, IHelperConnection
         var payload = IpcConnection.ToPayload(new ConsentMessage(enabled), SensorIpcJsonContext.Default.ConsentMessage);
         var response = await TryRequestAsync(SensorOperation.SetPawnIoConsent, payload, cancellationToken).ConfigureAwait(false);
         return ToSettingResult(response);
+    }
+
+    /// <inheritdoc />
+    /// <remarks>Helper につながっていない場合や、Helper が古くこの操作を知らない場合は <see cref="AppCpuUsageSummary.Empty"/>。</remarks>
+    public async Task<AppCpuUsageSummary> GetCpuUsageAsync(
+        DateTimeOffset fromUtc,
+        DateTimeOffset toUtc,
+        double highLoadThresholdPercent,
+        int top,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(top);
+
+        var payload = IpcConnection.ToPayload(
+            new AppCpuUsageRequest(fromUtc, toUtc, highLoadThresholdPercent, top),
+            SensorIpcJsonContext.Default.AppCpuUsageRequest);
+        var response = await TryRequestAsync(SensorOperation.GetAppCpuUsage, payload, cancellationToken).ConfigureAwait(false);
+        return AppUsageDtoMapper.FromDto(IpcConnection.FromPayload(response?.Payload, SensorIpcJsonContext.Default.AppCpuUsageResponse));
     }
 
     private static SensorSettingResult ToSettingResult(IpcEnvelope? response) =>

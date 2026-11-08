@@ -57,6 +57,7 @@
             <ContentControl
                 x:Name="PageHost"
                 HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Stretch"
                 IsTabStop="False">
                 <!-- 画面を切り替えたら、下から軽く浮かび上がるように出す -->
                 <ContentControl.ContentTransitions>

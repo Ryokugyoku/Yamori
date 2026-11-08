@@ -29,4 +29,10 @@ public static class YamoriDataPaths
     /// </summary>
     /// <returns>設定ファイルの絶対パス。</returns>
     public static string GetSensorPriorityFilePath() => Path.Combine(GetDataDirectory(), "sensor-priority.json");
+
+    /// <summary>
+    /// 画面で起きた想定外のエラーを書き残すファイルのパスを取得する。落ちる原因を調べるためのもので、PC の外には送らない。
+    /// </summary>
+    /// <returns>エラーの記録ファイルの絶対パス。</returns>
+    public static string GetErrorLogFilePath() => Path.Combine(GetDataDirectory(), "errors.log");
 }

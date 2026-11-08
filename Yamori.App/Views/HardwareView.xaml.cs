@@ -1,4 +1,5 @@
 using System;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Yamori.ViewModels;
 
@@ -19,8 +20,18 @@ public sealed partial class HardwareView : UserControl
         ArgumentNullException.ThrowIfNull(viewModel);
         ViewModel = viewModel;
         InitializeComponent();
+        Unloaded += OnUnloaded;
     }
 
     /// <summary>画面の状態を取得する。x:Bind の参照先。</summary>
     public MainViewModel ViewModel { get; }
+
+    /// <summary>
+    /// 閉じたら、共有のビューモデルの変更を受け取らないようにする（画面は開くたびに作り直す）。
+    /// </summary>
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        Bindings.StopTracking();
+        DetachedViewCleaner.Release(this);
+    }
 }

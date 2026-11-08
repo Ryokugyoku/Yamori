@@ -79,10 +79,5 @@ public sealed class RecommendationTextFormatter
             _ => CoreText.Get("Level_Unknown"),
         };
 
-    private static string FormatDuration(TimeSpan duration) =>
-        duration.TotalDays >= 1
-            ? CoreText.Format("Duration_Days", duration.TotalDays)
-            : duration.TotalHours >= 1
-                ? CoreText.Format("Duration_Hours", duration.TotalHours)
-                : CoreText.Format("Duration_Minutes", duration.TotalMinutes);
+    private static string FormatDuration(TimeSpan duration) => DurationFormatter.Format(duration);
 }

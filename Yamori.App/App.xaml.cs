@@ -1,5 +1,7 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System.Threading.Tasks;
+using Microsoft.UI.Xaml;
 using Yamori.Composition;
+using Yamori.Services;
 
 namespace Yamori;
 
@@ -17,6 +19,8 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
+        UnhandledException += OnUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
     }
 
     /// <summary>
@@ -34,5 +38,24 @@ public partial class App : Application
 
         _session.Start();
         _window.Activate();
+    }
+
+    /// <summary>
+    /// UI スレッドで処理されなかった例外を書き残し、アプリを落とさずに続ける。
+    /// 見守りのアプリが一時的な読み取りの失敗で消えてしまうより、続けて次の更新で回復するほうがよいため。
+    /// </summary>
+    private static void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+    {
+        ErrorLog.Write("UI", e.Exception);
+        e.Handled = true;
+    }
+
+    /// <summary>
+    /// 待たれずに失敗したタスクの例外を書き残す。
+    /// </summary>
+    private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        ErrorLog.Write("Task", e.Exception);
+        e.SetObserved();
     }
 }

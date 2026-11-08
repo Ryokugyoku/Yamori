@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Yamori.Core.AppUsage.Service;
 using Yamori.Core.Sensors.Ipc.Messages;
 using Yamori.Core.Sensors.Service;
 
@@ -12,17 +13,26 @@ public sealed class SensorRequestHandler
 {
     private static readonly TimeSpan MaxRecentWindow = TimeSpan.FromDays(1);
 
+    /// <summary>アプリごとの使用率のまとめで、1 回に頼める最長の期間。</summary>
+    private static readonly TimeSpan MaxAppUsageRange = TimeSpan.FromDays(100);
+
+    /// <summary>アプリごとの使用率のまとめで、1 回に返せる上位の数の上限。</summary>
+    private const int MaxAppUsageTop = 50;
+
     private readonly ISensorService _service;
+    private readonly IAppUsageService _appUsage;
 
     /// <summary>
     /// 依頼を渡す先を指定して作る。
     /// </summary>
     /// <param name="service">センサーの窓口（Helper の中の <see cref="LocalSensorService"/>）。</param>
+    /// <param name="appUsage">アプリごとの使用率の記録の窓口。null なら常に記録なしを返す。</param>
     /// <exception cref="ArgumentNullException"><paramref name="service"/> が null。</exception>
-    public SensorRequestHandler(ISensorService service)
+    public SensorRequestHandler(ISensorService service, IAppUsageService? appUsage = null)
     {
         ArgumentNullException.ThrowIfNull(service);
         _service = service;
+        _appUsage = appUsage ?? new LocalAppUsageService(null);
     }
 
     /// <summary>
@@ -56,6 +66,7 @@ public sealed class SensorRequestHandler
                 SensorOperation.GetExtendedSensorState => await GetExtendedStateAsync(cancellationToken).ConfigureAwait(false),
                 SensorOperation.GetPawnIoConsent => await GetConsentAsync(cancellationToken).ConfigureAwait(false),
                 SensorOperation.SetPawnIoConsent => await SetConsentAsync(request, callerIsAdministrator, cancellationToken).ConfigureAwait(false),
+                SensorOperation.GetAppCpuUsage => await GetAppCpuUsageAsync(request, cancellationToken).ConfigureAwait(false),
                 _ => null,
             };
 
@@ -180,6 +191,25 @@ public sealed class SensorRequestHandler
             ? await _service.SetPawnIoConsentAsync(args.Enabled, cancellationToken).ConfigureAwait(false)
             : SensorSettingResult.AccessDenied;
         return IpcConnection.ToPayload(new SettingResultResponse(result), SensorIpcJsonContext.Default.SettingResultResponse);
+    }
+
+    private async Task<JsonElement?> GetAppCpuUsageAsync(IpcEnvelope request, CancellationToken cancellationToken)
+    {
+        var args = IpcConnection.FromPayload(request.Payload, SensorIpcJsonContext.Default.AppCpuUsageRequest);
+        if (args is null
+            || args.ToUtc < args.FromUtc
+            || args.ToUtc - args.FromUtc > MaxAppUsageRange
+            || !double.IsFinite(args.HighLoadThresholdPercent)
+            || args.HighLoadThresholdPercent is < 0 or > 100
+            || args.Top is <= 0 or > MaxAppUsageTop)
+        {
+            return null;
+        }
+
+        var summary = await _appUsage
+            .GetCpuUsageAsync(args.FromUtc, args.ToUtc, args.HighLoadThresholdPercent, args.Top, cancellationToken)
+            .ConfigureAwait(false);
+        return IpcConnection.ToPayload(AppUsageDtoMapper.ToDto(summary), SensorIpcJsonContext.Default.AppCpuUsageResponse);
     }
 
     private static JsonElement ToPayload(IReadOnlyList<SensorReading> readings) =>

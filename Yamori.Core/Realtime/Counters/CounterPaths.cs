@@ -20,6 +20,12 @@ public static class CounterPaths
     /// <summary>論理プロセッサごとの定格クロック（MHz）。</summary>
     public const string ProcessorFrequency = @"\Processor Information(*)\Processor Frequency";
 
+    /// <summary>PC 全体の <c>% Processor Utility</c>（%）。アプリごとの使用率の記録で、PC 全体の使用率に使う。</summary>
+    public const string ProcessorUtilityTotal = @"\Processor Information(_Total)\% Processor Utility";
+
+    /// <summary>PC 全体の <c>% Processor Time</c>（%）。<c>% Processor Utility</c> がない古い Windows 用。</summary>
+    public const string ProcessorTimeTotal = @"\Processor Information(_Total)\% Processor Time";
+
     /// <summary>ユーザー モード（アプリ）で使った時間の割合（%）。</summary>
     public const string ProcessorUserTimeTotal = @"\Processor Information(_Total)\% User Time";
 

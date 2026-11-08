@@ -6,8 +6,8 @@ namespace Yamori.Core.Sensors.Service;
 /// </summary>
 public static class SensorContract
 {
-    /// <summary>今の版。</summary>
-    public const int Version = 1;
+    /// <summary>今の版。2 でアプリごとの CPU 使用率の記録（<see cref="Ipc.SensorOperation.GetAppCpuUsage"/>）を足した。</summary>
+    public const int Version = 2;
 
     /// <summary>やり取りできる最も古い版。これより古い相手とは接続しない。</summary>
     public const int MinimumCompatibleVersion = 1;

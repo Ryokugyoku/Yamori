@@ -8,6 +8,7 @@ namespace Yamori.ViewModels.Sensors;
 public sealed class SensorRowItem : ObservableObject
 {
     private string _label = string.Empty;
+    private string _fullLabel = string.Empty;
     private string _valueText = string.Empty;
     private double _percent;
     private bool _hasPercent;
@@ -22,8 +23,11 @@ public sealed class SensorRowItem : ObservableObject
     /// <summary>センサーのキーの文字列表記を取得する。</summary>
     public string Key { get; }
 
-    /// <summary>センサーの名前を取得する。</summary>
+    /// <summary>センサーの名前（カードの中で共通の末尾を取り除いた短い名前）を取得する。</summary>
     public string Label { get => _label; set => SetProperty(ref _label, value); }
+
+    /// <summary>センサーの元の名前を取得する。ツールチップに出す。</summary>
+    public string FullLabel { get => _fullLabel; set => SetProperty(ref _fullLabel, value); }
 
     /// <summary>値の表示を取得する。読めないときは「—」。</summary>
     public string ValueText { get => _valueText; set => SetProperty(ref _valueText, value); }

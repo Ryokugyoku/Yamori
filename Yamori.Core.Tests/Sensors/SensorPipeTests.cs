@@ -1,4 +1,5 @@
-using System.IO.Pipes;
+﻿using System.IO.Pipes;
+using Yamori.Core.AppUsage.Analysis;
 using Yamori.Core.Sensors;
 using Yamori.Core.Sensors.Collection;
 using Yamori.Core.Sensors.Extended;
@@ -235,6 +236,54 @@ public class SensorPipeTests
     }
 
     /// <summary>テストの間だけ動かす <see cref="RemoteSensorService"/>。</summary>
+    [Fact]
+    public async Task AppCpuUsageIsReadThroughThePipe()
+    {
+        await using var harness = new PipeServerHarness();
+        harness.AppUsage.Summary = new AppCpuUsageSummary(
+            TimeSpan.FromHours(3),
+            TimeSpan.FromMinutes(20),
+            80,
+            [new AppCpuUsage("chrome", 12.5, 40), new AppCpuUsage("teams", 3, 25)]);
+        harness.Start();
+        await using var remote = new RunningRemote(harness);
+        await remote.WaitConnectedAsync();
+
+        var summary = await remote.Service.GetCpuUsageAsync(Time.AddDays(-7), Time, 80, 10);
+
+        Assert.Equal(TimeSpan.FromHours(3), summary.Observed);
+        Assert.Equal(TimeSpan.FromMinutes(20), summary.HighLoad);
+        Assert.Equal(80, summary.HighLoadThresholdPercent);
+        Assert.Equal(["chrome", "teams"], summary.Apps.Select(a => a.Name));
+        Assert.Equal(40, summary.Apps[0].HighLoadAveragePercent);
+        Assert.Equal((Time.AddDays(-7), Time, 80d, 10), harness.AppUsage.LastRequest);
+    }
+
+    [Fact]
+    public async Task AppCpuUsageRejectsTooLongRanges()
+    {
+        await using var harness = new PipeServerHarness();
+        harness.AppUsage.Summary = new AppCpuUsageSummary(TimeSpan.FromHours(1), TimeSpan.Zero, 80, []);
+        harness.Start();
+        await using var remote = new RunningRemote(harness);
+        await remote.WaitConnectedAsync();
+
+        var summary = await remote.Service.GetCpuUsageAsync(Time.AddDays(-400), Time, 80, 10);
+
+        Assert.False(summary.HasData);
+        Assert.Null(harness.AppUsage.LastRequest);
+    }
+
+    [Fact]
+    public async Task AppCpuUsageIsEmptyWhileDisconnected()
+    {
+        var remote = new RemoteSensorService(_ => throw new IOException(), TimeProvider.System, PipeServerHarness.FastRetry);
+
+        var summary = await remote.GetCpuUsageAsync(Time.AddDays(-1), Time, 80, 5);
+
+        Assert.Same(AppCpuUsageSummary.Empty, summary);
+    }
+
     private sealed class RunningRemote : IAsyncDisposable
     {
         private readonly CancellationTokenSource _cancellation = new();

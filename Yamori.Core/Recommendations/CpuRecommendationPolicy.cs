@@ -4,12 +4,12 @@ namespace Yamori.Core.Recommendations;
 
 /// <summary>
 /// CPU の論理プロセッサ数（スレッド数）のおすすめを判定する。
+/// Helper の記録から、CPU の使用率が高かった時間に多く使っていたアプリを原因として示す。
 /// </summary>
-/// <remarks>
-/// アプリごとの CPU 使用率は、まだ履歴として集計していないため、原因アプリは示さない。
-/// </remarks>
 public sealed class CpuRecommendationPolicy : TieredCapacityPolicy
 {
+    private const int MaxCauses = 2;
+
     /// <summary>
     /// 判定の基準値を指定して作る。
     /// </summary>
@@ -30,5 +30,12 @@ public sealed class CpuRecommendationPolicy : TieredCapacityPolicy
     {
         ArgumentNullException.ThrowIfNull(inventory);
         return inventory.Cpu is { LogicalProcessors: > 0 } cpu ? cpu.LogicalProcessors : null;
+    }
+
+    /// <inheritdoc />
+    protected override IReadOnlyList<string> GetMainCauses(RecommendationInput input)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+        return input.RecordedCauses.Take(MaxCauses).ToArray();
     }
 }

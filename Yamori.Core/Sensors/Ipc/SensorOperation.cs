@@ -34,4 +34,7 @@ public enum SensorOperation
 
     /// <summary>PawnIO の利用の同意の変更（管理者だけ）。</summary>
     SetPawnIoConsent = 8,
+
+    /// <summary>アプリごとの CPU 使用率の記録のまとめの取得（版 2 から）。</summary>
+    GetAppCpuUsage = 9,
 }
