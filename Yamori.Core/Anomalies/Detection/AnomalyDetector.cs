@@ -247,5 +247,6 @@ public sealed class AnomalyDetector
     }
 
     private bool ShouldNotify(AnomalyKind kind, AnomalyRecord record, DateTimeOffset now) =>
-        _notifications.ShouldNotify(_settings.Get(kind), record, _repository.GetLastNotified(kind, record.HardwareKey), now);
+        _settings.GetNotificationsEnabled()
+        && _notifications.ShouldNotify(_settings.Get(kind), record, _repository.GetLastNotified(kind, record.HardwareKey), now);
 }

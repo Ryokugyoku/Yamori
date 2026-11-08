@@ -130,6 +130,21 @@ public sealed class AnomalyStorageTests : IDisposable
     }
 
     [Fact]
+    public void TheGlobalNotificationSwitchDefaultsToOnAndIsSaved()
+    {
+        var repository = new SqliteAnomalySettingsRepository(_master);
+        Assert.True(repository.GetNotificationsEnabled());
+
+        var cache = new AnomalySettingsCache(repository);
+        cache.SaveNotificationsEnabled(false);
+        Assert.False(cache.GetNotificationsEnabled());
+        Assert.False(new SqliteAnomalySettingsRepository(_master).GetNotificationsEnabled());
+
+        repository.SaveNotificationsEnabled(true);
+        Assert.True(repository.GetNotificationsEnabled());
+    }
+
+    [Fact]
     public void SettingsCacheRejectsOutOfRangeThresholdsAndWritesThrough()
     {
         var repository = new SqliteAnomalySettingsRepository(_master);

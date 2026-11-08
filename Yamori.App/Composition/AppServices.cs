@@ -1,6 +1,7 @@
 ﻿using System;
 using Yamori.Accounts;
 using Yamori.Core.Analysis.History;
+using Yamori.Core.Anomalies.Service;
 using Yamori.Core.AppUsage.Service;
 using Yamori.Core.Formatting;
 using Yamori.Core.Hardware;
@@ -41,6 +42,7 @@ public sealed class AppServices
         IWindowsAccountProvider accountProvider,
         FailoverSensorService sensors,
         IAppUsageService appUsage,
+        IAnomalyService anomalies,
         NextPcReportService reportService,
         NextPcReportPresenter presenter,
         HardwareSectionsPresenter hardwarePresenter)
@@ -50,6 +52,7 @@ public sealed class AppServices
         AccountProvider = accountProvider;
         Sensors = sensors;
         AppUsage = appUsage;
+        Anomalies = anomalies;
         ReportService = reportService;
         Presenter = presenter;
         HardwarePresenter = hardwarePresenter;
@@ -69,6 +72,9 @@ public sealed class AppServices
 
     /// <summary>アプリごとの使用率の記録の窓口を取得する（Helper へのパイプ。Helper が動いていない間は記録なし）。</summary>
     public IAppUsageService AppUsage { get; }
+
+    /// <summary>異常の一覧と設定の窓口を取得する（Helper へのパイプ。Helper が動いていない間は空で、変更はできない）。</summary>
+    public IAnomalyService Anomalies { get; }
 
     /// <summary>次の PC のレポートを作る処理を取得する。</summary>
     public NextPcReportService ReportService { get; }
@@ -111,6 +117,7 @@ public sealed class AppServices
             languageService,
             new CurrentWindowsAccountProvider(),
             sensors,
+            remote,
             remote,
             reportService,
             new NextPcReportPresenter(new RecommendationTextFormatter()),
@@ -176,5 +183,6 @@ public sealed class AppServices
             SettingsStore.Load(),
             LanguageService,
             AccountProvider.GetCurrent(),
-            MachineDataPaths.GetSensorDataDirectory());
+            MachineDataPaths.GetSensorDataDirectory(),
+            new NotificationSettingsViewModel(Anomalies, Sensors));
 }

@@ -12,7 +12,7 @@ using Yamori.Services;
 namespace Yamori.ViewModels;
 
 /// <summary>
-/// 設定画面の状態。表示言語を変更し、記録の扱い（Helper が PC の中に保存すること）を説明する。
+/// 設定画面の状態。表示言語と異常の通知のオン・オフを変更し、記録の扱い（Helper が PC の中に保存すること）を説明する。
 /// </summary>
 public sealed class SettingsViewModel : ObservableObject
 {
@@ -29,25 +29,29 @@ public sealed class SettingsViewModel : ObservableObject
     /// <param name="languageService">表示言語を切り替える処理。</param>
     /// <param name="account">サインイン中のアカウント。</param>
     /// <param name="sensorDataDirectory">Helper が記録を保存するフォルダー（画面に表示する）。</param>
+    /// <param name="notifications">異常の通知の設定（Helper に保存する）。</param>
     /// <exception cref="ArgumentNullException">いずれかの引数が null。</exception>
     public SettingsViewModel(
         ISettingsStore settingsStore,
         YamoriSettings settings,
         LanguageService languageService,
         WindowsAccount account,
-        string sensorDataDirectory)
+        string sensorDataDirectory,
+        NotificationSettingsViewModel notifications)
     {
         ArgumentNullException.ThrowIfNull(settingsStore);
         ArgumentNullException.ThrowIfNull(settings);
         ArgumentNullException.ThrowIfNull(languageService);
         ArgumentNullException.ThrowIfNull(account);
         ArgumentNullException.ThrowIfNull(sensorDataDirectory);
+        ArgumentNullException.ThrowIfNull(notifications);
 
         _settingsStore = settingsStore;
         _settings = settings;
         _languageService = languageService;
 
         Account = account;
+        Notifications = notifications;
         DataDirectoryText = UiText.Format("Storage_PathLabel", sensorDataDirectory);
         Languages =
         [
@@ -65,6 +69,9 @@ public sealed class SettingsViewModel : ObservableObject
 
     /// <summary>サインイン中のアカウントを取得する。</summary>
     public WindowsAccount Account { get; }
+
+    /// <summary>異常の通知の設定を取得する。</summary>
+    public NotificationSettingsViewModel Notifications { get; }
 
     /// <summary>Yamori の版の表示（例：バージョン 1.0.0.0）を取得する。</summary>
     public string VersionText { get; } = UiText.Format("Settings_Version", AppVersion.Get());

@@ -32,4 +32,5 @@ namespace Yamori.Core.Sensors.Ipc;
 [JsonSerializable(typeof(AnomalyIdRequest))]
 [JsonSerializable(typeof(AnomalySettingDto))]
 [JsonSerializable(typeof(AnomalySettingDto[]))]
+[JsonSerializable(typeof(AnomalyNotificationsMessage))]
 public sealed partial class SensorIpcJsonContext : JsonSerializerContext;

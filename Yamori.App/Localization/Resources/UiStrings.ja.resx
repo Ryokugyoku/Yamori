@@ -948,4 +948,28 @@
   <data name="Highlight_level_passive-limit" xml:space="preserve">
     <value>熱による制限</value>
   </data>
+  <data name="Settings_GroupNotifications" xml:space="preserve">
+    <value>通知</value>
+  </data>
+  <data name="Settings_NotifyHeader" xml:space="preserve">
+    <value>異常の通知</value>
+  </data>
+  <data name="Settings_NotifyDescription" xml:space="preserve">
+    <value>CPU が熱で性能を落としているなどの異常を見つけたら、Windows の通知で知らせます。通知には部品と数値だけを書きます。全画面のアプリを使っている間は通知せず、どちらの場合も異常は一覧に残ります。</value>
+  </data>
+  <data name="Settings_Notify_ThermalThrottling" xml:space="preserve">
+    <value>サーマルスロットリング</value>
+  </data>
+  <data name="Settings_Notify_ThermalThrottling_Description" xml:space="preserve">
+    <value>部品が熱で性能を落とす状態が続いたとき。電力・電流の上限だけによるものは、一覧に残しますが通知しません。</value>
+  </data>
+  <data name="Settings_NotifyLoading" xml:space="preserve">
+    <value>見守りのサービスから設定を読んでいます…</value>
+  </data>
+  <data name="Settings_NotifyUnavailable" xml:space="preserve">
+    <value>見守りのサービス（Yamori.Helper）が動いている間に変えられます。</value>
+  </data>
+  <data name="Settings_NotifySaveFailed" xml:space="preserve">
+    <value>設定を保存できませんでした。見守りのサービスが動いているか確かめてください。</value>
+  </data>
 </root>

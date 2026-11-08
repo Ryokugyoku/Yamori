@@ -136,4 +136,27 @@ public sealed class LocalAnomalyService : IAnomalyService
             },
             cancellationToken);
     }
+
+    /// <inheritdoc />
+    public Task<bool?> GetNotificationsEnabledAsync(CancellationToken cancellationToken = default) =>
+        _settings is { } settings
+            ? Task.Run<bool?>(() => settings.GetNotificationsEnabled(), cancellationToken)
+            : Task.FromResult<bool?>(null);
+
+    /// <inheritdoc />
+    public Task<SensorSettingResult> SetNotificationsEnabledAsync(bool enabled, CancellationToken cancellationToken = default)
+    {
+        if (_settings is not { } settings)
+        {
+            return Task.FromResult(SensorSettingResult.Unavailable);
+        }
+
+        return Task.Run(
+            () =>
+            {
+                settings.SaveNotificationsEnabled(enabled);
+                return SensorSettingResult.Applied;
+            },
+            cancellationToken);
+    }
 }

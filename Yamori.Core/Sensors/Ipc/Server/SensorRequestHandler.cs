@@ -80,6 +80,8 @@ public sealed class SensorRequestHandler
                 SensorOperation.MarkAnomalyNotified => await MarkAnomalyNotifiedAsync(request, cancellationToken).ConfigureAwait(false),
                 SensorOperation.GetAnomalySettings => await GetAnomalySettingsAsync(cancellationToken).ConfigureAwait(false),
                 SensorOperation.SetAnomalySetting => await SetAnomalySettingAsync(request, cancellationToken).ConfigureAwait(false),
+                SensorOperation.GetAnomalyNotificationsEnabled => await GetAnomalyNotificationsAsync(cancellationToken).ConfigureAwait(false),
+                SensorOperation.SetAnomalyNotificationsEnabled => await SetAnomalyNotificationsAsync(request, cancellationToken).ConfigureAwait(false),
                 _ => null,
             };
 
@@ -284,6 +286,27 @@ public sealed class SensorRequestHandler
         var result = AnomalyDtoMapper.FromDto(args) is { } setting
             ? await _anomalies.SetSettingAsync(setting, cancellationToken).ConfigureAwait(false)
             : SensorSettingResult.Invalid;
+        return IpcConnection.ToPayload(new SettingResultResponse(result), SensorIpcJsonContext.Default.SettingResultResponse);
+    }
+
+    private async Task<JsonElement?> GetAnomalyNotificationsAsync(CancellationToken cancellationToken)
+    {
+        // 記録が使えないときは返事を作らない（受け手は「分からない」として扱う）。
+        var enabled = await _anomalies.GetNotificationsEnabledAsync(cancellationToken).ConfigureAwait(false);
+        return enabled is { } value
+            ? IpcConnection.ToPayload(new AnomalyNotificationsMessage(value), SensorIpcJsonContext.Default.AnomalyNotificationsMessage)
+            : null;
+    }
+
+    private async Task<JsonElement?> SetAnomalyNotificationsAsync(IpcEnvelope request, CancellationToken cancellationToken)
+    {
+        var args = IpcConnection.FromPayload(request.Payload, SensorIpcJsonContext.Default.AnomalyNotificationsMessage);
+        if (args is null)
+        {
+            return null;
+        }
+
+        var result = await _anomalies.SetNotificationsEnabledAsync(args.Enabled, cancellationToken).ConfigureAwait(false);
         return IpcConnection.ToPayload(new SettingResultResponse(result), SensorIpcJsonContext.Default.SettingResultResponse);
     }
 

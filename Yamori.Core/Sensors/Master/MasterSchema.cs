@@ -80,6 +80,14 @@ public static class MasterSchema
             manual_threshold REAL
         );
         """,
+
+        // 3: 異常の通知の全体のオン・オフ（1 行だけ）。行がなければオン。
+        """
+        CREATE TABLE anomaly_notification (
+            id      INTEGER PRIMARY KEY CHECK (id = 1),
+            enabled INTEGER NOT NULL
+        );
+        """,
     ];
 
     /// <summary>今のコードが扱うスキーマの版を取得する。</summary>

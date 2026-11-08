@@ -63,4 +63,19 @@ public interface IAnomalyService
     /// <returns>結果。値が範囲の外なら <see cref="SensorSettingResult.Invalid"/>。</returns>
     /// <exception cref="ArgumentNullException"><paramref name="setting"/> が null。</exception>
     Task<SensorSettingResult> SetSettingAsync(AnomalySetting setting, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 異常の通知の全体のオン・オフを取得する。
+    /// </summary>
+    /// <param name="cancellationToken">中止の合図。</param>
+    /// <returns>オンなら true、オフなら false。記録が使えない、Helper につながっていない、または Helper が古くこの操作を知らない場合は null。</returns>
+    Task<bool?> GetNotificationsEnabledAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 異常の通知の全体のオン・オフを変える。オフの間も、異常は一覧に残す。
+    /// </summary>
+    /// <param name="enabled">通知を出すなら true。</param>
+    /// <param name="cancellationToken">中止の合図。</param>
+    /// <returns>結果。</returns>
+    Task<SensorSettingResult> SetNotificationsEnabledAsync(bool enabled, CancellationToken cancellationToken = default);
 }

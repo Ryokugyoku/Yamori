@@ -12,7 +12,7 @@ public sealed class SqliteAnomalySettingsRepository : IAnomalySettingsRepository
     /// <summary>
     /// データベースを指定して作る。
     /// </summary>
-    /// <param name="database">マスタのデータベース（スキーマの版 2 以上）。</param>
+    /// <param name="database">マスタのデータベース（スキーマの版 3 以上）。</param>
     /// <exception cref="ArgumentNullException"><paramref name="database"/> が null。</exception>
     public SqliteAnomalySettingsRepository(MasterDatabase database)
     {
@@ -40,6 +40,30 @@ public sealed class SqliteAnomalySettingsRepository : IAnomalySettingsRepository
         return AnomalySettingRules.Kinds
             .Select(kind => saved.TryGetValue(kind, out var setting) ? setting : AnomalySettingRules.Default(kind))
             .ToArray();
+    }
+
+    /// <inheritdoc />
+    public bool GetNotificationsEnabled() =>
+        _database.Execute(connection =>
+        {
+            using var command = SqliteCommands.Create(connection, "SELECT enabled FROM anomaly_notification WHERE id = 1;");
+            return command.ExecuteScalar() is not long enabled || enabled != 0;
+        });
+
+    /// <inheritdoc />
+    public void SaveNotificationsEnabled(bool enabled)
+    {
+        _database.Execute(connection =>
+        {
+            using var command = SqliteCommands.Create(
+                connection,
+                """
+                INSERT INTO anomaly_notification (id, enabled) VALUES (1, $enabled)
+                ON CONFLICT(id) DO UPDATE SET enabled = excluded.enabled;
+                """,
+                ("$enabled", enabled ? 1 : 0));
+            return command.ExecuteNonQuery();
+        });
     }
 
     /// <inheritdoc />

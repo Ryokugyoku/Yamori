@@ -269,6 +269,21 @@ public sealed class RemoteSensorService : ISensorService, IHelperConnection, IAp
         return ToSettingResult(response);
     }
 
+    /// <inheritdoc />
+    public async Task<bool?> GetNotificationsEnabledAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await TryRequestAsync(SensorOperation.GetAnomalyNotificationsEnabled, null, cancellationToken).ConfigureAwait(false);
+        return IpcConnection.FromPayload(response?.Payload, SensorIpcJsonContext.Default.AnomalyNotificationsMessage)?.Enabled;
+    }
+
+    /// <inheritdoc />
+    public async Task<SensorSettingResult> SetNotificationsEnabledAsync(bool enabled, CancellationToken cancellationToken = default)
+    {
+        var payload = IpcConnection.ToPayload(new AnomalyNotificationsMessage(enabled), SensorIpcJsonContext.Default.AnomalyNotificationsMessage);
+        var response = await TryRequestAsync(SensorOperation.SetAnomalyNotificationsEnabled, payload, cancellationToken).ConfigureAwait(false);
+        return ToSettingResult(response);
+    }
+
     private static SensorSettingResult ToSettingResult(IpcEnvelope? response) =>
         IpcConnection.FromPayload(response?.Payload, SensorIpcJsonContext.Default.SettingResultResponse)?.Result ?? SensorSettingResult.Unavailable;
 

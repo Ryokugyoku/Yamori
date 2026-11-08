@@ -4,7 +4,10 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:l="using:Yamori.Localization"
-    xmlns:views="using:Yamori.Views">
+    xmlns:views="using:Yamori.Views"
+    xmlns:vm="using:Yamori.ViewModels"
+    Loaded="OnLoaded"
+    Unloaded="OnUnloaded">
 
     <!-- Windows 11 の設定アプリにならい、1 行 1 項目のカードをまとまりごとに並べる -->
     <StackPanel
@@ -72,6 +75,61 @@
                 </StackPanel>
             </Grid>
         </Border>
+
+        <!-- 通知（Helper に保存し、通知専用の常駐プログラムと Helper が従う） -->
+        <TextBlock Style="{StaticResource SettingsGroupHeaderTextStyle}" Text="{l:Loc Key=Settings_GroupNotifications}" />
+        <Border Style="{StaticResource SettingsCardStyle}">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <FontIcon VerticalAlignment="Center" FontSize="20" Glyph="&#xEA8F;" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{l:Loc Key=Settings_NotifyHeader}" />
+                    <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{l:Loc Key=Settings_NotifyDescription}" />
+                    <TextBlock
+                        Margin="0,4,0,0"
+                        Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                        Style="{StaticResource FootnoteTextStyle}"
+                        Text="{x:Bind ViewModel.Notifications.StatusText, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.Notifications.HasStatus, Mode=OneWay}" />
+                </StackPanel>
+                <ToggleSwitch
+                    Grid.Column="2"
+                    MinWidth="0"
+                    VerticalAlignment="Center"
+                    AutomationProperties.Name="{l:Loc Key=Settings_NotifyHeader}"
+                    IsEnabled="{x:Bind ViewModel.Notifications.IsAvailable, Mode=OneWay}"
+                    IsOn="{x:Bind ViewModel.Notifications.IsEnabled, Mode=TwoWay}" />
+            </Grid>
+        </Border>
+        <ItemsControl ItemsSource="{x:Bind ViewModel.Notifications.Kinds}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:AnomalyKindNotificationOption">
+                    <Border Margin="0,4,0,0" Style="{StaticResource SettingsCardStyle}">
+                        <Grid Padding="36,0,0,0" ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="{x:Bind Title}" />
+                                <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{x:Bind Description}" />
+                            </StackPanel>
+                            <ToggleSwitch
+                                Grid.Column="1"
+                                MinWidth="0"
+                                VerticalAlignment="Center"
+                                AutomationProperties.Name="{x:Bind Title}"
+                                IsEnabled="{x:Bind IsEditable, Mode=OneWay}"
+                                IsOn="{x:Bind IsOn, Mode=TwoWay}" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
 
         <!-- 表示 -->
         <TextBlock Style="{StaticResource SettingsGroupHeaderTextStyle}" Text="{l:Loc Key=Settings_GroupDisplay}" />

@@ -25,9 +25,9 @@ public sealed class MasterStoreTests : IDisposable
 
         Assert.Equal(MasterSchema.CurrentVersion, db.SchemaVersion);
         Assert.Equal("wal", db.Execute(c => Scalar(c, "PRAGMA journal_mode;")));
-        Assert.Equal(2, MasterSchema.CurrentVersion);
+        Assert.Equal(3, MasterSchema.CurrentVersion);
         Assert.Equal(
-            ["anomaly", "anomaly_setting", "event_log", "hardware", "sensor", "source"],
+            ["anomaly", "anomaly_notification", "anomaly_setting", "event_log", "hardware", "sensor", "source"],
             db.Execute(c => Strings(c, "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name;")));
     }
 
@@ -46,7 +46,7 @@ public sealed class MasterStoreTests : IDisposable
 
         using var db = MasterDatabase.Open(DbPath);
 
-        Assert.Equal(2, db.SchemaVersion);
+        Assert.Equal(3, db.SchemaVersion);
         Assert.Equal((ushort)1, new SqliteSourceRepository(db).GetAll()["win-std"]);
         Assert.Contains("anomaly", db.Execute(c => Strings(c, "SELECT name FROM sqlite_master WHERE type = 'table';")));
     }

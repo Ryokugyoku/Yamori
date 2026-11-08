@@ -10,6 +10,7 @@ public sealed class AnomalySettingsCache
     private readonly IAnomalySettingsRepository _repository;
     private readonly Lock _lock = new();
     private IReadOnlyDictionary<AnomalyKind, AnomalySetting>? _settings;
+    private bool? _notificationsEnabled;
 
     /// <summary>
     /// 保存先を指定して作る。読むのは最初に使うとき。
@@ -39,6 +40,31 @@ public sealed class AnomalySettingsCache
     /// <returns>設定。知らない種類なら初期の設定。</returns>
     public AnomalySetting Get(AnomalyKind kind) =>
         Load().TryGetValue(kind, out var setting) ? setting : AnomalySettingRules.Default(kind);
+
+    /// <summary>
+    /// 異常の通知の全体のオン・オフを取得する。オフなら、種類ごとの設定にかかわらず通知しない（異常は一覧に残す）。
+    /// </summary>
+    /// <returns>通知を出すなら true。</returns>
+    public bool GetNotificationsEnabled()
+    {
+        lock (_lock)
+        {
+            return _notificationsEnabled ??= _repository.GetNotificationsEnabled();
+        }
+    }
+
+    /// <summary>
+    /// 異常の通知の全体のオン・オフをマスタに保存し、メモリの値を差し替える。
+    /// </summary>
+    /// <param name="enabled">通知を出すなら true。</param>
+    public void SaveNotificationsEnabled(bool enabled)
+    {
+        lock (_lock)
+        {
+            _repository.SaveNotificationsEnabled(enabled);
+            _notificationsEnabled = enabled;
+        }
+    }
 
     /// <summary>
     /// 設定をマスタに保存し、メモリの設定を差し替える。

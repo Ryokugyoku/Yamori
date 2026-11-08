@@ -88,20 +88,23 @@ Yamori.slnx
 - **Yamori.Helper**：MSIX のパッケージ サービス（サービス名 `YamoriHelper`、自動起動、LocalSystem）として動き、センサーを集めて記録する。画面を閉じていても動き続ける。
 - **やり取り**：名前付きパイプ `\\.\pipe\Yamori.Helper.Sensors`。SYSTEM・Administrators と、対話的にサインインしているユーザーだけがつなげる。ネットワークからの接続は拒否する。
 - **管理者だけができる操作**：記録の設定の変更と、PawnIO の利用の同意の変更。画面から同意を変えるときは、`Yamori.Helper.exe --pawnio-consent on|off` を UAC の承認つきで起動し、そのコマンドが Helper に依頼する。異常の設定（しきい値・通知のオン・オフ）と「これは正常」の印は、安全に関わらないため管理者でなくても変えられる。
-- **やり取りの版**：3（異常の一覧・設定の操作と異常の知らせ、受け取る通知の選択、1 秒ごとの記録の読み出しを足した）。版 1・2 の画面ともつながり、知らない操作は「記録なし」として扱う。つなぐときに受け取りたい通知（毎秒の値・カタログ・拡張センサーの状態・異常の知らせ）を選べ、通知の常駐プログラムは異常の知らせだけを受け取る。
+- **やり取りの版**：4（3 で異常の一覧・設定の操作と異常の知らせ、受け取る通知の選択、1 秒ごとの記録の読み出しを、4 で異常の通知の全体のオン・オフの操作を足した）。古い版の画面ともつながり、知らない操作は「記録なし」として扱う。つなぐときに受け取りたい通知（毎秒の値・カタログ・拡張センサーの状態・異常の知らせ）を選べ、通知の常駐プログラムは異常の知らせだけを受け取る。
 - **Helper が動いていないとき**：画面は標準 API だけを読んで表示する（記録はせず、拡張センサーも使わない）。タイトルバーの見守りの札（「見守り中」「記録が止まっています」など。どの画面でも出る）と、リアルタイム画面のお知らせに「サービスを起動」のボタンを出し、押すと `sc.exe start` でサービスを起動する（権限が足りなければ UAC の承認つきで起動し直す。Debug は `YamoriHelperDev`、Release は `YamoriHelper`）。
 - **Helper のデータフォルダー**：パッケージのマシン共通フォルダー（なければ `%ProgramData%\Yamori`）の `sensors\`。アクセス権は SYSTEM と Administrators だけ。
 
 ### 通知（Yamori.Notifier）
 - Helper はサービス（セッション 0）なので、自分では Windows の通知を出せない。そのため、利用者のサインイン時に起動する小さな常駐プログラム `Yamori.Notifier.exe` が通知を出す（MSIX のスタートアップ タスク `YamoriNotifier`。止めるのは Windows の「設定 → アプリ → スタートアップ」）。アプリ本体を開いたときに動いていなければ、アプリ本体が起動する。
 - トレイにアイコンを出す。左クリックで Yamori を開き、右クリックのメニューで「Yamori を開く」「通知を 1 時間止める」「通知を明日まで止める」「通知を再開する」「終了」を選べる。
-- 全画面のアプリ（ゲームなど）やプレゼンテーションの間は通知を出さない。夜間などは Windows の「応答不可」に任せる。
-- 通知を押すと、Windows がアプリ本体を開く（COM の起動と `AppNotificationManager`。`Package.appxmanifest` の `windows.comServer` と `windows.toastNotificationActivation`）。通知を出すのにサインインは不要で、通知から開いたときも Windows Hello のサインインのあとで画面を切り替える。
+- Helper のパイプに「異常の知らせだけ」を受け取る形でつなぐ（毎秒の値は受け取らない）。パイプは UI とは別のスレッドで動かし、切れたら 5 秒待ってつなぎ直す。Helper が動いていない間も落ちずに待ち続け、トレイのヒントに「見守りのサービスを待っています」と出す。
+- 通知を出すのは、Helper が「通知すべき」とした、始まった・重くなった異常だけ（電力・電流の制限だけの異常など、Helper が通知しないとしたものは出さない）。出す前に Helper から通知の全体と異常の種類ごとのオン・オフを読み直し、オフなら出さない。同じ異常と、同じ部品の同じ種類の異常は 6 時間に 1 回まで。出したら Helper に通知済みの時刻を記録する（6 時間はここから数える）。
+- 全画面のアプリ（ゲームなど）やプレゼンテーションの間と、トレイで一時停止している間は通知を出さず、異常は一覧にだけ残す（通知済みにはしないので、その異常が重くなったときに出すことがある）。夜間などは Windows の「応答不可」に任せる。
+- 通知の文面は部品・現象・数値だけで、アプリ名は書かない（例：「CPU が熱で性能を落としています」「96℃・クロック約 30% 低下・12 分間」）。電力・電流の上限だけで性能が落ちたときは「電力の上限で」と書く。日英西の 3 言語。文面の組み立ては Core の `Notifications/AnomalyToastComposer`。
+- 通知を押すと、Windows がアプリ本体を開く（COM の起動と `AppNotificationManager`。`Package.appxmanifest` の `windows.comServer` と `windows.toastNotificationActivation`）。押したときの引数にはその異常の番号が入る。通知を出すのにサインインは不要で、通知から開いたときも Windows Hello のサインインのあとで画面を切り替える（分析画面ができるまでは、リアルタイム画面を開く）。
+- 通知のオン・オフ（全体と、異常の種類ごと）はアプリ本体の設定画面の「通知」で変える。設定は Helper の `master.db` に保存し、管理者でない利用者も変えられる。全体をオフにしても、異常は一覧に残る。
 - 想定外の失敗は `%LOCALAPPDATA%\Yamori\notifier-errors.log` に書き残す。
-- 開発中の状態：トレイ・一時停止・通知の出し方と押したときの動きまで。Helper 側の異常の知らせ（通知を出すべきかの判断つき）はできているが、常駐プログラムがそれを受け取る部分は未実装。
 
 ### センサーの記録（Helper）
-- 時系列は **RocksDB**（`timeseries\`）、センサー・ハードウェアの一覧とイベント、異常の一覧と異常の設定は **SQLite**（`master.db`。スキーマの版 2）に保存する
+- 時系列は **RocksDB**（`timeseries\`）、センサー・ハードウェアの一覧とイベント、異常の一覧と異常の設定（種類ごとの設定と、通知の全体のオン・オフ）は **SQLite**（`master.db`。スキーマの版 3）に保存する
 - 既定の記録間隔は 10 秒。変化が小さいとき（デッドバンド以内）は書かない。スレッド・GPU エンジン・コアごとの細かい値や回数・速さの値は、既定では記録しない
 - 1 分・1 時間の集計を作る。保持期間は、生データ 7 日、1 分集計 90 日、1 時間集計は無期限
 - **1 秒ごとの記録**：異常の検出と分析に使う一部のセンサー（CPU の使用率・パッケージ温度・実クロックと推定クロック・電力・性能の割合と制限・制限の印、GPU の使用率・温度・コアのクロック・ファン、メモリの使用率、ストレージの温度、ACPI 温度センサーの温度・制限・制限の印。PC によって 20〜40 個ほど）だけを、記録の設定とは別に毎秒・デッドバンドなしで残す（列ファミリー `fine_1s`）。保持期間は 24 時間（1 時間ごとの保持期間の処理で消すため、最大で約 25 時間残る）。対象は `Sensors/TimeSeries/FineSeriesSelection`
@@ -151,7 +154,11 @@ Debug でもスタートアップ タスクと通知の起動の宣言は残す�
 $pfn = (Get-AppxPackage b14827bd-a0ec-4f5d-a38d-dbb3f654a1f9).PackageFamilyName
 $dir = (Get-AppxPackage b14827bd-a0ec-4f5d-a38d-dbb3f654a1f9).InstallLocation
 Invoke-CommandInDesktopPackage -PackageFamilyName $pfn -AppId App -Command "$dir\Yamori.Notifier.exe" -Args '--test-notification'   # 確かめ用の通知を 1 回出す
+Invoke-CommandInDesktopPackage -PackageFamilyName $pfn -AppId App -Command "$dir\Yamori.Notifier.exe"   # 常駐させ、YamoriHelperDev の異常の知らせで通知を出す
 ```
+
+- 登録したパッケージは `Yamori.App\bin\x64\Debug\...\win-x64\AppX` のファイルをそのまま使う。`dotnet build` だけでは AppX のフォルダーは新しくならないので、Visual Studio で配置し直すか、ビルドで作られる `Yamori.App.build.appxrecipe` に書かれたファイルを AppX へ写す。
+- 本物の異常を起こすには、確かめの間だけサーマルスロットリングの手動のしきい値（注意の温度）を低く（例：60℃）して CPU に負荷をかけると、30 秒ほどで通知の対象の異常が始まる。終わったら自動に戻す。通知を出すと同じ部品は 6 時間通知しなくなる。
 
 - `Package.appxmanifest` の拡張（Extensions）を変えたときは、同じ版のままでは登録し直せない。Visual Studio の配置か、`Remove-AppxPackage -PreserveApplicationData` のあとで登録し直す。
 
@@ -223,6 +230,7 @@ Invoke-CommandInDesktopPackage -PackageFamilyName $pfn -AppId App -Command "$dir
   - タイトルバーに、Helper とつながって記録しているか（見守りの状態）を常に表示する
 - [x] 拡張センサー（任意・PawnIO・Intel の CPU のみ）：CPU のパッケージ・コアの温度、TjMax と熱制御の作動温度、性能の制限の印（熱・PROCHOT・電力・電流など）、電力（パッケージ・コア・DRAM）、実クロック。公式版の確認と、管理者の同意（UAC）が必要
 - [x] ACPI 温度センサーの熱による制限（Throttle Reasons）を、オン・オフの印のセンサー（`thermal-zone/{id}/flag/throttling`）として記録する
+- [x] サーマルスロットリングの自動検出と Windows の通知（Helper が見張り、通知の常駐プログラムが出す。詳しくは「通知（Yamori.Notifier）」）。設定画面で通知の全体と種類ごとにオン・オフできる
 - [x] 負荷時間の分析と、次のPCのおすすめ（CPUのスレッド数、メモリ容量）
   - 直近 90 日の Helper の時系列（1 分集計の平均。画面を閉じている間も含む）から判定する。画面のプロセスは記録しない。Helper の記録がない（入れたばかり、または Helper につながっていない）間は「データを集めています」になり、その理由をおすすめのカードに書く
   - Helper につながったときは、Helper の記録で自動的に判定し直す
@@ -238,7 +246,7 @@ Invoke-CommandInDesktopPackage -PackageFamilyName $pfn -AppId App -Command "$dir
 - [ ] アプリごとの GPU・読み書き・メモリの記録（今の値はリアルタイム表示と、メモリはアプリ画面で見られる）
 - [ ] GPU・ストレージ・ネットワークの使用率、SSD寿命の長期的な傾向
 - [ ] アプリごとの通信量（v1.5）
-- [ ] 異常の自動検出と通知（サーマルスロットリング、ふだんより悪い状態）と、部品ごとの分析画面。通知の常駐プログラムの土台（トレイ・一時停止・通知を押して開く）と、Helper の土台（制限の印と TjMax のセンサー、1 秒ごとの記録、異常の一覧と設定、検出の仕組み、パイプの操作と異常の知らせ）と、サーマルスロットリングの判定（Helper が異常の一覧に残す）までできている。通知の常駐プログラムが知らせを受け取って通知を出す部分、分析画面、「ふだんより悪い」の判定はまだ
+- [ ] 異常の自動検出と通知（サーマルスロットリング、ふだんより悪い状態）と、部品ごとの分析画面。Helper の土台（制限の印と TjMax のセンサー、1 秒ごとの記録、異常の一覧と設定、検出の仕組み、パイプの操作と異常の知らせ）、サーマルスロットリングの判定（Helper が異常の一覧に残す）、通知の常駐プログラムが知らせを受けて Windows の通知を出すこと、設定画面の通知のオン・オフまでできている。分析画面（通知から開いた異常の画面への移動を含む）、しきい値の設定画面、「ふだんより悪い」の判定はまだ
 
 既知の制限：
 - CPU の温度は、拡張センサー（PawnIO）を使う Intel の CPU でだけ表示する。AMD の CPU と、マザーボードにつながったファンの回転数にはまだ対応していない（標準 API では読めない）。GPU のファン・温度は、ドライバーが Windows に報告している場合だけ表示する。
@@ -263,7 +271,7 @@ Invoke-CommandInDesktopPackage -PackageFamilyName $pfn -AppId App -Command "$dir
 | `Storage/` | データの置き場所（画面の設定と、想定外のエラーの記録 `errors.log` は `%LOCALAPPDATA%\Yamori`、Helper の記録はマシン共通のフォルダー）と、Helper のデータフォルダーのアクセス権。`Legacy/` は以前の版の CSV を起動時に消す処理 |
 | `Settings/` | ユーザー設定（表示言語）と、その保存（`%LOCALAPPDATA%\Yamori\settings.json`） |
 | `Localization/`, `Resources/` | 表示文字列（`*.resx`。英語が既定、`.ja`・`.es` が翻訳） |
-| `Notifications/` | 通知の常駐プログラムとアプリ本体の間の決まりごと（通知を押したときの引数、通知の XML、一時停止、常駐プログラムの名前） |
+| `Notifications/` | 通知の常駐プログラムとアプリ本体の間の決まりごと（通知を押したときの引数、通知の XML、一時停止、常駐プログラムの名前）と、異常の知らせを通知にする流れ（出してよいかの判定 `AnomalyToastFilter`、文面 `AnomalyToastComposer`、設定を読んで出して通知済みを記録する `AnomalyNotificationDispatcher`） |
 | `Anomalies/` | 異常の自動検出（Helper の中で動く）。異常の種類・重さ・一覧の行・設定、`Detection/`（判定の規則の形 `IAnomalyRule`、毎秒の判定と始まり・終わりの管理、通知を出すべきかの判断。`Throttling/` はサーマルスロットリングの規則と、部品の種類ごとの材料の読み方）、`Thresholds/`（TjMax などから注意の温度を決める）、`Storage/`（`master.db` の異常の一覧と設定）、`Service/`（窓口。画面と通知の常駐プログラムからは `Sensors/Ipc/` のパイプで使う） |
 | `Processes/` | プロセスの使用量（メモリ、CPU・GPU・入出力）の取得と、アプリ単位の集計 |
 | `AppUsage/` | アプリごとの CPU 使用率の記録（Helper の中で動く）。`Sampling/`（パフォーマンスカウンターで測る）、`Recording/`（1 分ごとの平均と、記録の繰り返し・保持期間）、`Storage/`（SQLite の `app-usage.db`）、`Analysis/`（期間の平均と、高負荷の時間だけの平均）、`Service/`（読み出しの窓口。画面からは `Sensors/Ipc/` のパイプで読む） |

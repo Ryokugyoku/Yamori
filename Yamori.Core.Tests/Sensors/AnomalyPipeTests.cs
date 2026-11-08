@@ -14,10 +14,30 @@ public class AnomalyPipeTests
     private static readonly SensorKey Load = WellKnownSensorKeys.CpuTotalLoad;
 
     [Fact]
-    public void ContractVersionIsThree()
+    public void ContractVersionIsFour()
     {
-        Assert.Equal(3, SensorContract.Version);
-        Assert.True(SensorContract.IsCompatible(2));
+        Assert.Equal(4, SensorContract.Version);
+        Assert.True(SensorContract.IsCompatible(3));
+    }
+
+    [Fact]
+    public async Task TheGlobalNotificationSwitchTravelsThroughThePipe()
+    {
+        await using var harness = new PipeServerHarness(callerIsAdministrator: false);
+        harness.Start();
+        await using var remote = new RunningRemote(harness, SensorNotificationTopics.Anomalies);
+        await remote.WaitConnectedAsync();
+
+        Assert.True(await remote.Service.GetNotificationsEnabledAsync());
+
+        // 管理者でなくても変えられる。
+        Assert.Equal(SensorSettingResult.Applied, await remote.Service.SetNotificationsEnabledAsync(false));
+        Assert.False(harness.Anomalies.NotificationsEnabled);
+        Assert.False(await remote.Service.GetNotificationsEnabledAsync());
+
+        // Helper が記録を使えないときは「分からない」になる。
+        harness.Anomalies.NotificationsEnabled = null;
+        Assert.Null(await remote.Service.GetNotificationsEnabledAsync());
     }
 
     [Fact]

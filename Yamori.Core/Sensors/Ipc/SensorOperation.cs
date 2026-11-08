@@ -52,4 +52,10 @@ public enum SensorOperation
 
     /// <summary>異常の設定の変更（版 3 から。管理者でなくてもよい）。</summary>
     SetAnomalySetting = 14,
+
+    /// <summary>異常の通知の全体のオン・オフの取得（版 4 から）。</summary>
+    GetAnomalyNotificationsEnabled = 15,
+
+    /// <summary>異常の通知の全体のオン・オフの変更（版 4 から。管理者でなくてもよい）。</summary>
+    SetAnomalyNotificationsEnabled = 16,
 }

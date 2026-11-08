@@ -60,4 +60,15 @@ internal sealed class FakeAnomalyService : IAnomalyService
         Settings.Add(setting);
         return Task.FromResult(SensorSettingResult.Applied);
     }
+
+    public bool? NotificationsEnabled { get; set; } = true;
+
+    public Task<bool?> GetNotificationsEnabledAsync(CancellationToken cancellationToken = default) =>
+        Task.FromResult(NotificationsEnabled);
+
+    public Task<SensorSettingResult> SetNotificationsEnabledAsync(bool enabled, CancellationToken cancellationToken = default)
+    {
+        NotificationsEnabled = enabled;
+        return Task.FromResult(SensorSettingResult.Applied);
+    }
 }

@@ -39,4 +39,43 @@
   <data name="Test_Body" xml:space="preserve">
     <value>Click to open Yamori.</value>
   </data>
+  <data name="Tray_TooltipDisconnected" xml:space="preserve">
+    <value>Yamori - waiting for the monitoring service</value>
+  </data>
+  <data name="Toast_ThermalThrottlingTitle" xml:space="preserve">
+    <value>{0} is slowing down because of heat</value>
+  </data>
+  <data name="Toast_LimitThrottlingTitle" xml:space="preserve">
+    <value>{0} is slowing down at its power limit</value>
+  </data>
+  <data name="Toast_WorseThanUsualTitle" xml:space="preserve">
+    <value>{0} is running hotter than usual</value>
+  </data>
+  <data name="Toast_PartCpu" xml:space="preserve">
+    <value>The CPU</value>
+  </data>
+  <data name="Toast_PartGpu" xml:space="preserve">
+    <value>The GPU</value>
+  </data>
+  <data name="Toast_PartOther" xml:space="preserve">
+    <value>Your PC</value>
+  </data>
+  <data name="Toast_Temperature" xml:space="preserve">
+    <value>{0}°C</value>
+  </data>
+  <data name="Toast_ClockDrop" xml:space="preserve">
+    <value>clock about {0}% lower</value>
+  </data>
+  <data name="Toast_DeltaFromUsual" xml:space="preserve">
+    <value>{0}°C above usual</value>
+  </data>
+  <data name="Toast_DurationSeconds" xml:space="preserve">
+    <value>for {0} s</value>
+  </data>
+  <data name="Toast_DurationMinutes" xml:space="preserve">
+    <value>for {0} min</value>
+  </data>
+  <data name="Toast_Separator" xml:space="preserve">
+    <value> · </value>
+  </data>
 </root>

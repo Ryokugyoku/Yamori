@@ -948,4 +948,28 @@
   <data name="Highlight_level_passive-limit" xml:space="preserve">
     <value>Thermal limit</value>
   </data>
+  <data name="Settings_GroupNotifications" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="Settings_NotifyHeader" xml:space="preserve">
+    <value>Problem notifications</value>
+  </data>
+  <data name="Settings_NotifyDescription" xml:space="preserve">
+    <value>Shows a Windows notification when Yamori detects a problem, such as the CPU slowing down because of heat. Notifications only name the part and the numbers. While a full-screen app is in use they are held back, and problems stay in the list either way.</value>
+  </data>
+  <data name="Settings_Notify_ThermalThrottling" xml:space="preserve">
+    <value>Thermal throttling</value>
+  </data>
+  <data name="Settings_Notify_ThermalThrottling_Description" xml:space="preserve">
+    <value>When a part keeps running hot enough to lower its performance. Slowdowns caused only by power or current limits are listed but not notified.</value>
+  </data>
+  <data name="Settings_NotifyLoading" xml:space="preserve">
+    <value>Reading the settings from the monitoring service...</value>
+  </data>
+  <data name="Settings_NotifyUnavailable" xml:space="preserve">
+    <value>These settings can be changed while the monitoring service (Yamori.Helper) is running.</value>
+  </data>
+  <data name="Settings_NotifySaveFailed" xml:space="preserve">
+    <value>The setting could not be saved. Check that the monitoring service is running.</value>
+  </data>
 </root>

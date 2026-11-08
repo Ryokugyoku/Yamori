@@ -39,4 +39,43 @@
   <data name="Test_Body" xml:space="preserve">
     <value>押すと Yamori が開きます。</value>
   </data>
+  <data name="Tray_TooltipDisconnected" xml:space="preserve">
+    <value>Yamori - 見守りのサービスを待っています</value>
+  </data>
+  <data name="Toast_ThermalThrottlingTitle" xml:space="preserve">
+    <value>{0} が熱で性能を落としています</value>
+  </data>
+  <data name="Toast_LimitThrottlingTitle" xml:space="preserve">
+    <value>{0} が電力の上限で性能を落としています</value>
+  </data>
+  <data name="Toast_WorseThanUsualTitle" xml:space="preserve">
+    <value>{0} の温度がふだんより高くなっています</value>
+  </data>
+  <data name="Toast_PartCpu" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="Toast_PartGpu" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="Toast_PartOther" xml:space="preserve">
+    <value>PC</value>
+  </data>
+  <data name="Toast_Temperature" xml:space="preserve">
+    <value>{0}℃</value>
+  </data>
+  <data name="Toast_ClockDrop" xml:space="preserve">
+    <value>クロック約 {0}% 低下</value>
+  </data>
+  <data name="Toast_DeltaFromUsual" xml:space="preserve">
+    <value>ふだんより {0}℃ 高い</value>
+  </data>
+  <data name="Toast_DurationSeconds" xml:space="preserve">
+    <value>{0} 秒間</value>
+  </data>
+  <data name="Toast_DurationMinutes" xml:space="preserve">
+    <value>{0} 分間</value>
+  </data>
+  <data name="Toast_Separator" xml:space="preserve">
+    <value>・</value>
+  </data>
 </root>

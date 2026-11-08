@@ -145,6 +145,26 @@ public sealed class AnomalyDetectorTests : IDisposable
     }
 
     [Fact]
+    public async Task TheGlobalSwitchSilencesEveryKindButKeepsTheList()
+    {
+        var service = new LocalAnomalyService(_detector, _repository, _settings, _clock);
+        Assert.True(await service.GetNotificationsEnabledAsync());
+        Assert.Equal(SensorSettingResult.Applied, await service.SetNotificationsEnabledAsync(false));
+        Assert.False(await service.GetNotificationsEnabledAsync());
+
+        _rule.Findings.Add(Finding(AnomalySeverity.Notice));
+        Tick(0);
+        Assert.False(_notices[^1].ShouldNotify);
+        Assert.Single(await service.GetAnomaliesAsync(Start.AddHours(-1), Start.AddHours(1), includeDismissed: false, limit: 10));
+
+        // オンに戻すと、続いている異常が重くなったときに通知の対象になる。
+        await service.SetNotificationsEnabledAsync(true);
+        _rule.Findings[0] = Finding(AnomalySeverity.Warning);
+        Tick(1);
+        Assert.True(_notices[^1].ShouldNotify);
+    }
+
+    [Fact]
     public void AnomaliesOutsideTheNotificationScopeStayInTheListUntilTheyBecomeNotifiable()
     {
         _rule.Findings.Add(Finding(AnomalySeverity.Notice) with { Notifiable = false });
@@ -222,6 +242,8 @@ public sealed class AnomalyDetectorTests : IDisposable
         Assert.Empty(await service.GetSettingsAsync());
         Assert.Equal(SensorSettingResult.Unavailable, await service.SetDismissedAsync(1, true));
         Assert.Equal(SensorSettingResult.Unavailable, await service.SetSettingAsync(AnomalySettingRules.Default(AnomalyKind.ThermalThrottling)));
+        Assert.Null(await service.GetNotificationsEnabledAsync());
+        Assert.Equal(SensorSettingResult.Unavailable, await service.SetNotificationsEnabledAsync(false));
     }
 
     private void Tick(int seconds, double temperature = 90)

@@ -948,4 +948,28 @@
   <data name="Highlight_level_passive-limit" xml:space="preserve">
     <value>Límite térmico</value>
   </data>
+  <data name="Settings_GroupNotifications" xml:space="preserve">
+    <value>Notificaciones</value>
+  </data>
+  <data name="Settings_NotifyHeader" xml:space="preserve">
+    <value>Notificaciones de problemas</value>
+  </data>
+  <data name="Settings_NotifyDescription" xml:space="preserve">
+    <value>Muestra una notificación de Windows cuando Yamori detecta un problema, como que la CPU baje el rendimiento por el calor. Las notificaciones solo indican la pieza y los valores. Mientras usas una aplicación a pantalla completa no se muestran, y en ambos casos el problema queda en la lista.</value>
+  </data>
+  <data name="Settings_Notify_ThermalThrottling" xml:space="preserve">
+    <value>Limitación térmica</value>
+  </data>
+  <data name="Settings_Notify_ThermalThrottling_Description" xml:space="preserve">
+    <value>Cuando una pieza sigue tan caliente que baja su rendimiento. Las bajadas causadas solo por límites de energía o corriente quedan en la lista, pero no se notifican.</value>
+  </data>
+  <data name="Settings_NotifyLoading" xml:space="preserve">
+    <value>Leyendo la configuración del servicio de supervisión...</value>
+  </data>
+  <data name="Settings_NotifyUnavailable" xml:space="preserve">
+    <value>Esta configuración se puede cambiar mientras el servicio de supervisión (Yamori.Helper) está en marcha.</value>
+  </data>
+  <data name="Settings_NotifySaveFailed" xml:space="preserve">
+    <value>No se pudo guardar la configuración. Comprueba que el servicio de supervisión está en marcha.</value>
+  </data>
 </root>
