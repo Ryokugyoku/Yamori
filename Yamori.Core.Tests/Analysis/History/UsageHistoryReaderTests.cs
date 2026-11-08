@@ -1,6 +1,5 @@
 using Yamori.Core.Analysis.History;
 using Yamori.Core.Hardware;
-using Yamori.Core.Monitoring;
 using Yamori.Core.Sensors;
 using Yamori.Core.Sensors.Service;
 using Yamori.Core.Sensors.TimeSeries;
@@ -13,7 +12,7 @@ public class UsageHistoryReaderTests
     private static readonly DateTimeOffset Now = new(2026, 11, 8, 12, 0, 0, TimeSpan.Zero);
 
     [Fact]
-    public async Task SensorReaderReadsOneMinuteRollupsInChunks()
+    public async Task ReadsOneMinuteRollupsInChunks()
     {
         var sensors = new FakeSensorService();
         sensors.History.Add(new SensorHistoryPoint(Now.AddDays(-20), 10, 90, 55, 6));
@@ -36,7 +35,7 @@ public class UsageHistoryReaderTests
     }
 
     [Fact]
-    public async Task SensorReaderSkipsEmptyAndNonFinitePoints()
+    public async Task SkipsEmptyAndNonFinitePoints()
     {
         var sensors = new FakeSensorService();
         sensors.History.Add(new SensorHistoryPoint(Now.AddHours(-2), 0, 0, 0, 0));
@@ -46,10 +45,11 @@ public class UsageHistoryReaderTests
         var history = await reader.ReadAsync(HardwareComponent.Memory, Now.AddDays(-1), Now);
 
         Assert.Same(UsageHistory.Empty, history);
+        Assert.Equal(UsageHistoryOrigin.None, history.Origin);
     }
 
     [Fact]
-    public async Task SensorReaderReturnsEmptyForComponentsWithoutUsageSensor()
+    public async Task ReturnsEmptyForComponentsWithoutUsageSensor()
     {
         var sensors = new FakeSensorService();
         var reader = new SensorUsageHistoryReader(sensors);
@@ -58,55 +58,5 @@ public class UsageHistoryReaderTests
 
         Assert.True(history.IsEmpty);
         Assert.Empty(sensors.HistoryRequests);
-    }
-
-    [Fact]
-    public async Task CsvReaderMarksSamplesAsAppCsv()
-    {
-        var store = new InMemoryUsageHistoryStore();
-        store.Samples.Add(new ComponentUsageSample(HardwareComponent.Memory, Now.AddMinutes(-1), 42));
-        var reader = new CsvUsageHistoryReader(store);
-
-        var history = await reader.ReadAsync(HardwareComponent.Memory, Now.AddDays(-1), Now);
-
-        Assert.Equal(UsageHistoryOrigin.AppCsv, history.Origin);
-        Assert.Equal(42, Assert.Single(history.Samples).UsagePercent);
-    }
-
-    [Fact]
-    public async Task FallbackPrefersFirstReaderWithData()
-    {
-        var sensors = new FakeSensorService();
-        sensors.History.Add(new SensorHistoryPoint(Now.AddMinutes(-5), 20, 40, 30, 6));
-        var store = new InMemoryUsageHistoryStore();
-        store.Samples.Add(new ComponentUsageSample(HardwareComponent.Cpu, Now.AddMinutes(-1), 99));
-        var reader = new FallbackUsageHistoryReader(new SensorUsageHistoryReader(sensors), new CsvUsageHistoryReader(store));
-
-        var history = await reader.ReadAsync(HardwareComponent.Cpu, Now.AddDays(-1), Now);
-
-        Assert.Equal(UsageHistoryOrigin.HelperTimeSeries, history.Origin);
-        Assert.Equal(30, Assert.Single(history.Samples).UsagePercent);
-    }
-
-    [Fact]
-    public async Task FallbackUsesNextReaderWhenHelperHasNoRecords()
-    {
-        var store = new InMemoryUsageHistoryStore();
-        store.Samples.Add(new ComponentUsageSample(HardwareComponent.Cpu, Now.AddMinutes(-1), 99));
-        var reader = new FallbackUsageHistoryReader(new SensorUsageHistoryReader(new FakeSensorService()), new CsvUsageHistoryReader(store));
-
-        var history = await reader.ReadAsync(HardwareComponent.Cpu, Now.AddDays(-1), Now);
-
-        Assert.Equal(UsageHistoryOrigin.AppCsv, history.Origin);
-    }
-
-    [Fact]
-    public async Task FallbackReturnsEmptyWhenNoReaderHasRecords()
-    {
-        var reader = new FallbackUsageHistoryReader(new CsvUsageHistoryReader(new InMemoryUsageHistoryStore()));
-
-        var history = await reader.ReadAsync(HardwareComponent.Cpu, Now.AddDays(-1), Now);
-
-        Assert.Equal(UsageHistoryOrigin.None, history.Origin);
     }
 }

@@ -85,61 +85,16 @@
     <value>今メモリを多く使っているアプリです。同じアプリの複数のプロセスはまとめて集計しています。アプリごとの CPU・GPU・読み書きは、リアルタイムの画面で見られます。</value>
   </data>
   <data name="Privacy_Local" xml:space="preserve">
-    <value>Yamori は外部と通信しません。記録はこの PC の中だけに保存されます。</value>
-  </data>
-  <data name="Privacy_OneDrive" xml:space="preserve">
-    <value>Yamori 自身は外部と通信しません。記録は OneDrive フォルダーに保存され、OneDrive アプリによって同期されます。</value>
-  </data>
-  <data name="Privacy_Custom" xml:space="preserve">
-    <value>Yamori は外部と通信しません。記録は指定したフォルダーに保存されます。</value>
+    <value>Yamori は外部と通信しません。記録は常駐サービスがこの PC の中だけに保存します。</value>
   </data>
   <data name="Storage_PathLabel" xml:space="preserve">
     <value>保存先：{0}</value>
-  </data>
-  <data name="Storage_Fallback" xml:space="preserve">
-    <value>選んだ保存先が今は使えないため、この PC の中に保存しています。</value>
   </data>
   <data name="Settings_AccountHeader" xml:space="preserve">
     <value>アカウント</value>
   </data>
   <data name="Settings_AccountDescription" xml:space="preserve">
     <value>Windows アカウントでサインインしています。サインイン情報が PC の外に送られることはありません。</value>
-  </data>
-  <data name="Settings_StorageHeader" xml:space="preserve">
-    <value>記録の保存先</value>
-  </data>
-  <data name="Settings_StorageDescription" xml:space="preserve">
-    <value>使用率の記録を保存する場所を選びます。これまでの記録は新しい保存先にコピーされます（元の記録は消えません）。</value>
-  </data>
-  <data name="Settings_StorageLocal" xml:space="preserve">
-    <value>この PC（既定）</value>
-  </data>
-  <data name="Settings_StorageLocalNote" xml:space="preserve">
-    <value>記録はこの PC の中だけに保存します。</value>
-  </data>
-  <data name="Settings_StorageOneDrive" xml:space="preserve">
-    <value>OneDrive</value>
-  </data>
-  <data name="Settings_StorageCustom" xml:space="preserve">
-    <value>指定したフォルダー</value>
-  </data>
-  <data name="Settings_OneDriveNotFound" xml:space="preserve">
-    <value>OneDrive フォルダーが見つかりません。OneDrive アプリにサインインすると選べるようになります。</value>
-  </data>
-  <data name="Settings_OneDriveNote" xml:space="preserve">
-    <value>OneDrive を選ぶと、記録は OneDrive アプリによってクラウドに同期されます。PC ごとにフォルダーを分けるので、複数の PC の記録が混ざることはありません。</value>
-  </data>
-  <data name="Settings_ChooseFolder" xml:space="preserve">
-    <value>フォルダーを選ぶ…</value>
-  </data>
-  <data name="Settings_NoFolderChosen" xml:space="preserve">
-    <value>フォルダーが選ばれていません</value>
-  </data>
-  <data name="Settings_StorageError" xml:space="preserve">
-    <value>保存先を変更できませんでした：{0}</value>
-  </data>
-  <data name="Settings_StorageApplying" xml:space="preserve">
-    <value>記録をコピーしています…</value>
   </data>
   <data name="Settings_LanguageHeader" xml:space="preserve">
     <value>言語</value>
@@ -879,9 +834,6 @@
   <data name="RecSource_Helper" xml:space="preserve">
     <value>常駐サービスの記録（画面を閉じている間も含む）から判定しています。</value>
   </data>
-  <data name="RecSource_AppCsv" xml:space="preserve">
-    <value>画面を開いている間の記録だけから判定しています。常駐サービスを起動すると、閉じている間の使い方も含めて判定します。</value>
-  </data>
   <data name="Settings_GroupData" xml:space="preserve">
     <value>データと記録</value>
   </data>
@@ -896,5 +848,14 @@
   </data>
   <data name="Settings_Version" xml:space="preserve">
     <value>バージョン {0}</value>
+  </data>
+  <data name="Settings_RecordingHeader" xml:space="preserve">
+    <value>記録</value>
+  </data>
+  <data name="Settings_RecordingDescription" xml:space="preserve">
+    <value>使用率やセンサーの値は、常駐サービス（Yamori.Helper）が画面を閉じている間も 10 秒ごとに記録し、この PC の中だけに保存します。保存期間は、細かい値が 7 日、1 分ごとのまとめが 90 日、1 時間ごとのまとめは無期限です。</value>
+  </data>
+  <data name="RecSource_None" xml:space="preserve">
+    <value>常駐サービスの記録がまだないか、常駐サービスにつながっていません。判定は常駐サービスの記録だけを使います。</value>
   </data>
 </root>

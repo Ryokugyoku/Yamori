@@ -8,7 +8,7 @@ namespace Yamori.Presentation;
 /// <param name="Explanation">数値の意味と根拠。</param>
 /// <param name="Level">判定の色分け。</param>
 /// <param name="LevelText">判定を短く言い表した札の文字（例：余裕あり）。</param>
-/// <param name="SourceText">判定に使った記録の説明（例：常駐サービスの記録から）。履歴がなければ空。</param>
+/// <param name="SourceText">判定に使った記録の説明（例：常駐サービスの記録から）。空なら出さない。</param>
 public sealed record RecommendationItem(
     string Glyph,
     string Title,

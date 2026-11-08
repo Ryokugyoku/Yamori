@@ -50,15 +50,10 @@ public sealed class NextPcReportPresenter
     }
 
     /// <summary>
-    /// 判定に使った履歴の記録元を、短い説明にする。履歴がなければ空。
+    /// 判定に使った履歴の記録元を、短い説明にする。履歴がなければ、その理由になりうること（Helper の記録がまだない、またはつながっていない）を伝える。
     /// </summary>
     private static string SourceTextOf(UsageHistoryOrigin origin) =>
-        origin switch
-        {
-            UsageHistoryOrigin.HelperTimeSeries => UiText.Get("RecSource_Helper"),
-            UsageHistoryOrigin.AppCsv => UiText.Get("RecSource_AppCsv"),
-            _ => string.Empty,
-        };
+        origin == UsageHistoryOrigin.HelperTimeSeries ? UiText.Get("RecSource_Helper") : UiText.Get("RecSource_None");
 
     /// <summary>
     /// 判定を札の色にする。足りないときも赤にはしない（今すぐ困るわけではなく、次の PC を選ぶときの目安のため）。

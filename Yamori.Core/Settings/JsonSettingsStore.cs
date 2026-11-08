@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace Yamori.Core.Settings;
 
 /// <summary>
-/// 設定を JSON ファイルとして保存する。設定ファイルは記録の保存先にかかわらず、常にこの PC の中に置く。
+/// 設定を JSON ファイルとして保存する。設定ファイルはユーザーごとに、この PC の中に置く。知らない項目は読み込むときに無視する。
 /// </summary>
 public sealed class JsonSettingsStore : ISettingsStore
 {

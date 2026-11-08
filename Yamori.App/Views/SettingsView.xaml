@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <UserControl
     x:Class="Yamori.Views.SettingsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -36,83 +36,22 @@
         <!-- データと記録 -->
         <TextBlock Style="{StaticResource SettingsGroupHeaderTextStyle}" Text="{l:Loc Key=Settings_GroupData}" />
         <Border Style="{StaticResource SettingsCardStyle}">
-            <StackPanel Spacing="14">
-                <Grid ColumnSpacing="16">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <FontIcon VerticalAlignment="Center" FontSize="20" Glyph="&#xE8B7;" />
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                        <TextBlock Text="{l:Loc Key=Settings_StorageHeader}" />
-                        <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{l:Loc Key=Settings_StorageDescription}" />
-                    </StackPanel>
-                    <Button Grid.Column="2" VerticalAlignment="Center" Command="{x:Bind ViewModel.ChooseFolderCommand}">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon FontSize="14" Glyph="&#xE8DA;" />
-                            <TextBlock Text="{l:Loc Key=Settings_ChooseFolder}" />
-                        </StackPanel>
-                    </Button>
-                </Grid>
-
-                <Border Margin="36,0,0,0" Padding="16,12" Style="{StaticResource TileStyle}">
-                    <StackPanel Spacing="10">
-                        <RadioButtons
-                            IsEnabled="{x:Bind ViewModel.CanChangeStorage, Mode=OneWay}"
-                            SelectedIndex="{x:Bind ViewModel.StorageIndex, Mode=TwoWay}">
-                            <RadioButton>
-                                <StackPanel Spacing="2">
-                                    <TextBlock Text="{l:Loc Key=Settings_StorageLocal}" />
-                                    <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{l:Loc Key=Settings_StorageLocalNote}" />
-                                </StackPanel>
-                            </RadioButton>
-                            <RadioButton IsEnabled="{x:Bind ViewModel.IsOneDriveAvailable}">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Text="{l:Loc Key=Settings_StorageOneDrive}" />
-                                    <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{x:Bind ViewModel.OneDriveNoteText}" />
-                                </StackPanel>
-                            </RadioButton>
-                            <RadioButton>
-                                <StackPanel Spacing="2">
-                                    <TextBlock Text="{l:Loc Key=Settings_StorageCustom}" />
-                                    <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{x:Bind ViewModel.CustomFolderText, Mode=OneWay}" />
-                                </StackPanel>
-                            </RadioButton>
-                        </RadioButtons>
-
-                        <StackPanel
-                            Orientation="Horizontal"
-                            Spacing="8"
-                            Visibility="{x:Bind ViewModel.IsApplying, Mode=OneWay}">
-                            <ProgressRing Width="16" Height="16" IsActive="{x:Bind ViewModel.IsApplying, Mode=OneWay}" />
-                            <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:Loc Key=Settings_StorageApplying}" />
-                        </StackPanel>
-
-                        <InfoBar
-                            IsClosable="False"
-                            IsOpen="{x:Bind ViewModel.HasFallback, Mode=OneWay}"
-                            Message="{x:Bind ViewModel.FallbackText, Mode=OneWay}"
-                            Severity="Warning" />
-                        <InfoBar
-                            IsClosable="False"
-                            IsOpen="{x:Bind ViewModel.HasStorageError, Mode=OneWay}"
-                            Message="{x:Bind ViewModel.StorageErrorText, Mode=OneWay}"
-                            Severity="Error" />
-
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon
-                                FontSize="12"
-                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                                Glyph="&#xE8B7;" />
-                            <TextBlock
-                                IsTextSelectionEnabled="True"
-                                Style="{StaticResource FootnoteTextStyle}"
-                                Text="{x:Bind ViewModel.CurrentPathText, Mode=OneWay}" />
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-            </StackPanel>
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <FontIcon VerticalAlignment="Center" FontSize="20" Glyph="&#xE8B7;" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{l:Loc Key=Settings_RecordingHeader}" />
+                    <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{l:Loc Key=Settings_RecordingDescription}" />
+                    <TextBlock
+                        Margin="0,4,0,0"
+                        IsTextSelectionEnabled="True"
+                        Style="{StaticResource FootnoteTextStyle}"
+                        Text="{x:Bind ViewModel.DataDirectoryText}" />
+                </StackPanel>
+            </Grid>
         </Border>
 
         <!-- プライバシー -->

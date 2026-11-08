@@ -26,17 +26,21 @@ public sealed class JsonSettingsStoreTests : IDisposable
     public void RoundTrips()
     {
         var store = new JsonSettingsStore(FilePath);
-        var settings = new YamoriSettings
-        {
-            StorageLocation = StorageLocationKind.CustomFolder,
-            CustomFolderPath = @"D:\Data",
-            Language = AppLanguage.Spanish,
-        };
+        var settings = new YamoriSettings { Language = AppLanguage.Spanish };
 
         store.Save(settings);
 
         Assert.Equal(settings, store.Load());
         Assert.Contains("\"Spanish\"", File.ReadAllText(FilePath));
+    }
+
+    [Fact]
+    public void IgnoresStorageLocationFromOlderVersions()
+    {
+        Directory.CreateDirectory(_directory);
+        File.WriteAllText(FilePath, """{ "StorageLocation": "OneDrive", "CustomFolderPath": "D:\\Data", "Language": "Japanese" }""");
+
+        Assert.Equal(new YamoriSettings { Language = AppLanguage.Japanese }, new JsonSettingsStore(FilePath).Load());
     }
 
     [Fact]

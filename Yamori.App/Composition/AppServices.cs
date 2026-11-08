@@ -1,11 +1,9 @@
 using System;
-using Microsoft.UI;
 using Yamori.Accounts;
 using Yamori.Core.Analysis.History;
 using Yamori.Core.Formatting;
 using Yamori.Core.Hardware;
 using Yamori.Core.Hardware.Wmi;
-using Yamori.Core.Monitoring;
 using Yamori.Core.Processes;
 using Yamori.Core.Realtime;
 using Yamori.Core.Recommendations;
@@ -39,10 +37,7 @@ public sealed class AppServices
     private AppServices(
         ISettingsStore settingsStore,
         LanguageService languageService,
-        HistoryStorageService storage,
-        IOneDriveLocator oneDriveLocator,
         IWindowsAccountProvider accountProvider,
-        UsageMonitor monitor,
         FailoverSensorService sensors,
         NextPcReportService reportService,
         NextPcReportPresenter presenter,
@@ -50,10 +45,7 @@ public sealed class AppServices
     {
         SettingsStore = settingsStore;
         LanguageService = languageService;
-        Storage = storage;
-        OneDriveLocator = oneDriveLocator;
         AccountProvider = accountProvider;
-        Monitor = monitor;
         Sensors = sensors;
         ReportService = reportService;
         Presenter = presenter;
@@ -66,17 +58,8 @@ public sealed class AppServices
     /// <summary>表示言語を切り替える処理を取得する。</summary>
     public LanguageService LanguageService { get; }
 
-    /// <summary>記録の保存先を管理する処理を取得する。</summary>
-    public HistoryStorageService Storage { get; }
-
-    /// <summary>OneDrive フォルダーを探す処理を取得する。</summary>
-    public IOneDriveLocator OneDriveLocator { get; }
-
     /// <summary>サインイン中の Windows アカウントを取得する処理を取得する。</summary>
     public IWindowsAccountProvider AccountProvider { get; }
-
-    /// <summary>使用率を記録し続ける監視処理を取得する。</summary>
-    public UsageMonitor Monitor { get; }
 
     /// <summary>センサーの窓口を取得する。Helper に IPC でつなぎ、Helper が動いていない間は標準 API だけを読んで表示する（記録はしない）。</summary>
     public FailoverSensorService Sensors { get; }
@@ -102,23 +85,14 @@ public sealed class AppServices
         var languageService = new LanguageService();
         languageService.Apply(settings.Language);
 
-        var oneDriveLocator = new OneDriveLocator();
-        var serializer = new UsageSampleCsvSerializer();
-        var storage = new HistoryStorageService(
-            new HistoryLocationResolver(oneDriveLocator, YamoriDataPaths.GetHistoryDirectory(), Environment.MachineName),
-            new HistoryMigrator(),
-            directory => new CsvUsageHistoryStore(directory, serializer),
-            settings);
-
         var timeProvider = TimeProvider.System;
-        var monitor = new UsageMonitor([new CpuUsageSensor(), new MemoryUsageSensor()], storage.Store, timeProvider);
         var sensors = new FailoverSensorService(
             new RemoteSensorService(SensorPipeConnector.Create(SensorPipeNames.Sensors, HelperConnectTimeout), timeProvider),
             () => LocalSensorServiceFactory.CreateDisplayOnly(new ManagementWmiQueryExecutor(), YamoriDataPaths.GetSensorPriorityFilePath(), timeProvider));
-        // 負荷時間の分析は、Helper の時系列（画面を閉じている間も含む）を優先し、記録がなければ画面の CSV を使う。
+        // 記録は Helper だけが行う。負荷時間の分析も Helper の時系列（画面を閉じている間も含む）から作る。
         var reportService = new NextPcReportService(
             HardwareInventoryService.CreateDefault(new ManagementWmiQueryExecutor()),
-            new FallbackUsageHistoryReader(new SensorUsageHistoryReader(sensors), new CsvUsageHistoryReader(storage.Store)),
+            new SensorUsageHistoryReader(sensors),
             new SystemProcessSnapshotProvider(),
             NextPcAdvisor.CreateDefault(),
             timeProvider);
@@ -126,10 +100,7 @@ public sealed class AppServices
         return new AppServices(
             settingsStore,
             languageService,
-            storage,
-            oneDriveLocator,
             new CurrentWindowsAccountProvider(),
-            monitor,
             sensors,
             reportService,
             new NextPcReportPresenter(new RecommendationTextFormatter()),
@@ -155,7 +126,7 @@ public sealed class AppServices
             Presenter,
             HardwarePresenter,
             new SystemSpecPresenter(),
-            Storage,
+            MachineDataPaths.GetSensorDataDirectory(),
             Sensors,
             AccountProvider.GetCurrent().UserName,
             Environment.MachineName,
@@ -187,15 +158,12 @@ public sealed class AppServices
     /// <summary>
     /// 設定画面のビューモデルを、保存されている最新の設定で作る。言語を変えたら作り直す。
     /// </summary>
-    /// <param name="getWindowId">フォルダー選択画面の親にするウィンドウの ID を返す処理。</param>
     /// <returns>新しいビューモデル。</returns>
-    public SettingsViewModel CreateSettingsViewModel(Func<WindowId> getWindowId) =>
+    public SettingsViewModel CreateSettingsViewModel() =>
         new(
             SettingsStore,
             SettingsStore.Load(),
-            Storage,
-            OneDriveLocator,
-            new WindowsFolderPicker(getWindowId),
             LanguageService,
-            AccountProvider.GetCurrent());
+            AccountProvider.GetCurrent(),
+            MachineDataPaths.GetSensorDataDirectory());
 }

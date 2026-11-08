@@ -47,7 +47,7 @@ public sealed class AppSession : IDisposable
     }
 
     /// <summary>
-    /// 使用率の記録と、Helper との接続を止め、イベントの購読を解除する。センサーの記録は Helper が続ける。
+    /// Helper との接続を止め、イベントの購読を解除する。センサーの記録は Helper が続ける。
     /// </summary>
     public void Dispose()
     {
@@ -76,9 +76,8 @@ public sealed class AppSession : IDisposable
             login.SignedIn -= OnSignedIn;
         }
 
-        // 記録はサインインした後に始める。
+        // Helper への接続はサインインした後に始める（記録は Helper が画面と関係なく続けている）。
         var token = _monitorCancellation.Token;
-        _ = Task.Run(() => _services.Monitor.RunAsync(token), token);
         _sensorsRun = Task.Run(() => _services.Sensors.RunAsync(token), token);
 
         _main = _services.CreateMainViewModel();
@@ -93,7 +92,7 @@ public sealed class AppSession : IDisposable
         _status = _services.CreateHelperStatusViewModel();
         _window.ShowTitleBarStatus(new HelperStatusIndicator(_status));
 
-        var settings = _services.CreateSettingsViewModel(() => _window.Id);
+        var settings = _services.CreateSettingsViewModel();
         settings.LanguageChanged += OnLanguageChanged;
         _window.ShowContent(new ShellView(_main!, settings, _services.CreateRealtimeViewModel, openSettings));
     }

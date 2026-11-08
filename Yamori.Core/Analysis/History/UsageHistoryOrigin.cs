@@ -5,12 +5,9 @@ namespace Yamori.Core.Analysis.History;
 /// </summary>
 public enum UsageHistoryOrigin
 {
-    /// <summary>履歴がなかった。</summary>
+    /// <summary>履歴がなかった（Helper が記録していない、または Helper につながっていない）。</summary>
     None = 0,
 
     /// <summary>常駐サービス（Helper）の時系列。画面を閉じている間の記録も含む。</summary>
     HelperTimeSeries = 1,
-
-    /// <summary>画面のプロセスが記録した CSV。画面を開いている間の記録だけ。</summary>
-    AppCsv = 2,
 }

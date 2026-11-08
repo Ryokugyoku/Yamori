@@ -8,17 +8,6 @@ namespace Yamori.Core.Interop;
 internal static partial class NativeMethods
 {
     /// <summary>
-    /// システム全体の CPU 時間の累計値を取得する。
-    /// </summary>
-    /// <param name="idleTime">アイドル時間（100 ナノ秒単位）。</param>
-    /// <param name="kernelTime">カーネルモード時間（アイドルを含む、100 ナノ秒単位）。</param>
-    /// <param name="userTime">ユーザーモード時間（100 ナノ秒単位）。</param>
-    /// <returns>成功した場合は true。</returns>
-    [LibraryImport("kernel32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    internal static partial bool GetSystemTimes(out long idleTime, out long kernelTime, out long userTime);
-
-    /// <summary>
     /// 物理メモリと仮想メモリの使用状況を取得する。
     /// </summary>
     /// <param name="buffer">結果を受け取る構造体。<see cref="MemoryStatusEx.Length"/> を設定してから渡す。</param>

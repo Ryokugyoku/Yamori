@@ -85,61 +85,16 @@
     <value>Apps using the most memory right now. Processes of the same app are combined. CPU, GPU and reads/writes per app are on the Live page.</value>
   </data>
   <data name="Privacy_Local" xml:space="preserve">
-    <value>Yamori never connects to the internet. Records stay on this PC.</value>
-  </data>
-  <data name="Privacy_OneDrive" xml:space="preserve">
-    <value>Yamori itself never connects to the internet. Records are saved in your OneDrive folder and synced by the OneDrive app.</value>
-  </data>
-  <data name="Privacy_Custom" xml:space="preserve">
-    <value>Yamori never connects to the internet. Records are saved in the folder you chose.</value>
+    <value>Yamori does not communicate externally. The background service keeps its records only on this PC.</value>
   </data>
   <data name="Storage_PathLabel" xml:space="preserve">
     <value>Saved in: {0}</value>
-  </data>
-  <data name="Storage_Fallback" xml:space="preserve">
-    <value>The location you chose isn't available right now, so records are being saved on this PC.</value>
   </data>
   <data name="Settings_AccountHeader" xml:space="preserve">
     <value>Account</value>
   </data>
   <data name="Settings_AccountDescription" xml:space="preserve">
     <value>Signed in with your Windows account. Nothing is sent outside this PC.</value>
-  </data>
-  <data name="Settings_StorageHeader" xml:space="preserve">
-    <value>Where records are saved</value>
-  </data>
-  <data name="Settings_StorageDescription" xml:space="preserve">
-    <value>Choose where usage records are saved. Existing records are copied to the new location, and the originals are kept.</value>
-  </data>
-  <data name="Settings_StorageLocal" xml:space="preserve">
-    <value>This PC (default)</value>
-  </data>
-  <data name="Settings_StorageLocalNote" xml:space="preserve">
-    <value>Records stay only on this PC.</value>
-  </data>
-  <data name="Settings_StorageOneDrive" xml:space="preserve">
-    <value>OneDrive</value>
-  </data>
-  <data name="Settings_StorageCustom" xml:space="preserve">
-    <value>A folder I choose</value>
-  </data>
-  <data name="Settings_OneDriveNotFound" xml:space="preserve">
-    <value>No OneDrive folder was found. Sign in to the OneDrive app to use this option.</value>
-  </data>
-  <data name="Settings_OneDriveNote" xml:space="preserve">
-    <value>With OneDrive, the OneDrive app syncs your records to the cloud. Each PC gets its own folder, so records from different PCs don't mix.</value>
-  </data>
-  <data name="Settings_ChooseFolder" xml:space="preserve">
-    <value>Choose folder…</value>
-  </data>
-  <data name="Settings_NoFolderChosen" xml:space="preserve">
-    <value>No folder chosen yet</value>
-  </data>
-  <data name="Settings_StorageError" xml:space="preserve">
-    <value>The location couldn't be changed: {0}</value>
-  </data>
-  <data name="Settings_StorageApplying" xml:space="preserve">
-    <value>Copying records…</value>
   </data>
   <data name="Settings_LanguageHeader" xml:space="preserve">
     <value>Language</value>
@@ -879,9 +834,6 @@
   <data name="RecSource_Helper" xml:space="preserve">
     <value>Based on the background service's records, including while this window was closed.</value>
   </data>
-  <data name="RecSource_AppCsv" xml:space="preserve">
-    <value>Based only on records made while this window was open. Start the background service to include the rest of the time.</value>
-  </data>
   <data name="Settings_GroupData" xml:space="preserve">
     <value>Data and recording</value>
   </data>
@@ -896,5 +848,14 @@
   </data>
   <data name="Settings_Version" xml:space="preserve">
     <value>Version {0}</value>
+  </data>
+  <data name="Settings_RecordingHeader" xml:space="preserve">
+    <value>Records</value>
+  </data>
+  <data name="Settings_RecordingDescription" xml:space="preserve">
+    <value>The background service (Yamori.Helper) records usage and sensor values every 10 seconds, even while this window is closed, and keeps them only on this PC: detailed values for 7 days, 1-minute summaries for 90 days and hourly summaries indefinitely.</value>
+  </data>
+  <data name="RecSource_None" xml:space="preserve">
+    <value>There are no background service records yet, or the app is not connected to the service. Advice is based only on its records.</value>
   </data>
 </root>

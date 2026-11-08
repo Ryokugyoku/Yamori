@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -9,7 +9,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Yamori.Core.Reports;
 using Yamori.Core.Sensors.Ipc.Client;
-using Yamori.Core.Storage;
 using Yamori.Localization;
 using Yamori.Presentation;
 using Yamori.Presentation.Hardware;
@@ -26,7 +25,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private readonly NextPcReportPresenter _presenter;
     private readonly HardwareSectionsPresenter _hardwarePresenter;
     private readonly SystemSpecPresenter _specPresenter;
-    private readonly HistoryStorageService _storage;
+    private readonly string _sensorDataDirectory;
     private readonly IHelperConnection _helperConnection;
     private readonly string _userName;
     private readonly string _machineName;
@@ -45,14 +44,14 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private bool _refreshAgain;
 
     /// <summary>
-    /// 必要な処理を指定して作る。UI スレッドから呼ぶこと（保存先の変更の通知を UI スレッドへ戻すため）。
+    /// 必要な処理を指定して作る。UI スレッドから呼ぶこと（Helper の接続の通知を UI スレッドへ戻すため）。
     /// </summary>
     /// <param name="reportService">レポートを作る処理。</param>
     /// <param name="summaryCards">概要画面のサマリーカード。このインスタンスが破棄する。</param>
     /// <param name="presenter">レポートを表示用に変換する処理。</param>
     /// <param name="hardwarePresenter">ハードウェア一覧を部品の種類ごとの表示内容にする処理。</param>
     /// <param name="specPresenter">ハードウェア一覧から主な仕様を作る処理。</param>
-    /// <param name="storage">記録の保存先（画面に表示する）。</param>
+    /// <param name="sensorDataDirectory">Helper が記録を保存するフォルダー（画面に表示する）。</param>
     /// <param name="helperConnection">Helper との接続。つながったときに、Helper の記録で判定し直すために使う。</param>
     /// <param name="userName">サインイン中のユーザーの名前（あいさつに使う）。</param>
     /// <param name="machineName">この PC の名前。</param>
@@ -65,7 +64,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         NextPcReportPresenter presenter,
         HardwareSectionsPresenter hardwarePresenter,
         SystemSpecPresenter specPresenter,
-        HistoryStorageService storage,
+        string sensorDataDirectory,
         IHelperConnection helperConnection,
         string userName,
         string machineName,
@@ -76,7 +75,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(presenter);
         ArgumentNullException.ThrowIfNull(hardwarePresenter);
         ArgumentNullException.ThrowIfNull(specPresenter);
-        ArgumentNullException.ThrowIfNull(storage);
+        ArgumentNullException.ThrowIfNull(sensorDataDirectory);
         ArgumentNullException.ThrowIfNull(helperConnection);
         ArgumentNullException.ThrowIfNull(userName);
         ArgumentNullException.ThrowIfNull(machineName);
@@ -87,7 +86,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         _presenter = presenter;
         _hardwarePresenter = hardwarePresenter;
         _specPresenter = specPresenter;
-        _storage = storage;
+        _sensorDataDirectory = sensorDataDirectory;
         _helperConnection = helperConnection;
         _userName = userName;
         _machineName = machineName;
@@ -97,9 +96,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
         _statusText = UiText.Get("Status_Loading");
         UpdateGreeting();
-        UpdateLocationTexts();
+        UpdateDataTexts();
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
-        _storage.LocationChanged += OnLocationChanged;
         _helperConnection.ConnectionStateChanged += OnHelperConnectionStateChanged;
     }
 
@@ -138,14 +136,14 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     /// <summary>表示を最新にするコマンドを取得する。</summary>
     public IAsyncRelayCommand RefreshCommand { get; }
 
-    /// <summary>記録の保存先のフォルダーを示す文字列を取得する。</summary>
+    /// <summary>Helper が記録を保存するフォルダーを示す文字列を取得する。</summary>
     public string DataDirectoryText
     {
         get => _dataDirectoryText;
         private set => SetProperty(ref _dataDirectoryText, value);
     }
 
-    /// <summary>通信とデータの扱いについての説明を取得する。保存先によって変わる。</summary>
+    /// <summary>通信とデータの扱いについての説明を取得する。</summary>
     public string PrivacyNoteText
     {
         get => _privacyNoteText;
@@ -167,12 +165,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// センサーと保存先のイベント購読を解除する。
+    /// センサーと Helper との接続のイベント購読を解除する。
     /// </summary>
     public void Dispose()
     {
         SummaryCards.Dispose();
-        _storage.LocationChanged -= OnLocationChanged;
         _helperConnection.ConnectionStateChanged -= OnHelperConnectionStateChanged;
     }
 
@@ -183,7 +180,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public Task ReloadForLanguageAsync()
     {
         UpdateGreeting();
-        UpdateLocationTexts();
+        UpdateDataTexts();
         SummaryCards.Refresh();
         return RefreshCommand.ExecuteAsync(null);
     }
@@ -193,7 +190,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         IsBusy = true;
         try
         {
-            // WMI とファイルの読み込みは時間がかかるため、UI スレッドを止めないよう別スレッドで行う。
+            // WMI と Helper の記録の読み込みは時間がかかるため、UI スレッドを止めないよう別スレッドで行う。
             var report = await Task.Run(() => _reportService.CreateAsync());
 
             Replace(Hardware, _hardwarePresenter.Build(report.Inventory));
@@ -226,15 +223,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         WatchingText = UiText.Format("Overview_Watching", _machineName);
     }
 
-    private void UpdateLocationTexts()
+    private void UpdateDataTexts()
     {
-        var location = _storage.CurrentLocation;
-        DataDirectoryText = StorageLocationTexts.PathLabel(location);
-        PrivacyNoteText = StorageLocationTexts.PrivacyNote(location);
+        DataDirectoryText = UiText.Format("Storage_PathLabel", _sensorDataDirectory);
+        PrivacyNoteText = UiText.Get("Privacy_Local");
     }
-
-    private void OnLocationChanged(object? sender, HistoryLocation location) =>
-        _uiContext.Post(_ => UpdateLocationTexts(), null);
 
     /// <summary>
     /// Helper につながったら、Helper の記録（画面を閉じている間も含む）で次の PC の基準を判定し直す。

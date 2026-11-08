@@ -85,61 +85,16 @@
     <value>Aplicaciones que más memoria usan ahora. Los procesos de una misma aplicación se suman. La CPU, la GPU y las lecturas y escrituras por aplicación están en la página En tiempo real.</value>
   </data>
   <data name="Privacy_Local" xml:space="preserve">
-    <value>Yamori nunca se conecta a Internet. Los registros se quedan en este PC.</value>
-  </data>
-  <data name="Privacy_OneDrive" xml:space="preserve">
-    <value>Yamori no se conecta a Internet. Los registros se guardan en tu carpeta de OneDrive y la aplicación de OneDrive los sincroniza.</value>
-  </data>
-  <data name="Privacy_Custom" xml:space="preserve">
-    <value>Yamori nunca se conecta a Internet. Los registros se guardan en la carpeta que elegiste.</value>
+    <value>Yamori no se comunica con el exterior. El servicio en segundo plano guarda sus registros solo en este PC.</value>
   </data>
   <data name="Storage_PathLabel" xml:space="preserve">
     <value>Ubicación: {0}</value>
-  </data>
-  <data name="Storage_Fallback" xml:space="preserve">
-    <value>La ubicación que elegiste no está disponible ahora, así que los registros se guardan en este PC.</value>
   </data>
   <data name="Settings_AccountHeader" xml:space="preserve">
     <value>Cuenta</value>
   </data>
   <data name="Settings_AccountDescription" xml:space="preserve">
     <value>Sesión iniciada con tu cuenta de Windows. No se envía nada fuera de este PC.</value>
-  </data>
-  <data name="Settings_StorageHeader" xml:space="preserve">
-    <value>Dónde se guardan los registros</value>
-  </data>
-  <data name="Settings_StorageDescription" xml:space="preserve">
-    <value>Elige dónde se guardan los registros de uso. Los registros existentes se copian a la nueva ubicación y los originales se conservan.</value>
-  </data>
-  <data name="Settings_StorageLocal" xml:space="preserve">
-    <value>Este PC (predeterminado)</value>
-  </data>
-  <data name="Settings_StorageLocalNote" xml:space="preserve">
-    <value>Los registros se quedan solo en este PC.</value>
-  </data>
-  <data name="Settings_StorageOneDrive" xml:space="preserve">
-    <value>OneDrive</value>
-  </data>
-  <data name="Settings_StorageCustom" xml:space="preserve">
-    <value>Una carpeta que yo elija</value>
-  </data>
-  <data name="Settings_OneDriveNotFound" xml:space="preserve">
-    <value>No se encontró ninguna carpeta de OneDrive. Inicia sesión en la aplicación de OneDrive para usar esta opción.</value>
-  </data>
-  <data name="Settings_OneDriveNote" xml:space="preserve">
-    <value>Con OneDrive, la aplicación de OneDrive sincroniza tus registros con la nube. Cada PC tiene su propia carpeta, así que los registros no se mezclan.</value>
-  </data>
-  <data name="Settings_ChooseFolder" xml:space="preserve">
-    <value>Elegir carpeta…</value>
-  </data>
-  <data name="Settings_NoFolderChosen" xml:space="preserve">
-    <value>Todavía no se ha elegido ninguna carpeta</value>
-  </data>
-  <data name="Settings_StorageError" xml:space="preserve">
-    <value>No se pudo cambiar la ubicación: {0}</value>
-  </data>
-  <data name="Settings_StorageApplying" xml:space="preserve">
-    <value>Copiando registros…</value>
   </data>
   <data name="Settings_LanguageHeader" xml:space="preserve">
     <value>Idioma</value>
@@ -879,9 +834,6 @@
   <data name="RecSource_Helper" xml:space="preserve">
     <value>Basado en los registros del servicio en segundo plano, incluido el tiempo con esta ventana cerrada.</value>
   </data>
-  <data name="RecSource_AppCsv" xml:space="preserve">
-    <value>Basado solo en los registros de mientras esta ventana estaba abierta. Inicia el servicio en segundo plano para incluir el resto del tiempo.</value>
-  </data>
   <data name="Settings_GroupData" xml:space="preserve">
     <value>Datos y registro</value>
   </data>
@@ -896,5 +848,14 @@
   </data>
   <data name="Settings_Version" xml:space="preserve">
     <value>Versión {0}</value>
+  </data>
+  <data name="Settings_RecordingHeader" xml:space="preserve">
+    <value>Registros</value>
+  </data>
+  <data name="Settings_RecordingDescription" xml:space="preserve">
+    <value>El servicio en segundo plano (Yamori.Helper) registra el uso y los valores de los sensores cada 10 segundos, incluso con esta ventana cerrada, y los guarda solo en este PC: los valores detallados 7 días, los resúmenes por minuto 90 días y los resúmenes por hora sin límite.</value>
+  </data>
+  <data name="RecSource_None" xml:space="preserve">
+    <value>Todavía no hay registros del servicio en segundo plano o la app no está conectada a él. Las recomendaciones solo usan sus registros.</value>
   </data>
 </root>
