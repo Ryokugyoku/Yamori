@@ -3,6 +3,7 @@
     x:Class="Yamori.Views.OverviewView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:analysis="using:Yamori.Presentation.Analysis"
     xmlns:controls="using:Yamori.Controls"
     xmlns:l="using:Yamori.Localization"
     xmlns:presentation="using:Yamori.Presentation"
@@ -197,6 +198,78 @@
                 </DataTemplate>
             </ItemsRepeater.ItemTemplate>
         </ItemsRepeater>
+
+        <!-- 最近の異常：分析画面への入口。押すとその異常を選んだ状態で分析画面を開く -->
+        <Border Margin="0,12,0,0" Style="{StaticResource CardStyle}">
+            <StackPanel Spacing="12">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border Style="{StaticResource SmallIconBadgeStyle}">
+                        <FontIcon Glyph="&#xE7BA;" Style="{StaticResource SmallIconBadgeGlyphStyle}" />
+                    </Border>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <TextBlock
+                            Style="{StaticResource SubtitleTextBlockStyle}"
+                            FontSize="18"
+                            Text="{l:Loc Key=Overview_AnomaliesHeader}" />
+                        <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{x:Bind RecentAnomalies.SummaryText, Mode=OneWay}" />
+                    </StackPanel>
+                    <HyperlinkButton
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        Click="OnOpenAnalysisClick"
+                        Content="{l:Loc Key=Overview_OpenAnalysis}" />
+                </Grid>
+                <ListView
+                    IsItemClickEnabled="True"
+                    ItemClick="OnRecentAnomalyClick"
+                    ItemsSource="{x:Bind RecentAnomalies.Items}"
+                    SelectionMode="None"
+                    Visibility="{x:Bind RecentAnomalies.HasItems, Mode=OneWay}">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="Padding" Value="12,8" />
+                            <Setter Property="CornerRadius" Value="8" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="analysis:AnomalyItem">
+                            <Grid AutomationProperties.Name="{x:Bind AutomationName}" ColumnSpacing="14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <controls:StatusChip
+                                    MinWidth="72"
+                                    Level="{x:Bind Level}"
+                                    Text="{x:Bind SeverityText}" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Title}" />
+                                    <TextBlock
+                                        Style="{StaticResource FootnoteTextStyle}"
+                                        Text="{x:Bind PartText}"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextWrapping="NoWrap" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="1">
+                                    <TextBlock HorizontalAlignment="Right" Text="{x:Bind TimeText}" />
+                                    <TextBlock
+                                        HorizontalAlignment="Right"
+                                        Style="{StaticResource FootnoteTextStyle}"
+                                        Text="{x:Bind DurationText}" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
+        </Border>
 
         <!-- 次の PC の基準と、メモリを多く使っているアプリ -->
         <Grid

@@ -67,18 +67,10 @@ public sealed class AnomalyToastComposer
     private string TitleTemplate(AnomalyRecord anomaly) => anomaly.Kind switch
     {
         AnomalyKind.WorseThanUsual => _templates.WorseThanUsualTitle,
-        _ when IsLimitOnly(anomaly) => _templates.LimitThrottlingTitle,
+        // 電力・電流の制限だけで、クロックが大きく下がって通知の対象になった場合。
+        _ when AnomalyEvidence.IsLimitOnlyThrottling(anomaly) => _templates.LimitThrottlingTitle,
         _ => _templates.ThermalThrottlingTitle,
     };
-
-    /// <summary>
-    /// 熱の制限の印も注意の温度以上の時間もなく、電力・電流の制限だけがかかっていたかどうか
-    /// （クロックが大きく下がって通知の対象になった場合）。理由の数値がなければ熱とみなす。
-    /// </summary>
-    private static bool IsLimitOnly(AnomalyRecord anomaly) =>
-        Evidence(anomaly, AnomalyEvidenceNames.ThermalLimitSeconds) is 0.0
-        && Evidence(anomaly, AnomalyEvidenceNames.AboveThresholdSeconds) is 0.0
-        && (Evidence(anomaly, AnomalyEvidenceNames.PowerLimitSeconds) > 0 || Evidence(anomaly, AnomalyEvidenceNames.CurrentLimitSeconds) > 0);
 
     private string PartName(HardwareKind kind) => kind switch
     {
@@ -97,8 +89,7 @@ public sealed class AnomalyToastComposer
         return string.Format(_culture, _templates.DurationMinutes, (int)Math.Floor(duration.TotalMinutes));
     }
 
-    private static double? Evidence(AnomalyRecord anomaly, string name) =>
-        anomaly.Evidence.TryGetValue(name, out var value) && double.IsFinite(value) ? value : null;
+    private static double? Evidence(AnomalyRecord anomaly, string name) => AnomalyEvidence.Get(anomaly, name);
 
     private static int Round(double value) => (int)Math.Round(value, MidpointRounding.AwayFromZero);
 }

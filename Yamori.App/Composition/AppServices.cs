@@ -18,10 +18,12 @@ using Yamori.Core.Settings;
 using Yamori.Core.Storage;
 using Yamori.Localization;
 using Yamori.Presentation;
+using Yamori.Presentation.Analysis;
 using Yamori.Presentation.Hardware;
 using Yamori.Presentation.Realtime;
 using Yamori.Services;
 using Yamori.ViewModels;
+using Yamori.ViewModels.Analysis;
 using Yamori.ViewModels.Sensors;
 
 namespace Yamori.Composition;
@@ -167,6 +169,28 @@ public sealed class AppServices
                 () => RealtimeSnapshotService.CreateDefault(new ManagementWmiQueryExecutor(), TimeProvider.System),
                 RealtimeSectionsPresenter.CreateDefault(),
                 TimeProvider.System));
+
+    /// <summary>
+    /// 分析画面のビューモデルを作る。UI スレッドから呼ぶこと。画面を開くたびに作る。
+    /// </summary>
+    /// <returns>新しいビューモデル。</returns>
+    public AnalysisViewModel CreateAnalysisViewModel() =>
+        new(
+            Sensors,
+            Anomalies,
+            AppUsage,
+            Sensors,
+            new AnalysisPresenter(),
+            new AppCpuHistoryPresenter(),
+            RecommendationOptions.Default,
+            TimeProvider.System);
+
+    /// <summary>
+    /// 概要の「最近の異常」のカードのビューモデルを作る。UI スレッドから呼ぶこと。
+    /// </summary>
+    /// <returns>新しいビューモデル。</returns>
+    public RecentAnomaliesViewModel CreateRecentAnomaliesViewModel() =>
+        new(Anomalies, Sensors, new AnalysisPresenter(), TimeProvider.System);
 
     /// <summary>
     /// 画面で共有するセンサーの状態を取得する。最初に呼んだときに UI スレッドで作る。

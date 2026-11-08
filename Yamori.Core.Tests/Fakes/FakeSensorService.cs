@@ -57,10 +57,26 @@ internal sealed class FakeSensorService : ISensorService
 
     public List<(SensorKey Key, DateTimeOffset From, DateTimeOffset To, TimeSeriesResolution Resolution)> HistoryRequests { get; } = [];
 
+    /// <summary>履歴を返す解像度。null ならどの解像度にも同じ履歴を返す。</summary>
+    public TimeSeriesResolution? HistoryResolution { get; set; }
+
+    /// <summary>解像度ごとの履歴。入っている解像度は <see cref="History"/> の代わりにこちらを返す。</summary>
+    public Dictionary<TimeSeriesResolution, List<SensorHistoryPoint>> HistoryByResolution { get; } = [];
+
     public Task<IReadOnlyList<SensorHistoryPoint>> GetHistoryAsync(
         SensorKey key, DateTimeOffset fromUtc, DateTimeOffset toUtc, TimeSeriesResolution resolution, CancellationToken cancellationToken = default)
     {
         HistoryRequests.Add((key, fromUtc, toUtc, resolution));
+        if (HistoryResolution is { } only && only != resolution)
+        {
+            return Task.FromResult<IReadOnlyList<SensorHistoryPoint>>([]);
+        }
+
+        if (HistoryByResolution.TryGetValue(resolution, out var own))
+        {
+            return Task.FromResult<IReadOnlyList<SensorHistoryPoint>>(own.Where(p => p.TimestampUtc >= fromUtc && p.TimestampUtc < toUtc).ToArray());
+        }
+
         return Task.FromResult<IReadOnlyList<SensorHistoryPoint>>(History.Where(p => p.TimestampUtc >= fromUtc && p.TimestampUtc < toUtc).ToArray());
     }
 

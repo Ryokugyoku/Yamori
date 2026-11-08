@@ -126,9 +126,8 @@ public sealed class AppSession : IDisposable
             return;
         }
 
-        // 段階 4 で「分析」画面ができたら、そこでこの異常（request.AnomalyId）を選んだ状態で開く。
-        // それまでは、通知から開いたことが分かるようにリアルタイム画面を開く。
-        _shell?.SelectPage("Realtime");
+        // 分析画面を、その異常を選んだ状態で開く（番号がなければ分析画面だけを開く）。
+        _shell?.OpenAnalysis(request.AnomalyId);
     }
 
     private void ShowShell(bool openSettings)
@@ -140,7 +139,13 @@ public sealed class AppSession : IDisposable
 
         var settings = _services.CreateSettingsViewModel();
         settings.LanguageChanged += OnLanguageChanged;
-        _shell = new ShellView(_main!, settings, _services.CreateRealtimeViewModel, openSettings);
+        _shell = new ShellView(
+            _main!,
+            settings,
+            _services.CreateRealtimeViewModel,
+            _services.CreateAnalysisViewModel,
+            _services.CreateRecentAnomaliesViewModel(),
+            openSettings);
         _window.ShowContent(_shell);
     }
 

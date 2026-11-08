@@ -27,6 +27,14 @@
                 <GradientStop Offset="0.6" Color="#1530A0C0" />
                 <GradientStop Offset="1" Color="#00FFFFFF" />
             </RadialGradientBrush>
+            <!-- 分析のグラフ：負荷＝青、温度＝橙、クロック＝紫。異常の区間＝黄（危険は赤） -->
+            <SolidColorBrush x:Key="ChartSeries1Brush" Color="#FF0067C0" />
+            <SolidColorBrush x:Key="ChartSeries2Brush" Color="#FFC4501A" />
+            <SolidColorBrush x:Key="ChartSeries3Brush" Color="#FF7A43B6" />
+            <SolidColorBrush x:Key="ChartBandBrush" Color="#38E8A33D" />
+            <SolidColorBrush x:Key="ChartCriticalBandBrush" Color="#33D13438" />
+            <SolidColorBrush x:Key="ChartBandStrokeBrush" Color="#CCB06A00" />
+            <SolidColorBrush x:Key="ChartGridBrush" Color="#17000000" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
             <LinearGradientBrush x:Key="HeroBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
@@ -43,6 +51,13 @@
                 <GradientStop Offset="0.6" Color="#10306090" />
                 <GradientStop Offset="1" Color="#00000000" />
             </RadialGradientBrush>
+            <SolidColorBrush x:Key="ChartSeries1Brush" Color="#FF4CC2FF" />
+            <SolidColorBrush x:Key="ChartSeries2Brush" Color="#FFFF9A5C" />
+            <SolidColorBrush x:Key="ChartSeries3Brush" Color="#FFC29BFF" />
+            <SolidColorBrush x:Key="ChartBandBrush" Color="#40F5C04A" />
+            <SolidColorBrush x:Key="ChartCriticalBandBrush" Color="#40FF6B6B" />
+            <SolidColorBrush x:Key="ChartBandStrokeBrush" Color="#CCF5C04A" />
+            <SolidColorBrush x:Key="ChartGridBrush" Color="#1FFFFFFF" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="HeroBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
@@ -51,6 +66,14 @@
             <SolidColorBrush x:Key="IconBadgeBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="SoftChipBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="LoginGlowBrush" Color="Transparent" />
+            <!-- ハイコントラストでは系統の色を使い、異常の区間は薄い塗りに加えて枠で示す -->
+            <SolidColorBrush x:Key="ChartSeries1Brush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ChartSeries2Brush" Color="{ThemeResource SystemColorHotlightColor}" />
+            <SolidColorBrush x:Key="ChartSeries3Brush" Color="{ThemeResource SystemColorGrayTextColor}" />
+            <SolidColorBrush x:Key="ChartBandBrush" Opacity="0.25" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ChartCriticalBandBrush" Opacity="0.4" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ChartBandStrokeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="ChartGridBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -201,6 +224,19 @@
     <!-- 折れ線と円のグラフの標準の色 -->
     <Style TargetType="controls:Sparkline">
         <Setter Property="Stroke" Value="{ThemeResource AccentFillColorDefaultBrush}" />
+        <Setter Property="IsTabStop" Value="False" />
+    </Style>
+    <Style TargetType="controls:TimeSeriesChart">
+        <Setter Property="Series1Brush" Value="{ThemeResource ChartSeries1Brush}" />
+        <Setter Property="Series2Brush" Value="{ThemeResource ChartSeries2Brush}" />
+        <Setter Property="Series3Brush" Value="{ThemeResource ChartSeries3Brush}" />
+        <Setter Property="BandBrush" Value="{ThemeResource ChartBandBrush}" />
+        <Setter Property="CriticalBandBrush" Value="{ThemeResource ChartCriticalBandBrush}" />
+        <Setter Property="BandStrokeBrush" Value="{ThemeResource ChartBandStrokeBrush}" />
+        <Setter Property="GridBrush" Value="{ThemeResource ChartGridBrush}" />
+        <Setter Property="AxisTextBrush" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+        <Setter Property="TipBackgroundBrush" Value="{ThemeResource SolidBackgroundFillColorBaseBrush}" />
+        <Setter Property="TipBorderBrush" Value="{ThemeResource SurfaceStrokeColorDefaultBrush}" />
         <Setter Property="IsTabStop" Value="False" />
     </Style>
     <Style TargetType="controls:RingGauge">

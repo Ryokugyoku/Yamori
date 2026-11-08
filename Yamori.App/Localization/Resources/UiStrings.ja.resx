@@ -972,4 +972,232 @@
   <data name="Settings_NotifySaveFailed" xml:space="preserve">
     <value>設定を保存できませんでした。見守りのサービスが動いているか確かめてください。</value>
   </data>
+  <data name="Nav_Analysis" xml:space="preserve">
+    <value>分析</value>
+  </data>
+  <data name="Analysis_Description" xml:space="preserve">
+    <value>部品ごとの記録と、自動で見つけた異常を調べます。</value>
+  </data>
+  <data name="Analysis_PeriodLabel" xml:space="preserve">
+    <value>期間</value>
+  </data>
+  <data name="Analysis_Period_Custom" xml:space="preserve">
+    <value>範囲を指定</value>
+  </data>
+  <data name="Analysis_CustomFrom" xml:space="preserve">
+    <value>始まりの日</value>
+  </data>
+  <data name="Analysis_CustomTo" xml:space="preserve">
+    <value>終わりの日</value>
+  </data>
+  <data name="Analysis_HardwareLabel" xml:space="preserve">
+    <value>分析する部品</value>
+  </data>
+  <data name="Analysis_AllAnomalies" xml:space="preserve">
+    <value>すべての異常</value>
+  </data>
+  <data name="Analysis_Part_Cpu" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="Analysis_Part_Gpu" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="Analysis_Part_Memory" xml:space="preserve">
+    <value>メモリ</value>
+  </data>
+  <data name="Analysis_Part_Storage" xml:space="preserve">
+    <value>ストレージ</value>
+  </data>
+  <data name="Analysis_Part_Network" xml:space="preserve">
+    <value>ネットワーク</value>
+  </data>
+  <data name="Analysis_Part_ThermalZone" xml:space="preserve">
+    <value>温度センサー（ACPI）</value>
+  </data>
+  <data name="Analysis_PartAndName" xml:space="preserve">
+    <value>{0}・{1}</value>
+  </data>
+  <data name="Analysis_AnomaliesHeader" xml:space="preserve">
+    <value>異常</value>
+  </data>
+  <data name="Analysis_IncludeDismissed" xml:space="preserve">
+    <value>「正常」としたものも表示</value>
+  </data>
+  <data name="Analysis_NoAnomaliesAll" xml:space="preserve">
+    <value>この期間に異常は見つかっていません。</value>
+  </data>
+  <data name="Analysis_NoAnomaliesPart" xml:space="preserve">
+    <value>この期間に、この部品の異常は見つかっていません。下のグラフで期間全体の記録を確かめられます。</value>
+  </data>
+  <data name="Analysis_SelectHint" xml:space="preserve">
+    <value>異常を選ぶと、その時間を中心にグラフと集計値、そのとき CPU を多く使っていたアプリを表示します。</value>
+  </data>
+  <data name="Analysis_Kind_ThermalThrottling" xml:space="preserve">
+    <value>サーマルスロットリング</value>
+  </data>
+  <data name="Analysis_Kind_LimitThrottling" xml:space="preserve">
+    <value>電力・電流の上限による制限</value>
+  </data>
+  <data name="Analysis_Kind_WorseThanUsual" xml:space="preserve">
+    <value>ふだんより悪い</value>
+  </data>
+  <data name="Analysis_Kind_Other" xml:space="preserve">
+    <value>異常</value>
+  </data>
+  <data name="Analysis_Ongoing" xml:space="preserve">
+    <value>{0}（続いています）</value>
+  </data>
+  <data name="Analysis_DismissedBadge" xml:space="preserve">
+    <value>正常とした</value>
+  </data>
+  <data name="Analysis_TimeRange" xml:space="preserve">
+    <value>{0}〜{1}</value>
+  </data>
+  <data name="Analysis_ReasonHeader" xml:space="preserve">
+    <value>判断の理由</value>
+  </data>
+  <data name="Analysis_Dismiss" xml:space="preserve">
+    <value>これは正常</value>
+  </data>
+  <data name="Analysis_Undismiss" xml:space="preserve">
+    <value>正常の印を外す</value>
+  </data>
+  <data name="Analysis_DismissTip" xml:space="preserve">
+    <value>この異常を一覧と数から外します。同じ種類の次の異常は、これまでどおり知らせます。</value>
+  </data>
+  <data name="Analysis_DismissFailed" xml:space="preserve">
+    <value>変更できませんでした。見守りのサービスが動いているか確かめてください。</value>
+  </data>
+  <data name="Analysis_ShowWholePeriod" xml:space="preserve">
+    <value>期間全体を表示</value>
+  </data>
+  <data name="Analysis_ChartName" xml:space="preserve">
+    <value>負荷・温度・クロックのグラフ</value>
+  </data>
+  <data name="Analysis_Series_Load" xml:space="preserve">
+    <value>負荷</value>
+  </data>
+  <data name="Analysis_Series_Temperature" xml:space="preserve">
+    <value>温度</value>
+  </data>
+  <data name="Analysis_Series_Clock" xml:space="preserve">
+    <value>クロック</value>
+  </data>
+  <data name="Analysis_ThresholdLine" xml:space="preserve">
+    <value>注意の温度 {0}℃</value>
+  </data>
+  <data name="Analysis_Source_Second" xml:space="preserve">
+    <value>1 秒ごとの記録</value>
+  </data>
+  <data name="Analysis_Source_Minute" xml:space="preserve">
+    <value>1 分ごとの集計</value>
+  </data>
+  <data name="Analysis_Source_Mixed" xml:space="preserve">
+    <value>1 秒ごとの記録（一部は 1 分ごとの集計）</value>
+  </data>
+  <data name="Analysis_NoRecord" xml:space="preserve">
+    <value>この範囲の記録がありません</value>
+  </data>
+  <data name="Analysis_StatsHeader" xml:space="preserve">
+    <value>集計値</value>
+  </data>
+  <data name="Analysis_Stat_Min" xml:space="preserve">
+    <value>最小</value>
+  </data>
+  <data name="Analysis_Stat_Average" xml:space="preserve">
+    <value>平均</value>
+  </data>
+  <data name="Analysis_Stat_Max" xml:space="preserve">
+    <value>最大</value>
+  </data>
+  <data name="Analysis_Stat_P95" xml:space="preserve">
+    <value>95%</value>
+  </data>
+  <data name="Analysis_HighTemperature" xml:space="preserve">
+    <value>高温の時間：注意の温度（{1}℃）以上だったのは {0}（記録した時間の {2:0.#}%）。</value>
+  </data>
+  <data name="Analysis_StatsNote" xml:space="preserve">
+    <value>95% は「95% の時間はこの値以下だった」という値です。1 分ごとの集計では、1 分より短い山はならされます。</value>
+  </data>
+  <data name="Analysis_AppsHeader_Period" xml:space="preserve">
+    <value>この期間に CPU を多く使ったアプリ</value>
+  </data>
+  <data name="Analysis_AppsHeader_Anomaly" xml:space="preserve">
+    <value>この時間に CPU を多く使ったアプリ</value>
+  </data>
+  <data name="Analysis_AppsNone" xml:space="preserve">
+    <value>この時間に CPU を目立って使ったアプリはありません。</value>
+  </data>
+  <data name="Analysis_HelperRequired" xml:space="preserve">
+    <value>見守りのサービス（Yamori.Helper）につながっていないため、記録と異常を読めません。</value>
+  </data>
+  <data name="Overview_AnomaliesHeader" xml:space="preserve">
+    <value>最近の異常</value>
+  </data>
+  <data name="Overview_AnomaliesLoading" xml:space="preserve">
+    <value>異常の一覧を読んでいます…</value>
+  </data>
+  <data name="Overview_AnomaliesNone" xml:space="preserve">
+    <value>直近 7 日に異常は見つかっていません。</value>
+  </data>
+  <data name="Overview_AnomaliesCount" xml:space="preserve">
+    <value>直近 7 日に {0} 件の異常が見つかりました。</value>
+  </data>
+  <data name="Overview_OpenAnalysis" xml:space="preserve">
+    <value>分析を開く</value>
+  </data>
+  <data name="Explain_Sentence" xml:space="preserve">
+    <value>{0} だったため、「{1}」と判断しました。</value>
+  </data>
+  <data name="Explain_SentenceWithoutReasons" xml:space="preserve">
+    <value>「{0}」と判断しました。</value>
+  </data>
+  <data name="Explain_Separator" xml:space="preserve">
+    <value>、</value>
+  </data>
+  <data name="Explain_LastSeparator" xml:space="preserve">
+    <value>、</value>
+  </data>
+  <data name="Explain_Severity_Notice" xml:space="preserve">
+    <value>注意</value>
+  </data>
+  <data name="Explain_Severity_Warning" xml:space="preserve">
+    <value>警告</value>
+  </data>
+  <data name="Explain_Severity_Critical" xml:space="preserve">
+    <value>危険</value>
+  </data>
+  <data name="Explain_ThermalLimit" xml:space="preserve">
+    <value>熱による制限の印が {0}</value>
+  </data>
+  <data name="Explain_AboveThreshold" xml:space="preserve">
+    <value>注意の温度（{1}）以上が {0}</value>
+  </data>
+  <data name="Explain_PowerLimit" xml:space="preserve">
+    <value>電力の上限による制限が {0}</value>
+  </data>
+  <data name="Explain_CurrentLimit" xml:space="preserve">
+    <value>電流の上限による制限が {0}</value>
+  </data>
+  <data name="Explain_PeakTemperature" xml:space="preserve">
+    <value>最高温度が {0}</value>
+  </data>
+  <data name="Explain_ClockDrop" xml:space="preserve">
+    <value>クロックの低下が約 {0}%</value>
+  </data>
+  <data name="Explain_DeltaFromUsual" xml:space="preserve">
+    <value>ふだん（{0}）との差が {1}</value>
+  </data>
+  <data name="Explain_Temperature" xml:space="preserve">
+    <value>{0}℃</value>
+  </data>
+  <data name="Explain_DurationSeconds" xml:space="preserve">
+    <value>{0} 秒</value>
+  </data>
+  <data name="Explain_DurationMinutes" xml:space="preserve">
+    <value>{0} 分 {1} 秒</value>
+  </data>
+  <data name="Explain_DurationHours" xml:space="preserve">
+    <value>{0} 時間 {1} 分</value>
+  </data>
 </root>

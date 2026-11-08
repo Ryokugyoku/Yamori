@@ -972,4 +972,232 @@
   <data name="Settings_NotifySaveFailed" xml:space="preserve">
     <value>The setting could not be saved. Check that the monitoring service is running.</value>
   </data>
+  <data name="Nav_Analysis" xml:space="preserve">
+    <value>Analysis</value>
+  </data>
+  <data name="Analysis_Description" xml:space="preserve">
+    <value>Look into each part's records and the anomalies found automatically.</value>
+  </data>
+  <data name="Analysis_PeriodLabel" xml:space="preserve">
+    <value>Period</value>
+  </data>
+  <data name="Analysis_Period_Custom" xml:space="preserve">
+    <value>Custom range</value>
+  </data>
+  <data name="Analysis_CustomFrom" xml:space="preserve">
+    <value>From</value>
+  </data>
+  <data name="Analysis_CustomTo" xml:space="preserve">
+    <value>To</value>
+  </data>
+  <data name="Analysis_HardwareLabel" xml:space="preserve">
+    <value>Part to analyze</value>
+  </data>
+  <data name="Analysis_AllAnomalies" xml:space="preserve">
+    <value>All anomalies</value>
+  </data>
+  <data name="Analysis_Part_Cpu" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="Analysis_Part_Gpu" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="Analysis_Part_Memory" xml:space="preserve">
+    <value>Memory</value>
+  </data>
+  <data name="Analysis_Part_Storage" xml:space="preserve">
+    <value>Storage</value>
+  </data>
+  <data name="Analysis_Part_Network" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="Analysis_Part_ThermalZone" xml:space="preserve">
+    <value>Temperature sensors (ACPI)</value>
+  </data>
+  <data name="Analysis_PartAndName" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="Analysis_AnomaliesHeader" xml:space="preserve">
+    <value>Anomalies</value>
+  </data>
+  <data name="Analysis_IncludeDismissed" xml:space="preserve">
+    <value>Show ones marked as normal</value>
+  </data>
+  <data name="Analysis_NoAnomaliesAll" xml:space="preserve">
+    <value>No anomalies were found in this period.</value>
+  </data>
+  <data name="Analysis_NoAnomaliesPart" xml:space="preserve">
+    <value>No anomalies were found for this part in this period. The chart below shows the records for the whole period.</value>
+  </data>
+  <data name="Analysis_SelectHint" xml:space="preserve">
+    <value>Select an anomaly to see the chart and statistics around that time, and the apps that used the most CPU then.</value>
+  </data>
+  <data name="Analysis_Kind_ThermalThrottling" xml:space="preserve">
+    <value>Thermal throttling</value>
+  </data>
+  <data name="Analysis_Kind_LimitThrottling" xml:space="preserve">
+    <value>Power or current limit</value>
+  </data>
+  <data name="Analysis_Kind_WorseThanUsual" xml:space="preserve">
+    <value>Worse than usual</value>
+  </data>
+  <data name="Analysis_Kind_Other" xml:space="preserve">
+    <value>Anomaly</value>
+  </data>
+  <data name="Analysis_Ongoing" xml:space="preserve">
+    <value>{0} (ongoing)</value>
+  </data>
+  <data name="Analysis_DismissedBadge" xml:space="preserve">
+    <value>Marked as normal</value>
+  </data>
+  <data name="Analysis_TimeRange" xml:space="preserve">
+    <value>{0} – {1}</value>
+  </data>
+  <data name="Analysis_ReasonHeader" xml:space="preserve">
+    <value>Why it was flagged</value>
+  </data>
+  <data name="Analysis_Dismiss" xml:space="preserve">
+    <value>This is normal</value>
+  </data>
+  <data name="Analysis_Undismiss" xml:space="preserve">
+    <value>Remove the normal mark</value>
+  </data>
+  <data name="Analysis_DismissTip" xml:space="preserve">
+    <value>Removes this anomaly from the list and the counts. The next anomaly of the same kind is still reported.</value>
+  </data>
+  <data name="Analysis_DismissFailed" xml:space="preserve">
+    <value>The change could not be made. Check that the monitoring service is running.</value>
+  </data>
+  <data name="Analysis_ShowWholePeriod" xml:space="preserve">
+    <value>Show whole period</value>
+  </data>
+  <data name="Analysis_ChartName" xml:space="preserve">
+    <value>Load, temperature and clock chart</value>
+  </data>
+  <data name="Analysis_Series_Load" xml:space="preserve">
+    <value>Load</value>
+  </data>
+  <data name="Analysis_Series_Temperature" xml:space="preserve">
+    <value>Temperature</value>
+  </data>
+  <data name="Analysis_Series_Clock" xml:space="preserve">
+    <value>Clock</value>
+  </data>
+  <data name="Analysis_ThresholdLine" xml:space="preserve">
+    <value>Warning temperature {0} °C</value>
+  </data>
+  <data name="Analysis_Source_Second" xml:space="preserve">
+    <value>Per-second records</value>
+  </data>
+  <data name="Analysis_Source_Minute" xml:space="preserve">
+    <value>Per-minute summaries</value>
+  </data>
+  <data name="Analysis_Source_Mixed" xml:space="preserve">
+    <value>Per-second records (some per-minute summaries)</value>
+  </data>
+  <data name="Analysis_NoRecord" xml:space="preserve">
+    <value>No records for this range</value>
+  </data>
+  <data name="Analysis_StatsHeader" xml:space="preserve">
+    <value>Statistics</value>
+  </data>
+  <data name="Analysis_Stat_Min" xml:space="preserve">
+    <value>Min</value>
+  </data>
+  <data name="Analysis_Stat_Average" xml:space="preserve">
+    <value>Average</value>
+  </data>
+  <data name="Analysis_Stat_Max" xml:space="preserve">
+    <value>Max</value>
+  </data>
+  <data name="Analysis_Stat_P95" xml:space="preserve">
+    <value>95th pct.</value>
+  </data>
+  <data name="Analysis_HighTemperature" xml:space="preserve">
+    <value>Time at high temperature: {0} at or above the warning temperature ({1} °C), {2:0.#}% of the recorded time.</value>
+  </data>
+  <data name="Analysis_StatsNote" xml:space="preserve">
+    <value>The 95th percentile is the value the part stayed at or below 95% of the time. Per-minute summaries smooth out peaks shorter than a minute.</value>
+  </data>
+  <data name="Analysis_AppsHeader_Period" xml:space="preserve">
+    <value>Apps that used the most CPU in this period</value>
+  </data>
+  <data name="Analysis_AppsHeader_Anomaly" xml:space="preserve">
+    <value>Apps that used the most CPU at this time</value>
+  </data>
+  <data name="Analysis_AppsNone" xml:space="preserve">
+    <value>No app used a notable amount of CPU at this time.</value>
+  </data>
+  <data name="Analysis_HelperRequired" xml:space="preserve">
+    <value>Not connected to the monitoring service (Yamori.Helper), so records and anomalies can't be read.</value>
+  </data>
+  <data name="Overview_AnomaliesHeader" xml:space="preserve">
+    <value>Recent anomalies</value>
+  </data>
+  <data name="Overview_AnomaliesLoading" xml:space="preserve">
+    <value>Reading the anomaly list...</value>
+  </data>
+  <data name="Overview_AnomaliesNone" xml:space="preserve">
+    <value>No anomalies were found in the last 7 days.</value>
+  </data>
+  <data name="Overview_AnomaliesCount" xml:space="preserve">
+    <value>{0} anomalies were found in the last 7 days.</value>
+  </data>
+  <data name="Overview_OpenAnalysis" xml:space="preserve">
+    <value>Open analysis</value>
+  </data>
+  <data name="Explain_Sentence" xml:space="preserve">
+    <value>Rated “{1}” because of {0}.</value>
+  </data>
+  <data name="Explain_SentenceWithoutReasons" xml:space="preserve">
+    <value>Rated “{0}”.</value>
+  </data>
+  <data name="Explain_Separator" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="Explain_LastSeparator" xml:space="preserve">
+    <value> and </value>
+  </data>
+  <data name="Explain_Severity_Notice" xml:space="preserve">
+    <value>Notice</value>
+  </data>
+  <data name="Explain_Severity_Warning" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="Explain_Severity_Critical" xml:space="preserve">
+    <value>Critical</value>
+  </data>
+  <data name="Explain_ThermalLimit" xml:space="preserve">
+    <value>thermal limiting for {0}</value>
+  </data>
+  <data name="Explain_AboveThreshold" xml:space="preserve">
+    <value>{0} at or above the warning temperature ({1})</value>
+  </data>
+  <data name="Explain_PowerLimit" xml:space="preserve">
+    <value>power limiting for {0}</value>
+  </data>
+  <data name="Explain_CurrentLimit" xml:space="preserve">
+    <value>current limiting for {0}</value>
+  </data>
+  <data name="Explain_PeakTemperature" xml:space="preserve">
+    <value>a peak of {0}</value>
+  </data>
+  <data name="Explain_ClockDrop" xml:space="preserve">
+    <value>a clock about {0}% below usual</value>
+  </data>
+  <data name="Explain_DeltaFromUsual" xml:space="preserve">
+    <value>{1} above usual ({0})</value>
+  </data>
+  <data name="Explain_Temperature" xml:space="preserve">
+    <value>{0} °C</value>
+  </data>
+  <data name="Explain_DurationSeconds" xml:space="preserve">
+    <value>{0} s</value>
+  </data>
+  <data name="Explain_DurationMinutes" xml:space="preserve">
+    <value>{0} min {1} s</value>
+  </data>
+  <data name="Explain_DurationHours" xml:space="preserve">
+    <value>{0} h {1} min</value>
+  </data>
 </root>

@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    分析画面。左で「すべての異常」か部品の種類を選び、右に期間の中の異常の一覧、負荷・温度・クロックのグラフ、集計値、
+    CPU を多く使ったアプリを出す。左の一覧は固定し、右だけをスクロールする（ISelfScrollingPage）。
+-->
+<UserControl
+    x:Class="Yamori.Views.AnalysisView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:analysis="using:Yamori.Presentation.Analysis"
+    xmlns:controls="using:Yamori.Controls"
+    xmlns:l="using:Yamori.Localization"
+    xmlns:presentation="using:Yamori.Presentation"
+    xmlns:views="using:Yamori.Views"
+    Loaded="OnLoaded"
+    Unloaded="OnUnloaded">
+
+    <UserControl.Resources>
+        <Style x:Key="MasterItemStyle" TargetType="ListViewItem" BasedOn="{StaticResource DefaultListViewItemStyle}">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Padding" Value="12,8" />
+            <Setter Property="Margin" Value="0,1" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+
+        <!-- 異常の数の札 -->
+        <Style x:Key="CountBadgeStyle" TargetType="Border">
+            <Setter Property="Padding" Value="8,1" />
+            <Setter Property="MinWidth" Value="24" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Background" Value="{ThemeResource SystemFillColorCautionBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource SystemFillColorCautionBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+        </Style>
+
+        <!-- 集計値の表の数字 -->
+        <Style x:Key="StatValueTextStyle" TargetType="TextBlock" BasedOn="{StaticResource BodyTextBlockStyle}">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="TextWrapping" Value="NoWrap" />
+            <Setter Property="IsTextSelectionEnabled" Value="True" />
+        </Style>
+        <Style x:Key="StatHeaderTextStyle" TargetType="TextBlock" BasedOn="{StaticResource TileLabelTextStyle}">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid
+        x:Name="Root"
+        MaxWidth="1600"
+        Padding="32,20,32,0"
+        RowSpacing="16">
+
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="Wide">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="1100" />
+                    </VisualState.StateTriggers>
+                </VisualState>
+                <VisualState x:Name="Narrow">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="MasterColumn.Width" Value="210" />
+                        <Setter Target="Root.Padding" Value="16,12,16,0" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- 見出しと期間の選択 -->
+        <Grid ColumnSpacing="16" RowSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <views:PageHeader
+                Description="{l:Loc Key=Analysis_Description}"
+                IsBusy="{x:Bind ViewModel.IsBusy, Mode=OneWay}"
+                Title="{l:Loc Key=Nav_Analysis}" />
+            <StackPanel
+                Grid.Column="1"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Spacing="8">
+                <RadioButtons
+                    HorizontalAlignment="Right"
+                    AutomationProperties.Name="{l:Loc Key=Analysis_PeriodLabel}"
+                    MaxColumns="4"
+                    SelectedIndex="{x:Bind ViewModel.SelectedPeriodIndex, Mode=TwoWay}">
+                    <RadioButton Content="{l:Loc Key=Apps_Period_Day}" />
+                    <RadioButton Content="{l:Loc Key=Apps_Period_Week}" />
+                    <RadioButton Content="{l:Loc Key=Apps_Period_Quarter}" />
+                    <RadioButton Content="{l:Loc Key=Analysis_Period_Custom}" />
+                </RadioButtons>
+                <StackPanel
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal"
+                    Spacing="8"
+                    Visibility="{x:Bind ViewModel.IsCustomPeriod, Mode=OneWay}">
+                    <CalendarDatePicker
+                        AutomationProperties.Name="{l:Loc Key=Analysis_CustomFrom}"
+                        Date="{x:Bind ViewModel.CustomFrom, Mode=TwoWay}"
+                        MaxDate="{x:Bind ViewModel.MaximumDate}"
+                        MinDate="{x:Bind ViewModel.MinimumDate}"
+                        PlaceholderText="{l:Loc Key=Analysis_CustomFrom}" />
+                    <TextBlock VerticalAlignment="Center" Text="〜" />
+                    <CalendarDatePicker
+                        AutomationProperties.Name="{l:Loc Key=Analysis_CustomTo}"
+                        Date="{x:Bind ViewModel.CustomTo, Mode=TwoWay}"
+                        MaxDate="{x:Bind ViewModel.MaximumDate}"
+                        MinDate="{x:Bind ViewModel.MinimumDate}"
+                        PlaceholderText="{l:Loc Key=Analysis_CustomTo}" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <InfoBar
+            Grid.Row="1"
+            CornerRadius="{StaticResource CardCornerRadius}"
+            IsClosable="False"
+            IsOpen="{x:Bind ViewModel.HasStatus, Mode=OneWay}"
+            Message="{x:Bind ViewModel.StatusText, Mode=OneWay}"
+            Severity="Informational" />
+
+        <Grid Grid.Row="2" ColumnSpacing="16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="MasterColumn" Width="260" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- 左：すべての異常と、部品の種類（異常の数つき） -->
+            <Border
+                Margin="0,0,0,20"
+                Padding="6"
+                VerticalAlignment="Stretch"
+                Style="{StaticResource CardStyle}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ListView
+                        x:Name="PartList"
+                        ItemContainerStyle="{StaticResource MasterItemStyle}"
+                        ItemsSource="{x:Bind ViewModel.Parts}"
+                        SelectionChanged="OnPartSelectionChanged"
+                        SelectionMode="Single">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="analysis:AnalysisPartItem">
+                                <Grid AutomationProperties.Name="{x:Bind Name}" ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Style="{StaticResource SmallIconBadgeStyle}">
+                                        <FontIcon Glyph="{x:Bind Glyph}" Style="{StaticResource SmallIconBadgeGlyphStyle}" />
+                                    </Border>
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                                        Text="{x:Bind Name}"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextWrapping="NoWrap" />
+                                    <Border
+                                        Grid.Column="2"
+                                        Style="{StaticResource CountBadgeStyle}"
+                                        Visibility="{x:Bind HasCount, Mode=OneWay}">
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            FontWeight="SemiBold"
+                                            Text="{x:Bind CountText, Mode=OneWay}" />
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </ScrollViewer>
+            </Border>
+
+            <!-- 右：異常の一覧と詳細 -->
+            <ScrollViewer Grid.Column="1" Padding="0,0,12,0" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,0,0,24" Spacing="16">
+
+                    <!-- 同じ種類の部品が複数あるときの選択 -->
+                    <ComboBox
+                        MinWidth="280"
+                        AutomationProperties.Name="{l:Loc Key=Analysis_HardwareLabel}"
+                        Header="{l:Loc Key=Analysis_HardwareLabel}"
+                        ItemsSource="{x:Bind ViewModel.HardwareOptions}"
+                        SelectionChanged="OnHardwareSelectionChanged"
+                        x:Name="HardwareBox"
+                        Visibility="{x:Bind ViewModel.HasHardwareChoice, Mode=OneWay}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="analysis:AnalysisHardwareOption">
+                                <TextBlock Text="{x:Bind Name}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <!-- 異常の一覧 -->
+                    <Border Padding="8" Style="{StaticResource CardStyle}">
+                        <StackPanel Spacing="4">
+                            <Grid Padding="12,8,12,4" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                                    FontSize="15"
+                                    Text="{l:Loc Key=Analysis_AnomaliesHeader}" />
+                                <CheckBox
+                                    Grid.Column="1"
+                                    MinWidth="0"
+                                    Content="{l:Loc Key=Analysis_IncludeDismissed}"
+                                    IsChecked="{x:Bind ViewModel.IncludeDismissed, Mode=TwoWay}" />
+                            </Grid>
+                            <TextBlock
+                                Margin="12,4,12,8"
+                                Style="{StaticResource SecondaryTextStyle}"
+                                Text="{x:Bind ViewModel.ListEmptyText, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.ShowsListEmpty, Mode=OneWay}" />
+                            <ListView
+                                x:Name="AnomalyList"
+                                MaxHeight="320"
+                                ItemContainerStyle="{StaticResource MasterItemStyle}"
+                                ItemsSource="{x:Bind ViewModel.Anomalies}"
+                                SelectionChanged="OnAnomalySelectionChanged"
+                                SelectionMode="Single"
+                                Visibility="{x:Bind ViewModel.HasAnomalies, Mode=OneWay}">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="analysis:AnomalyItem">
+                                        <Grid AutomationProperties.Name="{x:Bind AutomationName}" ColumnSpacing="14">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <controls:StatusChip
+                                                MinWidth="72"
+                                                Level="{x:Bind Level}"
+                                                Text="{x:Bind SeverityText}" />
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Title}" />
+                                                    <TextBlock
+                                                        VerticalAlignment="Center"
+                                                        Style="{StaticResource FootnoteTextStyle}"
+                                                        Text="{x:Bind DismissedText}"
+                                                        Visibility="{x:Bind IsDismissed}" />
+                                                </StackPanel>
+                                                <TextBlock
+                                                    Style="{StaticResource FootnoteTextStyle}"
+                                                    Text="{x:Bind PartText}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    TextWrapping="NoWrap" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="1">
+                                                <TextBlock HorizontalAlignment="Right" Text="{x:Bind TimeText}" />
+                                                <TextBlock
+                                                    HorizontalAlignment="Right"
+                                                    Style="{StaticResource FootnoteTextStyle}"
+                                                    Text="{x:Bind DurationText}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 選んだ異常の判断の理由と「これは正常」 -->
+                    <Border Style="{StaticResource CardStyle}" Visibility="{x:Bind ViewModel.HasSelectedAnomaly, Mode=OneWay}">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource IconBadgeStyle}">
+                                <FontIcon Glyph="&#xE946;" Style="{StaticResource IconBadgeGlyphStyle}" />
+                            </Border>
+                            <StackPanel Grid.Column="1" Spacing="4">
+                                <TextBlock Style="{StaticResource TileLabelTextStyle}" Text="{l:Loc Key=Analysis_ReasonHeader}" />
+                                <TextBlock
+                                    IsTextSelectionEnabled="True"
+                                    Style="{StaticResource BodyTextBlockStyle}"
+                                    Text="{x:Bind ViewModel.ExplanationText, Mode=OneWay}"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+                            <StackPanel
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="8">
+                                <Button
+                                    Click="OnDismissClick"
+                                    Content="{x:Bind ViewModel.DismissButtonText, Mode=OneWay}"
+                                    ToolTipService.ToolTip="{l:Loc Key=Analysis_DismissTip}" />
+                                <Button Click="OnClearSelectionClick" Content="{l:Loc Key=Analysis_ShowWholePeriod}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock
+                        Margin="4,0"
+                        Style="{StaticResource SecondaryTextStyle}"
+                        Text="{l:Loc Key=Analysis_SelectHint}"
+                        Visibility="{x:Bind ViewModel.ShowsSelectHint, Mode=OneWay}" />
+
+                    <!-- 詳細：グラフ・集計値・アプリ -->
+                    <StackPanel Spacing="16" Visibility="{x:Bind ViewModel.HasDetail, Mode=OneWay}">
+                        <Border Style="{StaticResource CardStyle}">
+                            <StackPanel Spacing="10">
+                                <StackPanel Spacing="2">
+                                    <TextBlock
+                                        Style="{StaticResource SubtitleTextBlockStyle}"
+                                        FontSize="18"
+                                        Text="{x:Bind ViewModel.DetailTitle, Mode=OneWay}"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock Style="{StaticResource FootnoteTextStyle}">
+                                        <Run Text="{x:Bind ViewModel.DetailRangeText, Mode=OneWay}" />
+                                        <Run Text="・" />
+                                        <Run Text="{x:Bind ViewModel.SourceText, Mode=OneWay}" />
+                                    </TextBlock>
+                                </StackPanel>
+                                <controls:TimeSeriesChart
+                                    Height="300"
+                                    AutomationProperties.Name="{l:Loc Key=Analysis_ChartName}"
+                                    Data="{x:Bind ViewModel.Chart, Mode=OneWay}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Grid x:Name="BottomGrid" ColumnSpacing="16" RowSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="3*" />
+                                <ColumnDefinition Width="2*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 集計値 -->
+                            <Border VerticalAlignment="Stretch" Style="{StaticResource CardStyle}">
+                                <StackPanel Spacing="12">
+                                    <TextBlock
+                                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                                        FontSize="15"
+                                        Text="{l:Loc Key=Analysis_StatsHeader}" />
+                                    <Grid ColumnSpacing="12" Visibility="{x:Bind ViewModel.HasStatistics, Mode=OneWay}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="1" Style="{StaticResource StatHeaderTextStyle}" Text="{l:Loc Key=Analysis_Stat_Min}" />
+                                        <TextBlock Grid.Column="2" Style="{StaticResource StatHeaderTextStyle}" Text="{l:Loc Key=Analysis_Stat_Average}" />
+                                        <TextBlock Grid.Column="3" Style="{StaticResource StatHeaderTextStyle}" Text="{l:Loc Key=Analysis_Stat_Max}" />
+                                        <TextBlock Grid.Column="4" Style="{StaticResource StatHeaderTextStyle}" Text="{l:Loc Key=Analysis_Stat_P95}" />
+                                    </Grid>
+                                    <ItemsControl ItemsSource="{x:Bind ViewModel.Statistics}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Spacing="8" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="analysis:AnalysisStatItem">
+                                                <Grid ColumnSpacing="12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" />
+                                                    <TextBlock Grid.Column="1" Style="{StaticResource StatValueTextStyle}" Text="{x:Bind MinimumText}" />
+                                                    <TextBlock Grid.Column="2" Style="{StaticResource StatValueTextStyle}" Text="{x:Bind AverageText}" />
+                                                    <TextBlock Grid.Column="3" Style="{StaticResource StatValueTextStyle}" Text="{x:Bind MaximumText}" />
+                                                    <TextBlock Grid.Column="4" Style="{StaticResource StatValueTextStyle}" Text="{x:Bind Percentile95Text}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock
+                                        Style="{StaticResource SecondaryTextStyle}"
+                                        Text="{x:Bind ViewModel.HighTemperatureText, Mode=OneWay}"
+                                        Visibility="{x:Bind ViewModel.HasHighTemperature, Mode=OneWay}" />
+                                    <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{l:Loc Key=Analysis_StatsNote}" />
+                                </StackPanel>
+                            </Border>
+
+                            <!-- その範囲に CPU を多く使ったアプリ -->
+                            <Border
+                                x:Name="AppsCard"
+                                Grid.Column="1"
+                                VerticalAlignment="Stretch"
+                                Style="{StaticResource CardStyle}">
+                                <StackPanel Spacing="12">
+                                    <TextBlock
+                                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                                        FontSize="15"
+                                        Text="{x:Bind ViewModel.AppsHeader, Mode=OneWay}"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock
+                                        Style="{StaticResource SecondaryTextStyle}"
+                                        Text="{x:Bind ViewModel.AppsEmptyText, Mode=OneWay}"
+                                        Visibility="{x:Bind ViewModel.ShowsAppsEmpty, Mode=OneWay}" />
+                                    <ItemsControl ItemsSource="{x:Bind ViewModel.Apps}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Spacing="10" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="presentation:AppCpuHistoryItem">
+                                                <StackPanel Spacing="4">
+                                                    <Grid ColumnSpacing="12">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock
+                                                            Text="{x:Bind Name}"
+                                                            TextTrimming="CharacterEllipsis"
+                                                            ToolTipService.ToolTip="{x:Bind Name}" />
+                                                        <TextBlock
+                                                            Grid.Column="1"
+                                                            Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                            Text="{x:Bind AverageText}" />
+                                                    </Grid>
+                                                    <ProgressBar Style="{StaticResource SlimBarStyle}" Value="{x:Bind RelativeShare}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -25,6 +25,11 @@
                     <FontIcon Glyph="&#xE9D9;" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
+            <NavigationViewItem Content="{l:Loc Key=Nav_Analysis}" Tag="Analysis">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE9D2;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
             <NavigationViewItem Content="{l:Loc Key=Nav_Hardware}" Tag="Hardware">
                 <NavigationViewItem.Icon>
                     <FontIcon Glyph="&#xE950;" />
