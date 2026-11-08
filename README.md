@@ -28,6 +28,7 @@ Yamoriは、PCのハードウェアを一つの画面で管理し、限界に近
 
 1. **完全オフライン**：外部APIは一切呼ばない。テレメトリ、分析、クラウド連携もなし。データはPCの中に留まる。
    - 記録は常駐サービス（Helper）だけが行い、PC の中（Helper のデータフォルダー）にだけ置く。保存先を PC の外（OneDrive など）に変える設定はない。
+   - 以前の版が画面のプロセスで記録していた CSV（`%LOCALAPPDATA%\Yamori\history`、OneDrive・指定フォルダーの `Yamori\<PC名>\history` の `usage-YYYY-MM-DD.csv`）は、起動時に消す。名前が合うファイルだけを消し、空になったフォルダーも消す。
    - サインインは **Windows アカウント**（Windows Hello）で、PCの中だけで行う。
 2. **オープンソース**：「通信しない」という主張を、誰でもコードで確認できる。
 3. **ドライバーを同梱しない・標準の仕組みが基本**：基本の機能は Windows が提供する仕組み（WMI、パフォーマンスカウンター、S.M.A.R.T.、GPUメーカーのAPI）だけで動く。Yamori はカーネルドライバーを同梱も自作もしない。WinRing0 のような脆弱なドライバーは使わない。
@@ -229,7 +230,7 @@ Debug ビルドでは、パッケージ サービスの宣言（`Package.appxman
 | `Hardware/` | 部品の情報のモデル（CPU・マザーボード・メモリ・GPU・ストレージ・ファン・電源ユニット・ネットワーク）と、それを読み取る処理（`Readers/` に部品ごとに1クラス）。情報源は `Wmi/`、`Smbios/`（ファームウェアのテーブル）、`Graphics/`（DXCore）、`Topology/`（P コア・E コア）、`DeviceIo/`（ディスクへの IOCTL。ストレージの温度） |
 | `Realtime/` | リアルタイム表示用の測定。`Counters/`（PDH のパフォーマンスカウンターと、インスタンス名の読み解き）、`Gpu/`（D3DKMT の GPU センサー）、`Sources/`（Win32 API・WMI）、`Collectors/`（部品ごと・アプリごとに 1 クラス） |
 | `Sensors/` | センサーの基盤。`Providers/`（取得元。`WindowsStandard/` は標準 API、`PawnIo/` は拡張センサー）、`Registry/`（取得元の優先順）、`Collection/`（収集の繰り返しとハードウェアの変化の検知）、`Hot/`（直近の値のメモリ上の保存）、`TimeSeries/`（RocksDB の時系列・集計・保持期間）、`Master/`（SQLite のマスタ）、`Persistence/`、`Ipc/`（Helper と画面の間のパイプ。`Server/`・`Client/`）、`Service/`、`Extended/`（PawnIO の状態・同意・署名の確認）、`Display/`（ツリー表示とまとめのカード） |
-| `Storage/` | データの置き場所（画面の設定は `%LOCALAPPDATA%\Yamori`、Helper の記録はマシン共通のフォルダー）と、Helper のデータフォルダーのアクセス権 |
+| `Storage/` | データの置き場所（画面の設定は `%LOCALAPPDATA%\Yamori`、Helper の記録はマシン共通のフォルダー）と、Helper のデータフォルダーのアクセス権。`Legacy/` は以前の版の CSV を起動時に消す処理 |
 | `Settings/` | ユーザー設定（表示言語）と、その保存（`%LOCALAPPDATA%\Yamori\settings.json`） |
 | `Localization/`, `Resources/` | 表示文字列（`*.resx`。英語が既定、`.ja`・`.es` が翻訳） |
 | `Processes/` | プロセスの使用量（メモリ、CPU・GPU・入出力）の取得と、アプリ単位の集計 |

@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Yamori.Core.Storage.Legacy;
 using Yamori.ViewModels;
 using Yamori.Views;
 
@@ -40,6 +41,10 @@ public sealed class AppSession : IDisposable
     /// </summary>
     public void Start()
     {
+        // 以前の版が残した使用率の記録（CSV）を消す。記録は Helper だけが行うため、もう使わない。
+        // 設定ファイルに残っている以前の指定フォルダーを読むため、設定を保存し直す前（サインインより前）に始める。
+        _ = Task.Run(() => LegacyHistoryCleaner.Clean(LegacyHistoryLocator.CreateDefault().Find()));
+
         var login = _services.CreateLoginViewModel(() => _window.Handle);
         login.SignedIn += OnSignedIn;
         _window.ShowContent(new LoginView(login));
