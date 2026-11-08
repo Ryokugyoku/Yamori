@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Yamori.Core.Reports;
+using Yamori.Core.Sensors.Ipc.Client;
 using Yamori.Core.Storage;
 using Yamori.Localization;
 using Yamori.Presentation;
@@ -26,6 +27,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private readonly HardwareSectionsPresenter _hardwarePresenter;
     private readonly SystemSpecPresenter _specPresenter;
     private readonly HistoryStorageService _storage;
+    private readonly IHelperConnection _helperConnection;
     private readonly string _userName;
     private readonly string _machineName;
     private readonly TimeProvider _timeProvider;
@@ -40,6 +42,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private string _privacyNoteText = string.Empty;
     private string _dataDirectoryText = string.Empty;
     private bool _isBusy;
+    private bool _refreshAgain;
 
     /// <summary>
     /// 必要な処理を指定して作る。UI スレッドから呼ぶこと（保存先の変更の通知を UI スレッドへ戻すため）。
@@ -50,6 +53,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     /// <param name="hardwarePresenter">ハードウェア一覧を部品の種類ごとの表示内容にする処理。</param>
     /// <param name="specPresenter">ハードウェア一覧から主な仕様を作る処理。</param>
     /// <param name="storage">記録の保存先（画面に表示する）。</param>
+    /// <param name="helperConnection">Helper との接続。つながったときに、Helper の記録で判定し直すために使う。</param>
     /// <param name="userName">サインイン中のユーザーの名前（あいさつに使う）。</param>
     /// <param name="machineName">この PC の名前。</param>
     /// <param name="timeProvider">今の時刻の提供元（あいさつの時間帯に使う）。</param>
@@ -62,6 +66,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         HardwareSectionsPresenter hardwarePresenter,
         SystemSpecPresenter specPresenter,
         HistoryStorageService storage,
+        IHelperConnection helperConnection,
         string userName,
         string machineName,
         TimeProvider timeProvider)
@@ -72,6 +77,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         ArgumentNullException.ThrowIfNull(hardwarePresenter);
         ArgumentNullException.ThrowIfNull(specPresenter);
         ArgumentNullException.ThrowIfNull(storage);
+        ArgumentNullException.ThrowIfNull(helperConnection);
         ArgumentNullException.ThrowIfNull(userName);
         ArgumentNullException.ThrowIfNull(machineName);
         ArgumentNullException.ThrowIfNull(timeProvider);
@@ -82,6 +88,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         _hardwarePresenter = hardwarePresenter;
         _specPresenter = specPresenter;
         _storage = storage;
+        _helperConnection = helperConnection;
         _userName = userName;
         _machineName = machineName;
         _timeProvider = timeProvider;
@@ -93,6 +100,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         UpdateLocationTexts();
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
         _storage.LocationChanged += OnLocationChanged;
+        _helperConnection.ConnectionStateChanged += OnHelperConnectionStateChanged;
     }
 
     /// <summary>概要画面のサマリーカードを取得する。</summary>
@@ -165,6 +173,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     {
         SummaryCards.Dispose();
         _storage.LocationChanged -= OnLocationChanged;
+        _helperConnection.ConnectionStateChanged -= OnHelperConnectionStateChanged;
     }
 
     /// <summary>
@@ -185,10 +194,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         try
         {
             // WMI とファイルの読み込みは時間がかかるため、UI スレッドを止めないよう別スレッドで行う。
-            var report = await Task.Run(() => _reportService.Create());
+            var report = await Task.Run(() => _reportService.CreateAsync());
 
             Replace(Hardware, _hardwarePresenter.Build(report.Inventory));
-            Replace(Recommendations, _presenter.BuildRecommendations(report.Recommendations));
+            Replace(Recommendations, _presenter.BuildRecommendations(report));
             Replace(TopApps, _presenter.BuildTopApps(report.TopApps));
             Replace(TopAppsPreview, TopApps.Take(TopAppsPreviewCount));
             Replace(Specs, _specPresenter.Build(report.Inventory));
@@ -202,6 +211,12 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         finally
         {
             IsBusy = false;
+        }
+
+        if (_refreshAgain)
+        {
+            _refreshAgain = false;
+            _uiContext.Post(_ => _ = RefreshCommand.ExecuteAsync(null), null);
         }
     }
 
@@ -220,6 +235,32 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     private void OnLocationChanged(object? sender, HistoryLocation location) =>
         _uiContext.Post(_ => UpdateLocationTexts(), null);
+
+    /// <summary>
+    /// Helper につながったら、Helper の記録（画面を閉じている間も含む）で次の PC の基準を判定し直す。
+    /// 更新の途中なら、終わってからもう一度更新する。
+    /// </summary>
+    private void OnHelperConnectionStateChanged(object? sender, HelperConnectionState state)
+    {
+        if (state != HelperConnectionState.Connected)
+        {
+            return;
+        }
+
+        _uiContext.Post(
+            _ =>
+            {
+                if (RefreshCommand.IsRunning)
+                {
+                    _refreshAgain = true;
+                }
+                else
+                {
+                    _ = RefreshCommand.ExecuteAsync(null);
+                }
+            },
+            null);
+    }
 
     private static void Replace<T>(ObservableCollection<T> target, IEnumerable<T> items)
     {

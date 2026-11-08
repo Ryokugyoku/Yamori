@@ -55,9 +55,14 @@ internal sealed class FakeSensorService : ISensorService
 
     public Task<ExtendedSensorState> GetExtendedSensorStateAsync(CancellationToken cancellationToken = default) => Task.FromResult(ExtendedState);
 
+    public List<(SensorKey Key, DateTimeOffset From, DateTimeOffset To, TimeSeriesResolution Resolution)> HistoryRequests { get; } = [];
+
     public Task<IReadOnlyList<SensorHistoryPoint>> GetHistoryAsync(
-        SensorKey key, DateTimeOffset fromUtc, DateTimeOffset toUtc, TimeSeriesResolution resolution, CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<SensorHistoryPoint>>(History.Where(p => p.TimestampUtc >= fromUtc && p.TimestampUtc < toUtc).ToArray());
+        SensorKey key, DateTimeOffset fromUtc, DateTimeOffset toUtc, TimeSeriesResolution resolution, CancellationToken cancellationToken = default)
+    {
+        HistoryRequests.Add((key, fromUtc, toUtc, resolution));
+        return Task.FromResult<IReadOnlyList<SensorHistoryPoint>>(History.Where(p => p.TimestampUtc >= fromUtc && p.TimestampUtc < toUtc).ToArray());
+    }
 
     public Task<SensorLogPolicy?> GetLogPolicyAsync(SensorKey key, CancellationToken cancellationToken = default) =>
         Task.FromResult(Policies.GetValueOrDefault(key));

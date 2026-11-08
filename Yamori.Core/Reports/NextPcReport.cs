@@ -1,3 +1,4 @@
+using Yamori.Core.Analysis.History;
 using Yamori.Core.Hardware;
 using Yamori.Core.Processes;
 using Yamori.Core.Recommendations;
@@ -11,8 +12,19 @@ namespace Yamori.Core.Reports;
 /// <param name="Recommendations">部品ごとのおすすめ。</param>
 /// <param name="TopApps">今、メモリを多く使っているアプリ。</param>
 /// <param name="GeneratedAt">作成した時刻。</param>
+/// <param name="HistoryOrigins">部品ごとの、判定に使った使用率の履歴の記録元。含まれない部品は <see cref="UsageHistoryOrigin.None"/>。</param>
 public sealed record NextPcReport(
     HardwareInventory Inventory,
     IReadOnlyList<HardwareRecommendation> Recommendations,
     IReadOnlyList<ProcessUsage> TopApps,
-    DateTimeOffset GeneratedAt);
+    DateTimeOffset GeneratedAt,
+    IReadOnlyDictionary<HardwareComponent, UsageHistoryOrigin> HistoryOrigins)
+{
+    /// <summary>
+    /// 部品の判定に使った使用率の履歴の記録元を取得する。
+    /// </summary>
+    /// <param name="component">部品の種類。</param>
+    /// <returns>記録元。履歴がなかった場合は <see cref="UsageHistoryOrigin.None"/>。</returns>
+    public UsageHistoryOrigin OriginOf(HardwareComponent component) =>
+        HistoryOrigins.TryGetValue(component, out var origin) ? origin : UsageHistoryOrigin.None;
+}

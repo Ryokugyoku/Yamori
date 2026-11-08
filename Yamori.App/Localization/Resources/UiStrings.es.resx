@@ -876,6 +876,12 @@
   <data name="RecLevel_Insufficient" xml:space="preserve">
     <value>Conviene subir un nivel</value>
   </data>
+  <data name="RecSource_Helper" xml:space="preserve">
+    <value>Basado en los registros del servicio en segundo plano, incluido el tiempo con esta ventana cerrada.</value>
+  </data>
+  <data name="RecSource_AppCsv" xml:space="preserve">
+    <value>Basado solo en los registros de mientras esta ventana estaba abierta. Inicia el servicio en segundo plano para incluir el resto del tiempo.</value>
+  </data>
   <data name="Settings_GroupData" xml:space="preserve">
     <value>Datos y registro</value>
   </data>

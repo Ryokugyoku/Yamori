@@ -876,6 +876,12 @@
   <data name="RecLevel_Insufficient" xml:space="preserve">
     <value>1 段上が安心</value>
   </data>
+  <data name="RecSource_Helper" xml:space="preserve">
+    <value>常駐サービスの記録（画面を閉じている間も含む）から判定しています。</value>
+  </data>
+  <data name="RecSource_AppCsv" xml:space="preserve">
+    <value>画面を開いている間の記録だけから判定しています。常駐サービスを起動すると、閉じている間の使い方も含めて判定します。</value>
+  </data>
   <data name="Settings_GroupData" xml:space="preserve">
     <value>データと記録</value>
   </data>

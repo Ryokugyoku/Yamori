@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Yamori.Core.Analysis.History;
 using Yamori.Core.Formatting;
 using Yamori.Core.Hardware;
 using Yamori.Core.Processes;
 using Yamori.Core.Recommendations;
+using Yamori.Core.Reports;
 using Yamori.Localization;
 
 namespace Yamori.Presentation;
@@ -30,21 +32,33 @@ public sealed class NextPcReportPresenter
     /// <summary>
     /// おすすめを表示用の項目にする。
     /// </summary>
-    /// <param name="recommendations">おすすめの一覧。</param>
+    /// <param name="report">レポート（おすすめと、判定に使った履歴の記録元）。</param>
     /// <returns>表示用の項目。</returns>
-    public IReadOnlyList<RecommendationItem> BuildRecommendations(IEnumerable<HardwareRecommendation> recommendations)
+    public IReadOnlyList<RecommendationItem> BuildRecommendations(NextPcReport report)
     {
-        ArgumentNullException.ThrowIfNull(recommendations);
-        return recommendations
+        ArgumentNullException.ThrowIfNull(report);
+        return report.Recommendations
             .Select(r => (Recommendation: r, Text: _recommendationFormatter.Format(r)))
             .Select(x => new RecommendationItem(
                 HardwareGlyphs.For(x.Recommendation.Component),
                 x.Text.Title,
                 x.Text.Explanation,
                 LevelOf(x.Recommendation.Level),
-                UiText.Get("RecLevel_" + x.Recommendation.Level)))
+                UiText.Get("RecLevel_" + x.Recommendation.Level),
+                SourceTextOf(report.OriginOf(x.Recommendation.Component))))
             .ToArray();
     }
+
+    /// <summary>
+    /// 判定に使った履歴の記録元を、短い説明にする。履歴がなければ空。
+    /// </summary>
+    private static string SourceTextOf(UsageHistoryOrigin origin) =>
+        origin switch
+        {
+            UsageHistoryOrigin.HelperTimeSeries => UiText.Get("RecSource_Helper"),
+            UsageHistoryOrigin.AppCsv => UiText.Get("RecSource_AppCsv"),
+            _ => string.Empty,
+        };
 
     /// <summary>
     /// 判定を札の色にする。足りないときも赤にはしない（今すぐ困るわけではなく、次の PC を選ぶときの目安のため）。

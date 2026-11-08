@@ -876,6 +876,12 @@
   <data name="RecLevel_Insufficient" xml:space="preserve">
     <value>Consider a step up</value>
   </data>
+  <data name="RecSource_Helper" xml:space="preserve">
+    <value>Based on the background service's records, including while this window was closed.</value>
+  </data>
+  <data name="RecSource_AppCsv" xml:space="preserve">
+    <value>Based only on records made while this window was open. Start the background service to include the rest of the time.</value>
+  </data>
   <data name="Settings_GroupData" xml:space="preserve">
     <value>Data and recording</value>
   </data>

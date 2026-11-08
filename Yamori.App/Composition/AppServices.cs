@@ -1,6 +1,7 @@
 using System;
 using Microsoft.UI;
 using Yamori.Accounts;
+using Yamori.Core.Analysis.History;
 using Yamori.Core.Formatting;
 using Yamori.Core.Hardware;
 using Yamori.Core.Hardware.Wmi;
@@ -114,9 +115,10 @@ public sealed class AppServices
         var sensors = new FailoverSensorService(
             new RemoteSensorService(SensorPipeConnector.Create(SensorPipeNames.Sensors, HelperConnectTimeout), timeProvider),
             () => LocalSensorServiceFactory.CreateDisplayOnly(new ManagementWmiQueryExecutor(), YamoriDataPaths.GetSensorPriorityFilePath(), timeProvider));
+        // 負荷時間の分析は、Helper の時系列（画面を閉じている間も含む）を優先し、記録がなければ画面の CSV を使う。
         var reportService = new NextPcReportService(
             HardwareInventoryService.CreateDefault(new ManagementWmiQueryExecutor()),
-            storage.Store,
+            new FallbackUsageHistoryReader(new SensorUsageHistoryReader(sensors), new CsvUsageHistoryReader(storage.Store)),
             new SystemProcessSnapshotProvider(),
             NextPcAdvisor.CreateDefault(),
             timeProvider);
@@ -154,6 +156,7 @@ public sealed class AppServices
             HardwarePresenter,
             new SystemSpecPresenter(),
             Storage,
+            Sensors,
             AccountProvider.GetCurrent().UserName,
             Environment.MachineName,
             TimeProvider.System);
