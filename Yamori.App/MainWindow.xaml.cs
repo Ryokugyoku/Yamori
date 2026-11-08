@@ -67,5 +67,11 @@ public sealed partial class MainWindow : Window
         ContentHost.Content = content;
     }
 
+    /// <summary>
+    /// タイトルバーの右側（最小化ボタンの左）に出す部品を差し替える。
+    /// </summary>
+    /// <param name="content">出す部品。null なら何も出さない。</param>
+    public void ShowTitleBarStatus(UIElement? content) => AppTitleBar.RightHeader = content;
+
     private void OnThemeChanged(object? sender, ElementTheme theme) => RootGrid.RequestedTheme = theme;
 }

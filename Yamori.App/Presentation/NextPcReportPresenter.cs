@@ -37,9 +37,26 @@ public sealed class NextPcReportPresenter
         ArgumentNullException.ThrowIfNull(recommendations);
         return recommendations
             .Select(r => (Recommendation: r, Text: _recommendationFormatter.Format(r)))
-            .Select(x => new RecommendationItem(HardwareGlyphs.For(x.Recommendation.Component), x.Text.Title, x.Text.Explanation))
+            .Select(x => new RecommendationItem(
+                HardwareGlyphs.For(x.Recommendation.Component),
+                x.Text.Title,
+                x.Text.Explanation,
+                LevelOf(x.Recommendation.Level),
+                UiText.Get("RecLevel_" + x.Recommendation.Level)))
             .ToArray();
     }
+
+    /// <summary>
+    /// 判定を札の色にする。足りないときも赤にはしない（今すぐ困るわけではなく、次の PC を選ぶときの目安のため）。
+    /// </summary>
+    private static StatusLevel LevelOf(RecommendationLevel level) =>
+        level switch
+        {
+            RecommendationLevel.Sufficient => StatusLevel.Good,
+            RecommendationLevel.Borderline => StatusLevel.Attention,
+            RecommendationLevel.Insufficient => StatusLevel.Caution,
+            _ => StatusLevel.Neutral,
+        };
 
     /// <summary>
     /// アプリの使用量を表示用の項目にする。
@@ -53,7 +70,8 @@ public sealed class NextPcReportPresenter
         var list = apps.ToArray();
         var largest = list.Length == 0 ? 0UL : list.Max(a => a.WorkingSetBytes);
         return list
-            .Select(a => new AppUsageItem(
+            .Select((a, index) => new AppUsageItem(
+                index + 1,
                 a.Name,
                 ByteSizeFormatter.Format(a.WorkingSetBytes),
                 UiText.Format("Apps_ProcessCount", a.ProcessCount),

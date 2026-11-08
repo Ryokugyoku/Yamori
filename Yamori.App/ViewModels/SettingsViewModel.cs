@@ -84,6 +84,9 @@ public sealed class SettingsViewModel : ObservableObject
     /// <summary>サインイン中のアカウントを取得する。</summary>
     public WindowsAccount Account { get; }
 
+    /// <summary>Yamori の版の表示（例：バージョン 1.0.0.0）を取得する。</summary>
+    public string VersionText { get; } = UiText.Format("Settings_Version", AppVersion.Get());
+
     /// <summary>OneDrive フォルダー。見つからなければ null。</summary>
     public string? OneDriveRoot { get; }
 

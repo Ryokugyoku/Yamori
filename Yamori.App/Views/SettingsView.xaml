@@ -6,123 +6,151 @@
     xmlns:l="using:Yamori.Localization"
     xmlns:views="using:Yamori.Views">
 
+    <!-- Windows 11 の設定アプリにならい、1 行 1 項目のカードをまとまりごとに並べる -->
     <StackPanel
-        MaxWidth="{StaticResource PageMaxWidth}"
+        MaxWidth="1000"
         Padding="{StaticResource PagePadding}"
-        Spacing="16">
+        Spacing="4">
 
-        <views:PageHeader Title="{l:Loc Key=Nav_Settings}" />
+        <views:PageHeader Margin="0,0,0,12" Title="{l:Loc Key=Nav_Settings}" />
 
         <!-- アカウント -->
-        <Border Style="{StaticResource CardStyle}">
-            <Grid ColumnSpacing="16">
+        <Border Padding="20" Style="{StaticResource HeroStyle}">
+            <Grid ColumnSpacing="18">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <PersonPicture
-                    Width="56"
-                    Height="56"
+                    Width="64"
+                    Height="64"
                     DisplayName="{x:Bind ViewModel.Account.UserName}" />
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                    <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{l:Loc Key=Settings_AccountHeader}" />
-                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind ViewModel.Account.QualifiedName}" />
+                    <TextBlock Style="{StaticResource TileLabelTextStyle}" Text="{l:Loc Key=Settings_AccountHeader}" />
+                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" FontSize="18" Text="{x:Bind ViewModel.Account.QualifiedName}" />
                     <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:Loc Key=Settings_AccountDescription}" />
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- 記録の保存先 -->
-        <Border Style="{StaticResource CardStyle}">
-            <Grid ColumnSpacing="16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Border Style="{StaticResource IconBadgeStyle}">
-                    <FontIcon Glyph="&#xE8B7;" Style="{StaticResource IconBadgeGlyphStyle}" />
-                </Border>
-                <StackPanel Grid.Column="1" Spacing="12">
-                    <StackPanel Spacing="2">
-                        <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{l:Loc Key=Settings_StorageHeader}" />
-                        <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:Loc Key=Settings_StorageDescription}" />
+        <!-- データと記録 -->
+        <TextBlock Style="{StaticResource SettingsGroupHeaderTextStyle}" Text="{l:Loc Key=Settings_GroupData}" />
+        <Border Style="{StaticResource SettingsCardStyle}">
+            <StackPanel Spacing="14">
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <FontIcon VerticalAlignment="Center" FontSize="20" Glyph="&#xE8B7;" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <TextBlock Text="{l:Loc Key=Settings_StorageHeader}" />
+                        <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{l:Loc Key=Settings_StorageDescription}" />
                     </StackPanel>
-
-                    <RadioButtons
-                        IsEnabled="{x:Bind ViewModel.CanChangeStorage, Mode=OneWay}"
-                        SelectedIndex="{x:Bind ViewModel.StorageIndex, Mode=TwoWay}">
-                        <RadioButton>
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="{l:Loc Key=Settings_StorageLocal}" />
-                                <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{l:Loc Key=Settings_StorageLocalNote}" />
-                            </StackPanel>
-                        </RadioButton>
-                        <RadioButton IsEnabled="{x:Bind ViewModel.IsOneDriveAvailable}">
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="{l:Loc Key=Settings_StorageOneDrive}" />
-                                <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{x:Bind ViewModel.OneDriveNoteText}" />
-                            </StackPanel>
-                        </RadioButton>
-                        <RadioButton>
-                            <StackPanel Spacing="2">
-                                <TextBlock Text="{l:Loc Key=Settings_StorageCustom}" />
-                                <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{x:Bind ViewModel.CustomFolderText, Mode=OneWay}" />
-                            </StackPanel>
-                        </RadioButton>
-                    </RadioButtons>
-
-                    <Button Command="{x:Bind ViewModel.ChooseFolderCommand}">
+                    <Button Grid.Column="2" VerticalAlignment="Center" Command="{x:Bind ViewModel.ChooseFolderCommand}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon FontSize="14" Glyph="&#xE8DA;" />
                             <TextBlock Text="{l:Loc Key=Settings_ChooseFolder}" />
                         </StackPanel>
                     </Button>
+                </Grid>
 
-                    <StackPanel
-                        Orientation="Horizontal"
-                        Spacing="8"
-                        Visibility="{x:Bind ViewModel.IsApplying, Mode=OneWay}">
-                        <ProgressRing Width="16" Height="16" IsActive="{x:Bind ViewModel.IsApplying, Mode=OneWay}" />
-                        <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:Loc Key=Settings_StorageApplying}" />
+                <Border Margin="36,0,0,0" Padding="16,12" Style="{StaticResource TileStyle}">
+                    <StackPanel Spacing="10">
+                        <RadioButtons
+                            IsEnabled="{x:Bind ViewModel.CanChangeStorage, Mode=OneWay}"
+                            SelectedIndex="{x:Bind ViewModel.StorageIndex, Mode=TwoWay}">
+                            <RadioButton>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="{l:Loc Key=Settings_StorageLocal}" />
+                                    <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{l:Loc Key=Settings_StorageLocalNote}" />
+                                </StackPanel>
+                            </RadioButton>
+                            <RadioButton IsEnabled="{x:Bind ViewModel.IsOneDriveAvailable}">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="{l:Loc Key=Settings_StorageOneDrive}" />
+                                    <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{x:Bind ViewModel.OneDriveNoteText}" />
+                                </StackPanel>
+                            </RadioButton>
+                            <RadioButton>
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="{l:Loc Key=Settings_StorageCustom}" />
+                                    <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{x:Bind ViewModel.CustomFolderText, Mode=OneWay}" />
+                                </StackPanel>
+                            </RadioButton>
+                        </RadioButtons>
+
+                        <StackPanel
+                            Orientation="Horizontal"
+                            Spacing="8"
+                            Visibility="{x:Bind ViewModel.IsApplying, Mode=OneWay}">
+                            <ProgressRing Width="16" Height="16" IsActive="{x:Bind ViewModel.IsApplying, Mode=OneWay}" />
+                            <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:Loc Key=Settings_StorageApplying}" />
+                        </StackPanel>
+
+                        <InfoBar
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.HasFallback, Mode=OneWay}"
+                            Message="{x:Bind ViewModel.FallbackText, Mode=OneWay}"
+                            Severity="Warning" />
+                        <InfoBar
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.HasStorageError, Mode=OneWay}"
+                            Message="{x:Bind ViewModel.StorageErrorText, Mode=OneWay}"
+                            Severity="Error" />
+
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                Glyph="&#xE8B7;" />
+                            <TextBlock
+                                IsTextSelectionEnabled="True"
+                                Style="{StaticResource FootnoteTextStyle}"
+                                Text="{x:Bind ViewModel.CurrentPathText, Mode=OneWay}" />
+                        </StackPanel>
                     </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
 
-                    <InfoBar
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.HasFallback, Mode=OneWay}"
-                        Message="{x:Bind ViewModel.FallbackText, Mode=OneWay}"
-                        Severity="Warning" />
-                    <InfoBar
-                        IsClosable="False"
-                        IsOpen="{x:Bind ViewModel.HasStorageError, Mode=OneWay}"
-                        Message="{x:Bind ViewModel.StorageErrorText, Mode=OneWay}"
-                        Severity="Error" />
-
-                    <TextBlock
-                        IsTextSelectionEnabled="True"
-                        Style="{StaticResource FootnoteTextStyle}"
-                        Text="{x:Bind ViewModel.CurrentPathText, Mode=OneWay}" />
+        <!-- プライバシー -->
+        <Border Style="{StaticResource SettingsCardStyle}">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <FontIcon
+                    VerticalAlignment="Center"
+                    FontSize="20"
+                    Foreground="{ThemeResource BrandForegroundBrush}"
+                    Glyph="&#xE72E;" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{l:Loc Key=Settings_PrivacyHeader}" />
+                    <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{l:Loc Key=Login_OfflineNote}" />
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- 言語 -->
-        <Border Style="{StaticResource CardStyle}">
+        <!-- 表示 -->
+        <TextBlock Style="{StaticResource SettingsGroupHeaderTextStyle}" Text="{l:Loc Key=Settings_GroupDisplay}" />
+        <Border Style="{StaticResource SettingsCardStyle}">
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Border Style="{StaticResource IconBadgeStyle}">
-                    <FontIcon Glyph="&#xE774;" Style="{StaticResource IconBadgeGlyphStyle}" />
-                </Border>
+                <FontIcon VerticalAlignment="Center" FontSize="20" Glyph="&#xE774;" />
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{l:Loc Key=Settings_LanguageHeader}" />
-                    <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:Loc Key=Settings_LanguageDescription}" />
+                    <TextBlock Text="{l:Loc Key=Settings_LanguageHeader}" />
+                    <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{l:Loc Key=Settings_LanguageDescription}" />
                 </StackPanel>
                 <ComboBox
                     Grid.Column="2"
-                    MinWidth="220"
+                    MinWidth="200"
                     VerticalAlignment="Center"
                     ItemsSource="{x:Bind ViewModel.Languages}"
                     SelectedIndex="{x:Bind ViewModel.SelectedLanguageIndex, Mode=TwoWay}" />
@@ -130,18 +158,26 @@
         </Border>
 
         <!-- Yamori について -->
-        <Border Style="{StaticResource CardStyle}">
+        <TextBlock Style="{StaticResource SettingsGroupHeaderTextStyle}" Text="{l:Loc Key=Settings_GroupAbout}" />
+        <Border Style="{StaticResource SettingsCardStyle}">
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Border Style="{StaticResource IconBadgeStyle}">
-                    <FontIcon Glyph="&#xE946;" Style="{StaticResource IconBadgeGlyphStyle}" />
-                </Border>
-                <StackPanel Grid.Column="1" Spacing="2">
-                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{l:Loc Key=Settings_AboutHeader}" />
-                    <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{l:Loc Key=Settings_AboutDescription}" />
+                <Image
+                    Width="40"
+                    Height="40"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AccessibilityView="Raw"
+                    Source="ms-appx:///Assets/Logo/YamoriLogo.png" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{l:Loc Key=Settings_AboutHeader}" />
+                    <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{x:Bind ViewModel.VersionText}" />
+                    <TextBlock
+                        Margin="0,4,0,0"
+                        Style="{StaticResource SecondaryTextStyle}"
+                        Text="{l:Loc Key=Settings_AboutDescription}" />
                 </StackPanel>
             </Grid>
         </Border>

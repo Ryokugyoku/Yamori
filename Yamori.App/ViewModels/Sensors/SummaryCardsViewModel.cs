@@ -81,5 +81,11 @@ public sealed class SummaryCardsViewModel : IDisposable
         item.Percent = percent ?? 0;
         item.HasPercent = percent is not null;
         item.Opacity = opacity;
+
+        // 割合の値は 0〜100 の目盛りで描く（小さな揺れを大きく見せて不安をあおらないよう、目盛りを値に合わせて広げない）。
+        var isPercent = percent is not null;
+        item.TrendMinimum = isPercent ? 0 : double.NaN;
+        item.TrendMaximum = isPercent ? 100 : double.NaN;
+        item.Trend = _board.GetTrend(key);
     }
 }

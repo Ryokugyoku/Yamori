@@ -19,16 +19,19 @@
 
         <!-- Helper との接続と拡張センサー（PawnIO）の状態は、ここ 1 か所にまとめて表示する -->
         <InfoBar
+            CornerRadius="{StaticResource CardCornerRadius}"
             IsClosable="False"
             IsOpen="True"
             Message="{x:Bind ViewModel.Tree.NoticeText, Mode=OneWay}"
             Severity="{x:Bind ViewModel.Tree.NoticeSeverity, Mode=OneWay}"
             Title="{x:Bind ViewModel.Tree.NoticeTitle, Mode=OneWay}">
             <InfoBar.ActionButton>
+                <!-- Helper が動いていなければサービスの起動、つながっていれば PawnIO の利用の同意のボタン -->
                 <Button
-                    Click="OnConsentClick"
-                    Content="{x:Bind ViewModel.Tree.ConsentActionText, Mode=OneWay}"
-                    Visibility="{x:Bind ViewModel.Tree.CanChangeConsent, Mode=OneWay}" />
+                    Click="OnNoticeActionClick"
+                    Content="{x:Bind ViewModel.Tree.NoticeActionText, Mode=OneWay}"
+                    IsEnabled="{x:Bind ViewModel.Tree.IsNoticeActionEnabled, Mode=OneWay}"
+                    Visibility="{x:Bind ViewModel.Tree.HasNoticeAction, Mode=OneWay}" />
             </InfoBar.ActionButton>
         </InfoBar>
 
@@ -39,64 +42,72 @@
             </ItemsRepeater.Layout>
             <ItemsRepeater.ItemTemplate>
                 <DataTemplate x:DataType="sensors:SensorHardwareItem">
-                    <Expander HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" IsExpanded="True">
+                    <Expander
+                        Padding="20,8,20,20"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        CornerRadius="{StaticResource CardCornerRadius}"
+                        IsExpanded="True">
                         <Expander.Header>
-                            <Grid Padding="0,8" ColumnSpacing="16">
+                            <Grid Padding="0,12" ColumnSpacing="16">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <Border Style="{StaticResource IconBadgeStyle}">
+                                <Border VerticalAlignment="Center" Style="{StaticResource IconBadgeStyle}">
                                     <FontIcon Glyph="{x:Bind Glyph, Mode=OneWay}" Style="{StaticResource IconBadgeGlyphStyle}" />
                                 </Border>
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Title, Mode=OneWay}" TextWrapping="Wrap" />
-                                    <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{x:Bind KindName, Mode=OneWay}" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                                    <TextBlock Style="{StaticResource TileLabelTextStyle}" Text="{x:Bind KindName, Mode=OneWay}" />
+                                    <TextBlock
+                                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                                        FontSize="16"
+                                        Text="{x:Bind Title, Mode=OneWay}"
+                                        TextWrapping="Wrap" />
                                 </StackPanel>
                             </Grid>
                         </Expander.Header>
 
                         <ItemsRepeater ItemsSource="{x:Bind Groups}">
                             <ItemsRepeater.Layout>
-                                <StackLayout Spacing="16" />
+                                <StackLayout Spacing="18" />
                             </ItemsRepeater.Layout>
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate x:DataType="sensors:SensorGroupItem">
-                                    <StackPanel Spacing="6">
-                                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Title, Mode=OneWay}" />
+                                    <StackPanel Spacing="8">
+                                        <TextBlock
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            FontWeight="SemiBold"
+                                            Text="{x:Bind Title, Mode=OneWay}" />
+                                        <!-- センサー 1 つを 1 枚の小さなタイルにして、幅に合わせて並べる -->
                                         <ItemsRepeater ItemsSource="{x:Bind Rows}">
                                             <ItemsRepeater.Layout>
                                                 <UniformGridLayout
                                                     ItemsStretch="Fill"
-                                                    MinColumnSpacing="24"
-                                                    MinItemWidth="300"
-                                                    MinRowSpacing="6" />
+                                                    MinColumnSpacing="8"
+                                                    MinItemWidth="190"
+                                                    MinRowSpacing="8" />
                                             </ItemsRepeater.Layout>
                                             <ItemsRepeater.ItemTemplate>
                                                 <DataTemplate x:DataType="sensors:SensorRowItem">
-                                                    <StackPanel Opacity="{x:Bind Opacity, Mode=OneWay}" Spacing="2">
-                                                        <Grid ColumnSpacing="12">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="*" />
-                                                                <ColumnDefinition Width="Auto" />
-                                                            </Grid.ColumnDefinitions>
+                                                    <Border Opacity="{x:Bind Opacity, Mode=OneWay}" Style="{StaticResource TileStyle}">
+                                                        <StackPanel Spacing="4">
                                                             <TextBlock
-                                                                Style="{StaticResource SecondaryTextStyle}"
+                                                                Style="{StaticResource TileLabelTextStyle}"
                                                                 Text="{x:Bind Label, Mode=OneWay}"
-                                                                TextTrimming="CharacterEllipsis"
-                                                                TextWrapping="NoWrap"
                                                                 ToolTipService.ToolTip="{x:Bind Key}" />
                                                             <TextBlock
-                                                                Grid.Column="1"
                                                                 IsTextSelectionEnabled="True"
-                                                                Style="{StaticResource BodyTextBlockStyle}"
+                                                                Style="{StaticResource TileValueTextStyle}"
                                                                 Text="{x:Bind ValueText, Mode=OneWay}" />
-                                                        </Grid>
-                                                        <ProgressBar
-                                                            Maximum="100"
-                                                            Value="{x:Bind Percent, Mode=OneWay}"
-                                                            Visibility="{x:Bind HasPercent, Mode=OneWay}" />
-                                                    </StackPanel>
+                                                            <ProgressBar
+                                                                Margin="0,2,0,0"
+                                                                Style="{StaticResource SlimBarStyle}"
+                                                                Value="{x:Bind Percent, Mode=OneWay}"
+                                                                Visibility="{x:Bind HasPercent, Mode=OneWay}" />
+                                                        </StackPanel>
+                                                    </Border>
                                                 </DataTemplate>
                                             </ItemsRepeater.ItemTemplate>
                                         </ItemsRepeater>
@@ -110,113 +121,102 @@
         </ItemsRepeater>
 
         <!-- アプリごとの今の使用量（センサーではないため、従来の測定のまま） -->
-        <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{x:Bind ViewModel.Apps.StatusText, Mode=OneWay}" />
-        <ItemsRepeater ItemsSource="{x:Bind ViewModel.Apps.Sections}">
+        <ItemsRepeater Margin="0,8,0,0" ItemsSource="{x:Bind ViewModel.Apps.Sections}">
             <ItemsRepeater.Layout>
-                <StackLayout Spacing="16" />
+                <StackLayout Spacing="12" />
             </ItemsRepeater.Layout>
             <ItemsRepeater.ItemTemplate>
                 <DataTemplate x:DataType="realtime:RealtimeSection">
                     <Border Style="{StaticResource CardStyle}">
-                        <Grid ColumnSpacing="16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Border Style="{StaticResource IconBadgeStyle}">
-                                <FontIcon Glyph="{x:Bind Glyph, Mode=OneWay}" Style="{StaticResource IconBadgeGlyphStyle}" />
-                            </Border>
-
-                            <StackPanel Grid.Column="1" Spacing="16">
-                                <!-- 見出し：種類の名前と、いちばん大事な値 -->
-                                <StackPanel Spacing="6">
-                                    <Grid ColumnSpacing="12">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock
-                                            VerticalAlignment="Center"
-                                            Style="{StaticResource SubtitleTextBlockStyle}"
-                                            Text="{x:Bind Category, Mode=OneWay}" />
-                                        <TextBlock
-                                            Grid.Column="1"
-                                            VerticalAlignment="Center"
-                                            Style="{StaticResource SubtitleTextBlockStyle}"
-                                            Text="{x:Bind Headline, Mode=OneWay}" />
-                                    </Grid>
-                                    <ProgressBar
-                                        Maximum="100"
-                                        Value="{x:Bind HeadlinePercent, Mode=OneWay}"
-                                        Visibility="{x:Bind HasHeadlinePercent, Mode=OneWay}" />
+                        <StackPanel Spacing="16">
+                            <!-- 見出し：種類の名前と、いちばん大事な値 -->
+                            <Grid ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Border VerticalAlignment="Center" Style="{StaticResource IconBadgeStyle}">
+                                    <FontIcon Glyph="{x:Bind Glyph, Mode=OneWay}" Style="{StaticResource IconBadgeGlyphStyle}" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                    <TextBlock
+                                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                                        FontSize="16"
+                                        Text="{x:Bind Category, Mode=OneWay}" />
                                     <TextBlock
                                         Style="{StaticResource FootnoteTextStyle}"
                                         Text="{x:Bind Note, Mode=OneWay}"
                                         Visibility="{x:Bind HasNote, Mode=OneWay}" />
                                 </StackPanel>
+                                <TextBlock
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    Style="{StaticResource TileValueTextStyle}"
+                                    FontSize="22"
+                                    Text="{x:Bind Headline, Mode=OneWay}" />
+                            </Grid>
+                            <ProgressBar
+                                Style="{StaticResource SlimBarStyle}"
+                                Value="{x:Bind HeadlinePercent, Mode=OneWay}"
+                                Visibility="{x:Bind HasHeadlinePercent, Mode=OneWay}" />
 
-                                <!-- この種類に属する部品（GPU 1 枚、ディスク 1 台など） -->
-                                <ItemsRepeater ItemsSource="{x:Bind Entries}">
-                                    <ItemsRepeater.Layout>
-                                        <StackLayout Spacing="20" />
-                                    </ItemsRepeater.Layout>
-                                    <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate x:DataType="realtime:RealtimeEntry">
-                                            <StackPanel Spacing="8">
-                                                <StackPanel Spacing="0">
-                                                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Title, Mode=OneWay}" TextWrapping="Wrap" />
-                                                    <TextBlock
-                                                        Style="{StaticResource SecondaryTextStyle}"
-                                                        Text="{x:Bind Subtitle, Mode=OneWay}"
-                                                        Visibility="{x:Bind HasSubtitle, Mode=OneWay}" />
-                                                </StackPanel>
+                            <!-- この種類に属する部品（アプリ 1 つなど） -->
+                            <ItemsRepeater ItemsSource="{x:Bind Entries}">
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Spacing="18" />
+                                </ItemsRepeater.Layout>
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="realtime:RealtimeEntry">
+                                        <StackPanel Spacing="8">
+                                            <StackPanel Spacing="0">
+                                                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Title, Mode=OneWay}" TextWrapping="Wrap" />
+                                                <TextBlock
+                                                    Style="{StaticResource FootnoteTextStyle}"
+                                                    Text="{x:Bind Subtitle, Mode=OneWay}"
+                                                    Visibility="{x:Bind HasSubtitle, Mode=OneWay}" />
+                                            </StackPanel>
 
-                                                <!-- 項目名と値の組。幅に合わせて複数列に並べる -->
-                                                <ItemsRepeater ItemsSource="{x:Bind Facts}">
-                                                    <ItemsRepeater.Layout>
-                                                        <UniformGridLayout
-                                                            ItemsStretch="Fill"
-                                                            MinColumnSpacing="24"
-                                                            MinItemWidth="300"
-                                                            MinRowSpacing="6" />
-                                                    </ItemsRepeater.Layout>
-                                                    <ItemsRepeater.ItemTemplate>
-                                                        <DataTemplate x:DataType="realtime:RealtimeFact">
-                                                            <StackPanel Spacing="2">
-                                                                <Grid ColumnSpacing="12">
-                                                                    <Grid.ColumnDefinitions>
-                                                                        <ColumnDefinition Width="*" />
-                                                                        <ColumnDefinition Width="Auto" />
-                                                                    </Grid.ColumnDefinitions>
-                                                                    <TextBlock
-                                                                        Style="{StaticResource SecondaryTextStyle}"
-                                                                        Text="{x:Bind Label, Mode=OneWay}"
-                                                                        TextTrimming="CharacterEllipsis"
-                                                                        TextWrapping="NoWrap"
-                                                                        ToolTipService.ToolTip="{x:Bind Label, Mode=OneWay}" />
-                                                                    <TextBlock
-                                                                        Grid.Column="1"
-                                                                        IsTextSelectionEnabled="True"
-                                                                        Style="{StaticResource BodyTextBlockStyle}"
-                                                                        Text="{x:Bind Value, Mode=OneWay}" />
-                                                                </Grid>
+                                            <!-- 項目名と値の組。幅に合わせて並べる -->
+                                            <ItemsRepeater ItemsSource="{x:Bind Facts}">
+                                                <ItemsRepeater.Layout>
+                                                    <UniformGridLayout
+                                                        ItemsStretch="Fill"
+                                                        MinColumnSpacing="8"
+                                                        MinItemWidth="190"
+                                                        MinRowSpacing="8" />
+                                                </ItemsRepeater.Layout>
+                                                <ItemsRepeater.ItemTemplate>
+                                                    <DataTemplate x:DataType="realtime:RealtimeFact">
+                                                        <Border Style="{StaticResource TileStyle}">
+                                                            <StackPanel Spacing="4">
+                                                                <TextBlock
+                                                                    Style="{StaticResource TileLabelTextStyle}"
+                                                                    Text="{x:Bind Label, Mode=OneWay}"
+                                                                    ToolTipService.ToolTip="{x:Bind Label, Mode=OneWay}" />
+                                                                <TextBlock
+                                                                    IsTextSelectionEnabled="True"
+                                                                    Style="{StaticResource TileValueTextStyle}"
+                                                                    Text="{x:Bind Value, Mode=OneWay}" />
                                                                 <ProgressBar
-                                                                    Maximum="100"
+                                                                    Margin="0,2,0,0"
+                                                                    Style="{StaticResource SlimBarStyle}"
                                                                     Value="{x:Bind Percent, Mode=OneWay}"
                                                                     Visibility="{x:Bind HasPercent, Mode=OneWay}" />
                                                             </StackPanel>
-                                                        </DataTemplate>
-                                                    </ItemsRepeater.ItemTemplate>
-                                                </ItemsRepeater>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ItemsRepeater.ItemTemplate>
-                                </ItemsRepeater>
-                            </StackPanel>
-                        </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsRepeater.ItemTemplate>
+                                            </ItemsRepeater>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                        </StackPanel>
                     </Border>
                 </DataTemplate>
             </ItemsRepeater.ItemTemplate>
         </ItemsRepeater>
+        <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{x:Bind ViewModel.Apps.StatusText, Mode=OneWay}" />
     </StackPanel>
 </UserControl>

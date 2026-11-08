@@ -18,77 +18,89 @@
             RefreshCommand="{x:Bind ViewModel.RefreshCommand}"
             Title="{l:Loc Key=Nav_Hardware}" />
 
-        <!-- 部品の種類（CPU、マザーボード、メモリ…）ごとに 1 枚のカード -->
+        <!-- 部品の種類（CPU、マザーボード、メモリ…）ごとに 1 枚の仕様書のカード -->
         <ItemsRepeater ItemsSource="{x:Bind ViewModel.Hardware}">
             <ItemsRepeater.Layout>
-                <StackLayout Spacing="16" />
+                <StackLayout Spacing="14" />
             </ItemsRepeater.Layout>
             <ItemsRepeater.ItemTemplate>
                 <DataTemplate x:DataType="hardware:HardwareSection">
-                    <Border Style="{StaticResource CardStyle}">
-                        <Grid ColumnSpacing="16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Border Style="{StaticResource IconBadgeStyle}">
-                                <FontIcon Glyph="{x:Bind Glyph}" Style="{StaticResource IconBadgeGlyphStyle}" />
-                            </Border>
-
-                            <StackPanel Grid.Column="1" Spacing="16">
-                                <StackPanel Spacing="2">
-                                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind Category}" />
+                    <Border Padding="0" Style="{StaticResource CardStyle}">
+                        <StackPanel>
+                            <!-- 見出しの帯 -->
+                            <Grid
+                                Padding="20,16"
+                                Background="{ThemeResource SubtleFillColorTertiaryBrush}"
+                                ColumnSpacing="16"
+                                CornerRadius="12,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border VerticalAlignment="Center" Style="{StaticResource IconBadgeStyle}">
+                                    <FontIcon Glyph="{x:Bind Glyph}" Style="{StaticResource IconBadgeGlyphStyle}" />
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" FontSize="18" Text="{x:Bind Category}" />
                                     <TextBlock
                                         Style="{StaticResource FootnoteTextStyle}"
                                         Text="{x:Bind Note}"
                                         Visibility="{x:Bind HasNote}" />
                                 </StackPanel>
+                            </Grid>
 
-                                <!-- この種類に属する部品（GPU 2 枚、メモリ 4 枚など） -->
-                                <ItemsRepeater ItemsSource="{x:Bind Entries}">
-                                    <ItemsRepeater.Layout>
-                                        <StackLayout Spacing="16" />
-                                    </ItemsRepeater.Layout>
-                                    <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate x:DataType="hardware:HardwareEntry">
-                                            <StackPanel Spacing="6">
-                                                <StackPanel Spacing="0">
-                                                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Title}" TextWrapping="Wrap" />
-                                                    <TextBlock
-                                                        Style="{StaticResource SecondaryTextStyle}"
-                                                        Text="{x:Bind Subtitle}"
-                                                        Visibility="{x:Bind HasSubtitle}" />
-                                                </StackPanel>
-
-                                                <!-- 項目名と値の組 -->
-                                                <ItemsRepeater ItemsSource="{x:Bind Facts}">
-                                                    <ItemsRepeater.Layout>
-                                                        <StackLayout Spacing="4" />
-                                                    </ItemsRepeater.Layout>
-                                                    <ItemsRepeater.ItemTemplate>
-                                                        <DataTemplate x:DataType="hardware:HardwareFact">
-                                                            <Grid ColumnSpacing="12">
-                                                                <Grid.ColumnDefinitions>
-                                                                    <ColumnDefinition Width="160" />
-                                                                    <ColumnDefinition Width="*" />
-                                                                </Grid.ColumnDefinitions>
-                                                                <TextBlock Style="{StaticResource SecondaryTextStyle}" Text="{x:Bind Label}" />
-                                                                <TextBlock
-                                                                    Grid.Column="1"
-                                                                    IsTextSelectionEnabled="True"
-                                                                    Style="{StaticResource BodyTextBlockStyle}"
-                                                                    Text="{x:Bind Value}"
-                                                                    TextWrapping="Wrap" />
-                                                            </Grid>
-                                                        </DataTemplate>
-                                                    </ItemsRepeater.ItemTemplate>
-                                                </ItemsRepeater>
+                            <!-- この種類に属する部品（GPU 2 枚、メモリ 4 枚など） -->
+                            <ItemsRepeater Margin="20,16,20,20" ItemsSource="{x:Bind Entries}">
+                                <ItemsRepeater.Layout>
+                                    <StackLayout Spacing="22" />
+                                </ItemsRepeater.Layout>
+                                <ItemsRepeater.ItemTemplate>
+                                    <DataTemplate x:DataType="hardware:HardwareEntry">
+                                        <StackPanel Spacing="10">
+                                            <StackPanel Spacing="0">
+                                                <TextBlock
+                                                    IsTextSelectionEnabled="True"
+                                                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                    FontSize="16"
+                                                    Text="{x:Bind Title}"
+                                                    TextWrapping="Wrap" />
+                                                <TextBlock
+                                                    Style="{StaticResource SecondaryTextStyle}"
+                                                    Text="{x:Bind Subtitle}"
+                                                    Visibility="{x:Bind HasSubtitle}" />
                                             </StackPanel>
-                                        </DataTemplate>
-                                    </ItemsRepeater.ItemTemplate>
-                                </ItemsRepeater>
-                            </StackPanel>
-                        </Grid>
+
+                                            <!-- 項目名と値の組を、仕様書のマス目のように並べる -->
+                                            <ItemsRepeater ItemsSource="{x:Bind Facts}">
+                                                <ItemsRepeater.Layout>
+                                                    <UniformGridLayout
+                                                        ItemsStretch="Fill"
+                                                        MinColumnSpacing="8"
+                                                        MinItemWidth="230"
+                                                        MinRowSpacing="8" />
+                                                </ItemsRepeater.Layout>
+                                                <ItemsRepeater.ItemTemplate>
+                                                    <DataTemplate x:DataType="hardware:HardwareFact">
+                                                        <Border Style="{StaticResource TileStyle}">
+                                                            <StackPanel Spacing="2">
+                                                                <TextBlock Style="{StaticResource TileLabelTextStyle}" Text="{x:Bind Label}" ToolTipService.ToolTip="{x:Bind Label}" />
+                                                                <TextBlock
+                                                                    IsTextSelectionEnabled="True"
+                                                                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                                    Text="{x:Bind Value}"
+                                                                    TextTrimming="CharacterEllipsis"
+                                                                    TextWrapping="NoWrap"
+                                                                    ToolTipService.ToolTip="{x:Bind Value}" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsRepeater.ItemTemplate>
+                                            </ItemsRepeater>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsRepeater.ItemTemplate>
+                            </ItemsRepeater>
+                        </StackPanel>
                     </Border>
                 </DataTemplate>
             </ItemsRepeater.ItemTemplate>

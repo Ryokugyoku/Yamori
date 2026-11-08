@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Yamori.Localization;
@@ -32,9 +33,50 @@ public sealed partial class RealtimeView : UserControl
     private void OnUnloaded(object sender, RoutedEventArgs e) => ViewModel.Dispose();
 
     /// <summary>
+    /// お知らせのボタンが押されたら、Helper が動いていなければサービスを起動し、そうでなければ PawnIO の利用の同意を変える。
+    /// </summary>
+    private async void OnNoticeActionClick(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel.Tree.CanStartHelper)
+        {
+            await StartHelperAsync();
+        }
+        else
+        {
+            await ChangeConsentAsync();
+        }
+    }
+
+    /// <summary>
+    /// Helper のサービスを起動する。起動できなければ、その理由を出す。
+    /// </summary>
+    private async Task StartHelperAsync()
+    {
+        var error = await ViewModel.Tree.StartHelperAsync();
+        if (error is not null)
+        {
+            await ShowErrorAsync(UiText.Get("HelperStart_ErrorTitle"), error);
+        }
+    }
+
+    /// <summary>
+    /// 失敗の理由をダイアログで出す。
+    /// </summary>
+    /// <param name="title">見出し。</param>
+    /// <param name="message">理由の説明。</param>
+    private async Task ShowErrorAsync(string title, string message) =>
+        await new ContentDialog
+        {
+            XamlRoot = XamlRoot,
+            Title = title,
+            Content = new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap },
+            CloseButtonText = UiText.Get("Consent_ErrorClose"),
+        }.ShowAsync();
+
+    /// <summary>
     /// PawnIO の利用の同意の画面を出し、確かめてから同意を変える。
     /// </summary>
-    private async void OnConsentClick(object sender, RoutedEventArgs e)
+    private async Task ChangeConsentAsync()
     {
         if (ViewModel.Tree.ConsentAction is not { } enable)
         {
@@ -61,12 +103,6 @@ public sealed partial class RealtimeView : UserControl
             return;
         }
 
-        await new ContentDialog
-        {
-            XamlRoot = XamlRoot,
-            Title = UiText.Get("Consent_ErrorTitle"),
-            Content = new TextBlock { Text = error, TextWrapping = TextWrapping.Wrap },
-            CloseButtonText = UiText.Get("Consent_ErrorClose"),
-        }.ShowAsync();
+        await ShowErrorAsync(UiText.Get("Consent_ErrorTitle"), error);
     }
 }

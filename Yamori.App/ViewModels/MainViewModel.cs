@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -23,10 +24,19 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private readonly NextPcReportService _reportService;
     private readonly NextPcReportPresenter _presenter;
     private readonly HardwareSectionsPresenter _hardwarePresenter;
+    private readonly SystemSpecPresenter _specPresenter;
     private readonly HistoryStorageService _storage;
+    private readonly string _userName;
+    private readonly string _machineName;
+    private readonly TimeProvider _timeProvider;
     private readonly SynchronizationContext _uiContext;
 
+    /// <summary>概要画面に出す、メモリを多く使っているアプリの数。</summary>
+    private const int TopAppsPreviewCount = 5;
+
     private string _statusText;
+    private string _greetingText = string.Empty;
+    private string _watchingText = string.Empty;
     private string _privacyNoteText = string.Empty;
     private string _dataDirectoryText = string.Empty;
     private bool _isBusy;
@@ -38,26 +48,48 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     /// <param name="summaryCards">概要画面のサマリーカード。このインスタンスが破棄する。</param>
     /// <param name="presenter">レポートを表示用に変換する処理。</param>
     /// <param name="hardwarePresenter">ハードウェア一覧を部品の種類ごとの表示内容にする処理。</param>
+    /// <param name="specPresenter">ハードウェア一覧から主な仕様を作る処理。</param>
     /// <param name="storage">記録の保存先（画面に表示する）。</param>
+    /// <param name="userName">サインイン中のユーザーの名前（あいさつに使う）。</param>
+    /// <param name="machineName">この PC の名前。</param>
+    /// <param name="timeProvider">今の時刻の提供元（あいさつの時間帯に使う）。</param>
     /// <exception cref="ArgumentNullException">いずれかの引数が null。</exception>
     /// <exception cref="InvalidOperationException">UI スレッド以外から呼ばれた。</exception>
-    public MainViewModel(NextPcReportService reportService, SummaryCardsViewModel summaryCards, NextPcReportPresenter presenter, HardwareSectionsPresenter hardwarePresenter, HistoryStorageService storage)
+    public MainViewModel(
+        NextPcReportService reportService,
+        SummaryCardsViewModel summaryCards,
+        NextPcReportPresenter presenter,
+        HardwareSectionsPresenter hardwarePresenter,
+        SystemSpecPresenter specPresenter,
+        HistoryStorageService storage,
+        string userName,
+        string machineName,
+        TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(reportService);
         ArgumentNullException.ThrowIfNull(summaryCards);
         ArgumentNullException.ThrowIfNull(presenter);
         ArgumentNullException.ThrowIfNull(hardwarePresenter);
+        ArgumentNullException.ThrowIfNull(specPresenter);
         ArgumentNullException.ThrowIfNull(storage);
+        ArgumentNullException.ThrowIfNull(userName);
+        ArgumentNullException.ThrowIfNull(machineName);
+        ArgumentNullException.ThrowIfNull(timeProvider);
 
         _reportService = reportService;
         SummaryCards = summaryCards;
         _presenter = presenter;
         _hardwarePresenter = hardwarePresenter;
+        _specPresenter = specPresenter;
         _storage = storage;
+        _userName = userName;
+        _machineName = machineName;
+        _timeProvider = timeProvider;
         _uiContext = SynchronizationContext.Current
             ?? throw new InvalidOperationException("MainViewModel は UI スレッドで作成してください。");
 
         _statusText = UiText.Get("Status_Loading");
+        UpdateGreeting();
         UpdateLocationTexts();
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
         _storage.LocationChanged += OnLocationChanged;
@@ -74,6 +106,26 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     /// <summary>メモリを多く使っているアプリを取得する。</summary>
     public ObservableCollection<AppUsageItem> TopApps { get; } = [];
+
+    /// <summary>概要画面に出す、メモリを多く使っているアプリの上位を取得する。</summary>
+    public ObservableCollection<AppUsageItem> TopAppsPreview { get; } = [];
+
+    /// <summary>この PC の主な仕様を取得する。</summary>
+    public ObservableCollection<SpecItem> Specs { get; } = [];
+
+    /// <summary>時間帯に合わせたあいさつを取得する。</summary>
+    public string GreetingText
+    {
+        get => _greetingText;
+        private set => SetProperty(ref _greetingText, value);
+    }
+
+    /// <summary>「この PC を見守っています」の文を取得する。</summary>
+    public string WatchingText
+    {
+        get => _watchingText;
+        private set => SetProperty(ref _watchingText, value);
+    }
 
     /// <summary>表示を最新にするコマンドを取得する。</summary>
     public IAsyncRelayCommand RefreshCommand { get; }
@@ -121,6 +173,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     /// <returns>作り直し終わったときに完了するタスク。</returns>
     public Task ReloadForLanguageAsync()
     {
+        UpdateGreeting();
         UpdateLocationTexts();
         SummaryCards.Refresh();
         return RefreshCommand.ExecuteAsync(null);
@@ -137,6 +190,9 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             Replace(Hardware, _hardwarePresenter.Build(report.Inventory));
             Replace(Recommendations, _presenter.BuildRecommendations(report.Recommendations));
             Replace(TopApps, _presenter.BuildTopApps(report.TopApps));
+            Replace(TopAppsPreview, TopApps.Take(TopAppsPreviewCount));
+            Replace(Specs, _specPresenter.Build(report.Inventory));
+            UpdateGreeting();
             StatusText = UiText.Format("Status_LastUpdated", report.GeneratedAt.ToLocalTime().ToString("G"));
         }
         catch (IOException ex)
@@ -147,6 +203,12 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             IsBusy = false;
         }
+    }
+
+    private void UpdateGreeting()
+    {
+        GreetingText = GreetingFormatter.For(_timeProvider.GetLocalNow(), _userName);
+        WatchingText = UiText.Format("Overview_Watching", _machineName);
     }
 
     private void UpdateLocationTexts()

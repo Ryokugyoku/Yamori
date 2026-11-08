@@ -147,7 +147,22 @@ public sealed class AppServices
     /// </summary>
     /// <returns>新しいビューモデル。</returns>
     public MainViewModel CreateMainViewModel() =>
-        new(ReportService, new SummaryCardsViewModel(GetBoard(), SummaryCardDefinitions.Default), Presenter, HardwarePresenter, Storage);
+        new(
+            ReportService,
+            new SummaryCardsViewModel(GetBoard(), SummaryCardDefinitions.Default),
+            Presenter,
+            HardwarePresenter,
+            new SystemSpecPresenter(),
+            Storage,
+            AccountProvider.GetCurrent().UserName,
+            Environment.MachineName,
+            TimeProvider.System);
+
+    /// <summary>
+    /// タイトルバーに出す見守りの状態のビューモデルを作る。UI スレッドから呼ぶこと。
+    /// </summary>
+    /// <returns>新しいビューモデル。</returns>
+    public HelperStatusViewModel CreateHelperStatusViewModel() => new(GetBoard(), new ScHelperServiceStarter());
 
     /// <summary>
     /// リアルタイム画面のビューモデルを作る。UI スレッドから呼ぶこと。アプリごとの使用量の測定の処理は、測定を始めるときに作る。
@@ -155,7 +170,7 @@ public sealed class AppServices
     /// <returns>新しいビューモデル。</returns>
     public RealtimePageViewModel CreateRealtimeViewModel() =>
         new(
-            new SensorTreeViewModel(GetBoard(), new HelperElevatedConsentChanger()),
+            new SensorTreeViewModel(GetBoard(), new HelperElevatedConsentChanger(), new ScHelperServiceStarter()),
             new RealtimeViewModel(
                 () => RealtimeSnapshotService.CreateDefault(new ManagementWmiQueryExecutor(), TimeProvider.System),
                 RealtimeSectionsPresenter.CreateDefault(),

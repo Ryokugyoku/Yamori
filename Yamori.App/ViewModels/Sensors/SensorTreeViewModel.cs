@@ -20,20 +20,25 @@ public sealed class SensorTreeViewModel : ObservableObject, IDisposable
 {
     private readonly SensorBoard _board;
     private readonly IElevatedConsentChanger _elevated;
+    private readonly IHelperServiceStarter _starter;
     private SensorNotice _notice = SensorNotice.Empty;
+    private bool _isStartingHelper;
 
     /// <summary>
     /// 共有の状態を指定して作る。UI スレッドから呼ぶこと。
     /// </summary>
     /// <param name="board">センサーの今の状態。</param>
     /// <param name="elevated">管理者の承認を得て同意を変える処理。</param>
+    /// <param name="starter">止まっている Helper のサービスを起動する処理。</param>
     /// <exception cref="ArgumentNullException">いずれかの引数が null。</exception>
-    public SensorTreeViewModel(SensorBoard board, IElevatedConsentChanger elevated)
+    public SensorTreeViewModel(SensorBoard board, IElevatedConsentChanger elevated, IHelperServiceStarter starter)
     {
         ArgumentNullException.ThrowIfNull(board);
         ArgumentNullException.ThrowIfNull(elevated);
+        ArgumentNullException.ThrowIfNull(starter);
         _board = board;
         _elevated = elevated;
+        _starter = starter;
         _board.Updated += OnUpdated;
         Refresh();
     }
@@ -58,6 +63,37 @@ public sealed class SensorTreeViewModel : ObservableObject, IDisposable
 
     /// <summary>ボタンを押したときに、同意する（true）か取り消す（false）かを取得する。ボタンを出さないときは null。</summary>
     public bool? ConsentAction => _notice.ConsentAction;
+
+    /// <summary>Helper のサービスを起動するボタンを出すかどうか（Helper が動いていないとき）を取得する。</summary>
+    public bool CanStartHelper => _notice.CanStartHelper;
+
+    /// <summary>お知らせのボタン（サービスの起動か、PawnIO の利用の同意）を出すかどうかを取得する。</summary>
+    public bool HasNoticeAction => CanStartHelper || CanChangeConsent;
+
+    /// <summary>お知らせのボタンの文字列を取得する。</summary>
+    public string NoticeActionText => CanStartHelper ? SensorTexts.StartHelperAction : ConsentActionText;
+
+    /// <summary>お知らせのボタンを押せるかどうか（サービスを起動している最中は押せない）を取得する。</summary>
+    public bool IsNoticeActionEnabled => !_isStartingHelper;
+
+    /// <summary>
+    /// Helper のサービスを起動する。権限が足りなければ、Windows の管理者の承認（UAC）を得て起動だけを管理者の権限で行う。
+    /// 起動したら、接続は自動でつなぎ直される。起動している間は、お知らせのボタンを押せなくする。
+    /// </summary>
+    /// <returns>起動できなかった場合は、その理由の説明。起動できた場合と、承認の画面で取り消された場合は null。</returns>
+    public async Task<string?> StartHelperAsync()
+    {
+        SetStartingHelper(true);
+        try
+        {
+            var result = await _starter.StartAsync();
+            return result is HelperStartResult.Started or HelperStartResult.Cancelled ? null : SensorTexts.StartHelperResult(result);
+        }
+        finally
+        {
+            SetStartingHelper(false);
+        }
+    }
 
     /// <summary>
     /// PawnIO の利用の同意を変える。管理者でない場合は、Windows の管理者の承認（UAC）を得て、その変更だけを管理者の権限で行う。
@@ -97,6 +133,18 @@ public sealed class SensorTreeViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(CanChangeConsent));
             OnPropertyChanged(nameof(ConsentActionText));
             OnPropertyChanged(nameof(ConsentAction));
+            OnPropertyChanged(nameof(CanStartHelper));
+            OnPropertyChanged(nameof(HasNoticeAction));
+            OnPropertyChanged(nameof(NoticeActionText));
+        }
+    }
+
+    private void SetStartingHelper(bool value)
+    {
+        if (_isStartingHelper != value)
+        {
+            _isStartingHelper = value;
+            OnPropertyChanged(nameof(IsNoticeActionEnabled));
         }
     }
 

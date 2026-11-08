@@ -3,6 +3,7 @@ using Yamori.Core.Sensors.Extended;
 using Yamori.Core.Sensors.Ipc.Client;
 using Yamori.Core.Sensors.Service;
 using Yamori.Localization;
+using Yamori.Services;
 
 namespace Yamori.Presentation.Sensors;
 
@@ -69,4 +70,14 @@ public static class SensorTexts
     /// <param name="result">変更の結果。</param>
     /// <returns>説明。</returns>
     public static string ConsentResult(SensorSettingResult result) => UiText.Get("Consent_Result_" + result);
+
+    /// <summary>Helper のサービスを起動するボタンの文字列を取得する。</summary>
+    public static string StartHelperAction => UiText.Get("HelperStart_Action");
+
+    /// <summary>
+    /// Helper のサービスを起動できなかった理由の説明を取得する。
+    /// </summary>
+    /// <param name="result">起動の結果。</param>
+    /// <returns>説明。</returns>
+    public static string StartHelperResult(HelperStartResult result) => UiText.Get("HelperStart_Result_" + result);
 }

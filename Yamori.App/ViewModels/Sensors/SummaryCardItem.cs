@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Yamori.ViewModels.Sensors;
@@ -14,6 +15,9 @@ public sealed class SummaryCardItem : ObservableObject
     private double _percent;
     private bool _hasPercent;
     private double _opacity = 1;
+    private IReadOnlyList<double> _trend = [];
+    private double _trendMinimum = double.NaN;
+    private double _trendMaximum = double.NaN;
 
     /// <summary>
     /// カードの ID を指定して作る。
@@ -44,4 +48,13 @@ public sealed class SummaryCardItem : ObservableObject
 
     /// <summary>不透明度を取得する。一時的に読めないときは薄くする。</summary>
     public double Opacity { get => _opacity; set => SetProperty(ref _opacity, value); }
+
+    /// <summary>直近の値（古い順）を取得する。折れ線グラフに使う。</summary>
+    public IReadOnlyList<double> Trend { get => _trend; set => SetProperty(ref _trend, value); }
+
+    /// <summary>折れ線グラフの縦軸の下限を取得する。NaN なら値から決める。</summary>
+    public double TrendMinimum { get => _trendMinimum; set => SetProperty(ref _trendMinimum, value); }
+
+    /// <summary>折れ線グラフの縦軸の上限を取得する。NaN なら値から決める。</summary>
+    public double TrendMaximum { get => _trendMaximum; set => SetProperty(ref _trendMaximum, value); }
 }

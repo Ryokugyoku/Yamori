@@ -801,4 +801,94 @@
   <data name="Consent_Result_Unavailable" xml:space="preserve">
     <value>The Yamori Helper service is not running, so the setting cannot be changed now.</value>
   </data>
+  <data name="HelperStart_Action" xml:space="preserve">
+    <value>Start service</value>
+  </data>
+  <data name="HelperStart_ErrorTitle" xml:space="preserve">
+    <value>Couldn't start the service</value>
+  </data>
+  <data name="HelperStart_Result_NotInstalled" xml:space="preserve">
+    <value>The Yamori Helper service isn't installed. Please reinstall Yamori.</value>
+  </data>
+  <data name="HelperStart_Result_Disabled" xml:space="preserve">
+    <value>The Yamori Helper service is disabled. In Windows Services, set its startup type back to Automatic.</value>
+  </data>
+  <data name="HelperStart_Result_Failed" xml:space="preserve">
+    <value>The Yamori Helper service couldn't be started. Try again later, or restart your PC.</value>
+  </data>
+  <data name="HelperStatus_Connecting" xml:space="preserve">
+    <value>Connecting…</value>
+  </data>
+  <data name="HelperStatus_Connected" xml:space="preserve">
+    <value>Watching</value>
+  </data>
+  <data name="HelperStatus_NotRunning" xml:space="preserve">
+    <value>Not recording</value>
+  </data>
+  <data name="HelperStatus_Incompatible" xml:space="preserve">
+    <value>Update needed</value>
+  </data>
+  <data name="HelperStatus_ConnectedDetail" xml:space="preserve">
+    <value>Yamori Helper (service) is watching this PC and recording sensor values. Recording continues after you close Yamori.</value>
+  </data>
+  <data name="Spec_CpuDetail" xml:space="preserve">
+    <value>{0} cores / {1} threads</value>
+  </data>
+  <data name="Spec_ModuleCount" xml:space="preserve">
+    <value>{0} modules</value>
+  </data>
+  <data name="Spec_Joined" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="Spec_GpuDetail" xml:space="preserve">
+    <value>{0} dedicated memory</value>
+  </data>
+  <data name="Spec_StorageDetail" xml:space="preserve">
+    <value>Total · {0} drives</value>
+  </data>
+  <data name="Greeting_Morning" xml:space="preserve">
+    <value>Good morning, {0}</value>
+  </data>
+  <data name="Greeting_Afternoon" xml:space="preserve">
+    <value>Good afternoon, {0}</value>
+  </data>
+  <data name="Greeting_Evening" xml:space="preserve">
+    <value>Good evening, {0}</value>
+  </data>
+  <data name="Overview_Watching" xml:space="preserve">
+    <value>Watching over {0}</value>
+  </data>
+  <data name="Overview_LiveHeader" xml:space="preserve">
+    <value>Right now</value>
+  </data>
+  <data name="Overview_TopAppsHeader" xml:space="preserve">
+    <value>Apps using the most memory</value>
+  </data>
+  <data name="RecLevel_NotEnoughData" xml:space="preserve">
+    <value>Collecting data</value>
+  </data>
+  <data name="RecLevel_Sufficient" xml:space="preserve">
+    <value>Comfortable</value>
+  </data>
+  <data name="RecLevel_Borderline" xml:space="preserve">
+    <value>Sometimes at the limit</value>
+  </data>
+  <data name="RecLevel_Insufficient" xml:space="preserve">
+    <value>Consider a step up</value>
+  </data>
+  <data name="Settings_GroupData" xml:space="preserve">
+    <value>Data and recording</value>
+  </data>
+  <data name="Settings_GroupDisplay" xml:space="preserve">
+    <value>Display</value>
+  </data>
+  <data name="Settings_GroupAbout" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="Settings_PrivacyHeader" xml:space="preserve">
+    <value>Privacy</value>
+  </data>
+  <data name="Settings_Version" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
 </root>

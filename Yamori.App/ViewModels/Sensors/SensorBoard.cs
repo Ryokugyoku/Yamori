@@ -22,6 +22,7 @@ public sealed class SensorBoard : IDisposable
     private readonly SynchronizationContext _uiContext;
     private readonly SensorVisibilityTracker _visibility = new();
     private readonly Dictionary<SensorKey, SensorReading> _latest = [];
+    private readonly SensorTrendBuffer _trends = new();
     private IReadOnlyList<SensorDescriptor> _catalog = [];
 
     /// <summary>
@@ -86,6 +87,13 @@ public sealed class SensorBoard : IDisposable
     public SensorReading? GetLatest(SensorKey key) => _latest.GetValueOrDefault(key);
 
     /// <summary>
+    /// 直近の値（古い順、最大 <see cref="SensorTrendBuffer.DefaultCapacity"/> 個）を取得する。
+    /// </summary>
+    /// <param name="key">センサーのキー。</param>
+    /// <returns>古い順の値。なければ空。</returns>
+    public IReadOnlyList<double> GetTrend(SensorKey key) => _trends.Get(key);
+
+    /// <summary>
     /// 説明を取得する。
     /// </summary>
     /// <param name="key">センサーのキー。</param>
@@ -148,6 +156,7 @@ public sealed class SensorBoard : IDisposable
             _latest.Remove(key);
         }
 
+        _trends.Retain(keys);
         Updated?.Invoke(this, EventArgs.Empty);
     }
 
@@ -157,6 +166,7 @@ public sealed class SensorBoard : IDisposable
         {
             _visibility.Apply(reading);
             _latest[reading.Key] = reading;
+            _trends.Add(reading);
         }
 
         Updated?.Invoke(this, EventArgs.Empty);

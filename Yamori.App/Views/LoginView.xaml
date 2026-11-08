@@ -5,108 +5,129 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:l="using:Yamori.Localization">
 
-    <Grid Padding="16">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <Border
-                MaxWidth="440"
-                Margin="0,24"
-                Padding="40,36"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Style="{StaticResource CardStyle}">
-                <StackPanel Spacing="24">
+    <Grid>
+        <!-- 背景：ブランドの緑の光をうっすら重ねる（Mica が透けて見える） -->
+        <Rectangle Fill="{ThemeResource LoginGlowBrush}" IsHitTestVisible="False" />
 
-                    <!-- ロゴとアプリ名 -->
-                    <StackPanel HorizontalAlignment="Center" Spacing="6">
-                        <Image
-                            Width="88"
-                            Height="88"
-                            Margin="0,0,0,8"
-                            HorizontalAlignment="Center"
-                            AutomationProperties.AccessibilityView="Raw"
-                            Source="ms-appx:///Assets/Logo/YamoriLogo.png" />
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            Style="{StaticResource TitleTextBlockStyle}"
-                            Text="{l:Loc Key=Login_Title}"
-                            TextAlignment="Center"
-                            TextWrapping="Wrap" />
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            Style="{StaticResource SecondaryTextStyle}"
-                            Text="{l:Loc Key=App_Tagline}"
-                            TextAlignment="Center" />
-                    </StackPanel>
+        <ScrollViewer Padding="16" VerticalScrollBarVisibility="Auto">
+            <Grid MaxWidth="460" Margin="0,32" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Border
+                    Padding="40,40,40,32"
+                    Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="20">
+                    <StackPanel Spacing="28">
 
-                    <!-- サインインするアカウント -->
-                    <StackPanel HorizontalAlignment="Center" Spacing="8">
-                        <PersonPicture
-                            Width="80"
-                            Height="80"
-                            HorizontalAlignment="Center"
-                            DisplayName="{x:Bind ViewModel.Account.UserName}" />
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            Style="{StaticResource SubtitleTextBlockStyle}"
-                            Text="{x:Bind ViewModel.Account.UserName}"
-                            TextAlignment="Center" />
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            Style="{StaticResource FootnoteTextStyle}"
-                            Text="{x:Bind ViewModel.Account.QualifiedName}"
-                            TextAlignment="Center" />
-                    </StackPanel>
-
-                    <StackPanel Spacing="12">
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            Text="{l:Loc Key=Login_Subtitle}"
-                            TextAlignment="Center"
-                            TextWrapping="Wrap" />
-                        <Button
-                            x:Name="SignInButton"
-                            MinHeight="40"
-                            HorizontalAlignment="Stretch"
-                            Command="{x:Bind ViewModel.SignInCommand}"
-                            Style="{StaticResource AccentButtonStyle}">
-                            <StackPanel Orientation="Horizontal" Spacing="10">
-                                <FontIcon FontSize="16" Glyph="&#xE8D7;" />
-                                <TextBlock Text="{x:Bind ViewModel.SignInButtonText, Mode=OneWay}" />
-                            </StackPanel>
-                        </Button>
-                        <Grid MinHeight="20" ColumnSpacing="8" HorizontalAlignment="Center">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <ProgressRing
-                                Width="16"
-                                Height="16"
-                                IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}"
-                                Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+                        <!-- ロゴとアプリ名 -->
+                        <StackPanel HorizontalAlignment="Center" Spacing="8">
+                            <Image
+                                Width="96"
+                                Height="96"
+                                Margin="0,0,0,8"
+                                HorizontalAlignment="Center"
+                                AutomationProperties.AccessibilityView="Raw"
+                                Source="ms-appx:///Assets/Logo/YamoriLogo.png" />
                             <TextBlock
-                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                FontFamily="Segoe UI Variable Display"
+                                FontSize="28"
+                                FontWeight="SemiBold"
+                                Text="{l:Loc Key=Login_Title}"
+                                TextAlignment="Center"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                HorizontalAlignment="Center"
                                 Style="{StaticResource SecondaryTextStyle}"
-                                Text="{x:Bind ViewModel.StatusText, Mode=OneWay}"
+                                Text="{l:Loc Key=App_Tagline}"
                                 TextAlignment="Center" />
-                        </Grid>
-                    </StackPanel>
+                        </StackPanel>
 
-                    <StackPanel
-                        HorizontalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="6">
-                        <FontIcon
-                            FontSize="12"
-                            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                            Glyph="&#xE72E;" />
-                        <TextBlock
-                            MaxWidth="320"
-                            Style="{StaticResource FootnoteTextStyle}"
-                            Text="{l:Loc Key=Login_OfflineNote}" />
+                        <!-- サインインするアカウント -->
+                        <Border Padding="16" Style="{StaticResource TileStyle}">
+                            <Grid ColumnSpacing="14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <PersonPicture
+                                    Width="52"
+                                    Height="52"
+                                    DisplayName="{x:Bind ViewModel.Account.UserName}" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                    <TextBlock
+                                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                                        FontSize="16"
+                                        Text="{x:Bind ViewModel.Account.UserName}"
+                                        TextTrimming="CharacterEllipsis" />
+                                    <TextBlock
+                                        Style="{StaticResource FootnoteTextStyle}"
+                                        Text="{x:Bind ViewModel.Account.QualifiedName}"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextWrapping="NoWrap" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <StackPanel Spacing="12">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                Style="{StaticResource SecondaryTextStyle}"
+                                Text="{l:Loc Key=Login_Subtitle}"
+                                TextAlignment="Center" />
+                            <Button
+                                x:Name="SignInButton"
+                                MinHeight="44"
+                                HorizontalAlignment="Stretch"
+                                Command="{x:Bind ViewModel.SignInCommand}"
+                                CornerRadius="8"
+                                Style="{StaticResource AccentButtonStyle}">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <FontIcon FontSize="16" Glyph="&#xE8D7;" />
+                                    <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind ViewModel.SignInButtonText, Mode=OneWay}" />
+                                </StackPanel>
+                            </Button>
+                            <Grid MinHeight="20" HorizontalAlignment="Center" ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <ProgressRing
+                                    Width="16"
+                                    Height="16"
+                                    IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}"
+                                    Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    Style="{StaticResource SecondaryTextStyle}"
+                                    Text="{x:Bind ViewModel.StatusText, Mode=OneWay}"
+                                    TextAlignment="Center" />
+                            </Grid>
+                        </StackPanel>
+
+                        <Border
+                            Padding="12,10"
+                            Background="{ThemeResource SubtleFillColorTertiaryBrush}"
+                            CornerRadius="10">
+                            <Grid ColumnSpacing="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <FontIcon
+                                    VerticalAlignment="Top"
+                                    FontSize="14"
+                                    Foreground="{ThemeResource BrandForegroundBrush}"
+                                    Glyph="&#xE72E;" />
+                                <TextBlock
+                                    Grid.Column="1"
+                                    Style="{StaticResource FootnoteTextStyle}"
+                                    Text="{l:Loc Key=Login_OfflineNote}" />
+                            </Grid>
+                        </Border>
                     </StackPanel>
-                </StackPanel>
-            </Border>
+                </Border>
+            </Grid>
         </ScrollViewer>
     </Grid>
 </UserControl>

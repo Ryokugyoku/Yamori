@@ -18,30 +18,57 @@
             RefreshCommand="{x:Bind ViewModel.RefreshCommand}"
             Title="{l:Loc Key=Nav_Apps}" />
 
+        <!-- メモリを多く使っている順のランキング -->
         <Border Padding="8" Style="{StaticResource CardStyle}">
             <ItemsControl ItemsSource="{x:Bind ViewModel.TopApps}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="2" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="presentation:AppUsageItem">
-                        <Grid Padding="12,10" ColumnSpacing="20">
+                        <Grid
+                            Padding="12,10"
+                            ColumnSpacing="16"
+                            CornerRadius="8">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" MinWidth="160" />
                                 <ColumnDefinition Width="2*" />
-                                <ColumnDefinition Width="90" />
+                                <ColumnDefinition Width="96" />
                             </Grid.ColumnDefinitions>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
+                            <Border Style="{StaticResource RankBadgeStyle}">
+                                <TextBlock
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    FontWeight="Bold"
+                                    Text="{x:Bind Rank}" />
+                            </Border>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock
+                                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                                    Text="{x:Bind Name}"
+                                    TextTrimming="CharacterEllipsis"
+                                    ToolTipService.ToolTip="{x:Bind Name}" />
                                 <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{x:Bind ProcessCountText}" />
                             </StackPanel>
                             <ProgressBar
-                                Grid.Column="1"
+                                Grid.Column="2"
                                 VerticalAlignment="Center"
+                                MinHeight="6"
+                                Height="6"
+                                CornerRadius="3"
                                 Maximum="100"
                                 Value="{x:Bind RelativeShare}" />
                             <TextBlock
-                                Grid.Column="2"
+                                Grid.Column="3"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
-                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                Style="{StaticResource TileValueTextStyle}"
+                                FontSize="16"
                                 Text="{x:Bind MemoryText}" />
                         </Grid>
                     </DataTemplate>

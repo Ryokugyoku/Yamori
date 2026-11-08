@@ -801,4 +801,94 @@
   <data name="Consent_Result_Unavailable" xml:space="preserve">
     <value>El servicio Yamori Helper no se está ejecutando, por lo que no se puede cambiar el ajuste ahora.</value>
   </data>
+  <data name="HelperStart_Action" xml:space="preserve">
+    <value>Iniciar servicio</value>
+  </data>
+  <data name="HelperStart_ErrorTitle" xml:space="preserve">
+    <value>No se pudo iniciar el servicio</value>
+  </data>
+  <data name="HelperStart_Result_NotInstalled" xml:space="preserve">
+    <value>El servicio Yamori Helper no está instalado. Vuelve a instalar Yamori.</value>
+  </data>
+  <data name="HelperStart_Result_Disabled" xml:space="preserve">
+    <value>El servicio Yamori Helper está deshabilitado. En Servicios de Windows, vuelve a establecer el tipo de inicio en Automático.</value>
+  </data>
+  <data name="HelperStart_Result_Failed" xml:space="preserve">
+    <value>No se pudo iniciar el servicio Yamori Helper. Inténtalo de nuevo más tarde o reinicia el PC.</value>
+  </data>
+  <data name="HelperStatus_Connecting" xml:space="preserve">
+    <value>Conectando…</value>
+  </data>
+  <data name="HelperStatus_Connected" xml:space="preserve">
+    <value>Vigilando</value>
+  </data>
+  <data name="HelperStatus_NotRunning" xml:space="preserve">
+    <value>Sin registrar</value>
+  </data>
+  <data name="HelperStatus_Incompatible" xml:space="preserve">
+    <value>Actualización necesaria</value>
+  </data>
+  <data name="HelperStatus_ConnectedDetail" xml:space="preserve">
+    <value>Yamori Helper (servicio) vigila este PC y registra los valores de los sensores. El registro continúa aunque cierres Yamori.</value>
+  </data>
+  <data name="Spec_CpuDetail" xml:space="preserve">
+    <value>{0} núcleos / {1} hilos</value>
+  </data>
+  <data name="Spec_ModuleCount" xml:space="preserve">
+    <value>{0} módulos</value>
+  </data>
+  <data name="Spec_Joined" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="Spec_GpuDetail" xml:space="preserve">
+    <value>{0} de memoria dedicada</value>
+  </data>
+  <data name="Spec_StorageDetail" xml:space="preserve">
+    <value>Total · {0} unidades</value>
+  </data>
+  <data name="Greeting_Morning" xml:space="preserve">
+    <value>Buenos días, {0}</value>
+  </data>
+  <data name="Greeting_Afternoon" xml:space="preserve">
+    <value>Buenas tardes, {0}</value>
+  </data>
+  <data name="Greeting_Evening" xml:space="preserve">
+    <value>Buenas noches, {0}</value>
+  </data>
+  <data name="Overview_Watching" xml:space="preserve">
+    <value>Vigilando {0}</value>
+  </data>
+  <data name="Overview_LiveHeader" xml:space="preserve">
+    <value>Ahora mismo</value>
+  </data>
+  <data name="Overview_TopAppsHeader" xml:space="preserve">
+    <value>Apps que más memoria usan</value>
+  </data>
+  <data name="RecLevel_NotEnoughData" xml:space="preserve">
+    <value>Recopilando datos</value>
+  </data>
+  <data name="RecLevel_Sufficient" xml:space="preserve">
+    <value>Holgado</value>
+  </data>
+  <data name="RecLevel_Borderline" xml:space="preserve">
+    <value>A veces al límite</value>
+  </data>
+  <data name="RecLevel_Insufficient" xml:space="preserve">
+    <value>Conviene subir un nivel</value>
+  </data>
+  <data name="Settings_GroupData" xml:space="preserve">
+    <value>Datos y registro</value>
+  </data>
+  <data name="Settings_GroupDisplay" xml:space="preserve">
+    <value>Visualización</value>
+  </data>
+  <data name="Settings_GroupAbout" xml:space="preserve">
+    <value>Acerca de</value>
+  </data>
+  <data name="Settings_PrivacyHeader" xml:space="preserve">
+    <value>Privacidad</value>
+  </data>
+  <data name="Settings_Version" xml:space="preserve">
+    <value>Versión {0}</value>
+  </data>
 </root>

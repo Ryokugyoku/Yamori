@@ -12,7 +12,8 @@ namespace Yamori.ViewModels.Sensors;
 /// <param name="Message">本文。</param>
 /// <param name="Severity">重さ（表示の色）。</param>
 /// <param name="ConsentAction">PawnIO の利用の同意のボタンで、同意する（true）か取り消す（false）か。ボタンを出さないなら null。</param>
-public sealed record SensorNotice(string Title, string Message, InfoBarSeverity Severity, bool? ConsentAction)
+/// <param name="CanStartHelper">Helper のサービスを起動するボタンを出すなら true（Helper が動いていないとき）。</param>
+public sealed record SensorNotice(string Title, string Message, InfoBarSeverity Severity, bool? ConsentAction, bool CanStartHelper = false)
 {
     /// <summary>まだ何も分かっていないときの内容を取得する。</summary>
     public static SensorNotice Empty { get; } = new(string.Empty, string.Empty, InfoBarSeverity.Informational, null);
@@ -44,6 +45,7 @@ public sealed record SensorNotice(string Title, string Message, InfoBarSeverity 
             SensorTexts.HelperTitle,
             SensorTexts.HelperConnection(connection),
             connection == HelperConnectionState.Connecting ? InfoBarSeverity.Informational : InfoBarSeverity.Warning,
-            null),
+            null,
+            connection == HelperConnectionState.NotRunning),
     };
 }

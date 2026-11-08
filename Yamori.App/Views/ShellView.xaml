@@ -10,7 +10,7 @@
         IsBackButtonVisible="Collapsed"
         IsSettingsVisible="False"
         IsTitleBarAutoPaddingEnabled="False"
-        OpenPaneLength="248"
+        OpenPaneLength="232"
         PaneDisplayMode="Auto"
         SelectionChanged="OnSelectionChanged">
 
@@ -57,7 +57,14 @@
             <ContentControl
                 x:Name="PageHost"
                 HorizontalContentAlignment="Stretch"
-                IsTabStop="False" />
+                IsTabStop="False">
+                <!-- 画面を切り替えたら、下から軽く浮かび上がるように出す -->
+                <ContentControl.ContentTransitions>
+                    <TransitionCollection>
+                        <ContentThemeTransition VerticalOffset="28" />
+                    </TransitionCollection>
+                </ContentControl.ContentTransitions>
+            </ContentControl>
         </ScrollViewer>
     </NavigationView>
 </UserControl>

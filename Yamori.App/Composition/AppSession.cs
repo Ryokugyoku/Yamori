@@ -18,6 +18,7 @@ public sealed class AppSession : IDisposable
 
     private readonly CancellationTokenSource _monitorCancellation = new();
     private MainViewModel? _main;
+    private HelperStatusViewModel? _status;
     private Task? _sensorsRun;
 
     /// <summary>
@@ -42,7 +43,8 @@ public sealed class AppSession : IDisposable
         var login = _services.CreateLoginViewModel(() => _window.Handle);
         login.SignedIn += OnSignedIn;
         _window.ShowContent(new LoginView(login));
-        _ = login.InitializeAsync();    }
+        _ = login.InitializeAsync();
+    }
 
     /// <summary>
     /// 使用率の記録と、Helper との接続を止め、イベントの購読を解除する。センサーの記録は Helper が続ける。
@@ -61,6 +63,7 @@ public sealed class AppSession : IDisposable
         }
 
         _main?.Dispose();
+        _status?.Dispose();
         _services.Sensors.Dispose();
 
         _monitorCancellation.Dispose();
@@ -85,6 +88,11 @@ public sealed class AppSession : IDisposable
 
     private void ShowShell(bool openSettings)
     {
+        // タイトルバーの見守りの状態も、表示言語に合わせて作り直す。
+        _status?.Dispose();
+        _status = _services.CreateHelperStatusViewModel();
+        _window.ShowTitleBarStatus(new HelperStatusIndicator(_status));
+
         var settings = _services.CreateSettingsViewModel(() => _window.Id);
         settings.LanguageChanged += OnLanguageChanged;
         _window.ShowContent(new ShellView(_main!, settings, _services.CreateRealtimeViewModel, openSettings));
