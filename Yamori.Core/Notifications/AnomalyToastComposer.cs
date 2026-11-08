@@ -43,7 +43,7 @@ public sealed class AnomalyToastComposer
         var title = string.Format(_culture, TitleTemplate(anomaly), part);
         var items = new List<string>();
 
-        if (Evidence(anomaly, AnomalyEvidenceNames.PeakTemperatureCelsius) is { } temperature)
+        if ((Evidence(anomaly, AnomalyEvidenceNames.PeakTemperatureCelsius) ?? Evidence(anomaly, AnomalyEvidenceNames.IdleTemperatureCelsius)) is { } temperature)
         {
             items.Add(string.Format(_culture, _templates.Temperature, Round(temperature)));
         }
@@ -60,12 +60,22 @@ public sealed class AnomalyToastComposer
             items.Add(string.Format(_culture, _templates.DeltaFromUsual, Round(delta)));
         }
 
+        if (anomaly.Kind == AnomalyKind.WorseThanUsual
+            && Evidence(anomaly, AnomalyEvidenceNames.IdleLoadDeltaPoints) is { } loadDelta && loadDelta > 0
+            && Evidence(anomaly, AnomalyEvidenceNames.IdleLoadPercent) is { } idleLoad)
+        {
+            items.Add(string.Format(_culture, _templates.IdleLoadDeltaFromUsual, Round(idleLoad), Round(loadDelta)));
+        }
+
         items.Add(DurationText(anomaly.Duration));
         return new AnomalyToastContent(title, string.Join(_templates.Separator, items), NotificationActivationRequest.ForAnomaly(anomaly.AnomalyId));
     }
 
     private string TitleTemplate(AnomalyRecord anomaly) => anomaly.Kind switch
     {
+        // 待機中の温度が高ければ温度の見出し（負荷も高ければ本文に両方を書く）。負荷だけなら負荷の見出し。
+        AnomalyKind.WorseThanUsual when Evidence(anomaly, AnomalyEvidenceNames.DeltaFromBaseline) is null
+            && Evidence(anomaly, AnomalyEvidenceNames.IdleLoadDeltaPoints) is not null => _templates.IdleLoadWorseThanUsualTitle,
         AnomalyKind.WorseThanUsual => _templates.WorseThanUsualTitle,
         // 電力・電流の制限だけで、クロックが大きく下がって通知の対象になった場合。
         _ when AnomalyEvidence.IsLimitOnlyThrottling(anomaly) => _templates.LimitThrottlingTitle,
@@ -86,7 +96,9 @@ public sealed class AnomalyToastComposer
             return string.Format(_culture, _templates.DurationSeconds, Math.Max(1, (int)Math.Round(duration.TotalSeconds)));
         }
 
-        return string.Format(_culture, _templates.DurationMinutes, (int)Math.Floor(duration.TotalMinutes));
+        return duration < TimeSpan.FromHours(1)
+            ? string.Format(_culture, _templates.DurationMinutes, (int)Math.Floor(duration.TotalMinutes))
+            : string.Format(_culture, _templates.DurationHours, (int)Math.Floor(duration.TotalHours));
     }
 
     private static double? Evidence(AnomalyRecord anomaly, string name) => AnomalyEvidence.Get(anomaly, name);

@@ -1186,7 +1186,7 @@
     <value>a clock about {0}% below usual</value>
   </data>
   <data name="Explain_DeltaFromUsual" xml:space="preserve">
-    <value>{1} above usual ({0})</value>
+    <value>the idle temperature being {1} above usual (14-day median {0}) for {2}</value>
   </data>
   <data name="Explain_Temperature" xml:space="preserve">
     <value>{0} °C</value>
@@ -1199,5 +1199,41 @@
   </data>
   <data name="Explain_DurationHours" xml:space="preserve">
     <value>{0} h {1} min</value>
+  </data>
+  <data name="Settings_Notify_WorseThanUsual" xml:space="preserve">
+    <value>Worse than usual</value>
+  </data>
+  <data name="Settings_Notify_WorseThanUsual_Description" xml:space="preserve">
+    <value>When the idle temperature or idle load stays higher than in similar-load periods over the last 14 days (a sign of dust, a worn fan, or an app running in the background). Starts after 7 days of records.</value>
+  </data>
+  <data name="Explain_IdleLoadDeltaFromUsual" xml:space="preserve">
+    <value>the idle load being {1} points above usual (14-day median {0}%) for {2}</value>
+  </data>
+  <data name="Settings_GroupThresholds" xml:space="preserve">
+    <value>Thresholds</value>
+  </data>
+  <data name="Settings_ThresholdAutomatic" xml:space="preserve">
+    <value>Automatic (recommended)</value>
+  </data>
+  <data name="Settings_ThresholdManual" xml:space="preserve">
+    <value>Set manually</value>
+  </data>
+  <data name="Settings_Threshold_ThermalThrottling" xml:space="preserve">
+    <value>Caution temperature (thermal throttling)</value>
+  </data>
+  <data name="Settings_Threshold_ThermalThrottling_Description" xml:space="preserve">
+    <value>Automatic uses 5°C below the temperature where the CPU starts thermal control, and 5°C below the driver limit for the GPU (90°C for the CPU and 85°C for the GPU when unknown). A manual value is used for the CPU, the GPU and the temperature sensors.</value>
+  </data>
+  <data name="Settings_Threshold_ThermalThrottling_Unit" xml:space="preserve">
+    <value>°C</value>
+  </data>
+  <data name="Settings_Threshold_WorseThanUsual" xml:space="preserve">
+    <value>Temperature above usual (worse than usual)</value>
+  </data>
+  <data name="Settings_Threshold_WorseThanUsual_Description" xml:space="preserve">
+    <value>Notifies when the idle temperature stays this much above usual (similar-load periods over the last 14 days) for 3 hours. Automatic is 8°C. The idle load difference (10 points) cannot be changed.</value>
+  </data>
+  <data name="Settings_Threshold_WorseThanUsual_Unit" xml:space="preserve">
+    <value>°C</value>
   </data>
 </root>

@@ -13,14 +13,15 @@ using Yamori.Localization;
 namespace Yamori.ViewModels;
 
 /// <summary>
-/// 設定画面の「通知」のまとまり。異常の通知の全体と、異常の種類ごとのオン・オフを Helper から読み、変えたら Helper に保存する。
-/// 通知専用の常駐プログラムと Helper は、この設定に従う。
+/// 設定画面の「通知」と「しきい値」のまとまり。異常の通知の全体と、異常の種類ごとのオン・オフとしきい値（自動・手動）を Helper から読み、
+/// 変えたら Helper に保存する。通知専用の常駐プログラムと Helper は、この設定に従う。
+/// 種類ごとの設定（オン・オフとしきい値）は 1 つの行に保存するため、両方をこのクラスでまとめて扱う（片方の古い値で上書きしないように）。
 /// </summary>
 /// <remarks>UI スレッドで作り、UI スレッドから使うこと。画面に出している間だけ <see cref="Activate"/> で Helper の接続を見張る。</remarks>
 public sealed class NotificationSettingsViewModel : ObservableObject
 {
-    /// <summary>画面に出す異常の種類。「ふだんより悪い」は検出を作るとき（段階 5）に足す。</summary>
-    private static readonly AnomalyKind[] ShownKinds = [AnomalyKind.ThermalThrottling];
+    /// <summary>画面に出す異常の種類（サーマルスロットリングと、ふだんより悪い）。</summary>
+    private static readonly AnomalyKind[] ShownKinds = [AnomalyKind.ThermalThrottling, AnomalyKind.WorseThanUsual];
 
     private readonly IAnomalyService _anomalies;
     private readonly IHelperConnection _connection;
@@ -54,11 +55,22 @@ public sealed class NotificationSettingsViewModel : ObservableObject
                 UiText.Get($"Settings_Notify_{kind}_Description"),
                 OnKindChanged))
             .ToArray();
+        Thresholds = ShownKinds
+            .Select(kind => new AnomalyThresholdOption(
+                kind,
+                UiText.Get($"Settings_Threshold_{kind}"),
+                UiText.Get($"Settings_Threshold_{kind}_Description"),
+                UiText.Get($"Settings_Threshold_{kind}_Unit"),
+                OnThresholdChanged))
+            .ToArray();
         StatusText = UiText.Get("Settings_NotifyLoading");
     }
 
     /// <summary>異常の種類ごとのオン・オフを取得する。</summary>
     public IReadOnlyList<AnomalyKindNotificationOption> Kinds { get; }
+
+    /// <summary>異常の種類ごとのしきい値を取得する。</summary>
+    public IReadOnlyList<AnomalyThresholdOption> Thresholds { get; }
 
     /// <summary>Helper から設定を読めていて、変えられるかどうかを取得する。</summary>
     public bool IsAvailable
@@ -153,6 +165,11 @@ public sealed class NotificationSettingsViewModel : ObservableObject
                 {
                     option.Load(_settings.TryGetValue(option.Kind, out var setting) ? setting.NotificationsEnabled : true);
                 }
+
+                foreach (var option in Thresholds)
+                {
+                    option.Load(_settings.TryGetValue(option.Kind, out var setting) ? setting.ManualThreshold : null);
+                }
             }
             finally
             {
@@ -190,13 +207,28 @@ public sealed class NotificationSettingsViewModel : ObservableObject
 
     private async Task SaveKindAsync(AnomalyKindNotificationOption option, bool isOn)
     {
-        // しきい値は変えない（手動のしきい値は、分析画面を作るときに設定画面へ足す）。
-        var current = _settings.TryGetValue(option.Kind, out var setting) ? setting : AnomalySettingRules.Default(option.Kind);
-        var next = current with { NotificationsEnabled = isOn };
+        // しきい値はそのまま（今の設定から通知のオン・オフだけを変える）。
+        await SaveSettingAsync(Current(option.Kind) with { NotificationsEnabled = isOn });
+    }
+
+    private void OnThresholdChanged(AnomalyThresholdOption option)
+    {
+        if (!_isLoading)
+        {
+            // 通知のオン・オフはそのまま（今の設定からしきい値だけを変える）。
+            _ = SaveSettingAsync(AnomalySettingRules.WithManualThreshold(Current(option.Kind), option.ManualThreshold));
+        }
+    }
+
+    private AnomalySetting Current(AnomalyKind kind) =>
+        _settings.TryGetValue(kind, out var setting) ? setting : AnomalySettingRules.Default(kind);
+
+    private async Task SaveSettingAsync(AnomalySetting next)
+    {
         var result = await TrySaveAsync(() => _anomalies.SetSettingAsync(next));
         if (result == SensorSettingResult.Applied)
         {
-            _settings[option.Kind] = next;
+            _settings[next.Kind] = next;
             return;
         }
 
@@ -221,6 +253,12 @@ public sealed class NotificationSettingsViewModel : ObservableObject
         foreach (var option in Kinds)
         {
             option.IsEditable = _isAvailable && _isEnabled;
+        }
+
+        // しきい値は、通知をオフにしていても一覧と分析画面の判定に使うため、つながっていれば変えられる。
+        foreach (var option in Thresholds)
+        {
+            option.IsEditable = _isAvailable;
         }
     }
 }

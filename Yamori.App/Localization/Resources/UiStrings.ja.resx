@@ -1186,7 +1186,7 @@
     <value>クロックの低下が約 {0}%</value>
   </data>
   <data name="Explain_DeltaFromUsual" xml:space="preserve">
-    <value>ふだん（{0}）との差が {1}</value>
+    <value>待機中の温度がふだん（直近 14 日の中央値 {0}）より {1} 高い時間が {2}</value>
   </data>
   <data name="Explain_Temperature" xml:space="preserve">
     <value>{0}℃</value>
@@ -1199,5 +1199,41 @@
   </data>
   <data name="Explain_DurationHours" xml:space="preserve">
     <value>{0} 時間 {1} 分</value>
+  </data>
+  <data name="Settings_Notify_WorseThanUsual" xml:space="preserve">
+    <value>ふだんより悪い</value>
+  </data>
+  <data name="Settings_Notify_WorseThanUsual_Description" xml:space="preserve">
+    <value>待機中の温度や負荷が、直近 14 日の同じくらいの負荷の時間より高い状態が続いたとき（ほこりやファンの劣化、裏で動くアプリの兆し）。記録が 7 日分たまってから働きます。</value>
+  </data>
+  <data name="Explain_IdleLoadDeltaFromUsual" xml:space="preserve">
+    <value>待機中の負荷がふだん（直近 14 日の中央値 {0}%）より {1} ポイント高い時間が {2}</value>
+  </data>
+  <data name="Settings_GroupThresholds" xml:space="preserve">
+    <value>しきい値</value>
+  </data>
+  <data name="Settings_ThresholdAutomatic" xml:space="preserve">
+    <value>自動（おすすめ）</value>
+  </data>
+  <data name="Settings_ThresholdManual" xml:space="preserve">
+    <value>手動で指定</value>
+  </data>
+  <data name="Settings_Threshold_ThermalThrottling" xml:space="preserve">
+    <value>注意の温度（サーマルスロットリング）</value>
+  </data>
+  <data name="Settings_Threshold_ThermalThrottling_Description" xml:space="preserve">
+    <value>自動では、CPU は熱制御が働き始める温度の 5℃ 下、GPU はドライバーの温度の上限の 5℃ 下にします（分からなければ CPU 90℃・GPU 85℃）。手動の値は CPU・GPU・温度センサーのすべてに使います。</value>
+  </data>
+  <data name="Settings_Threshold_ThermalThrottling_Unit" xml:space="preserve">
+    <value>℃</value>
+  </data>
+  <data name="Settings_Threshold_WorseThanUsual" xml:space="preserve">
+    <value>ふだんとの温度の差（ふだんより悪い）</value>
+  </data>
+  <data name="Settings_Threshold_WorseThanUsual_Description" xml:space="preserve">
+    <value>待機中の温度が、ふだん（直近 14 日の同じくらいの負荷の時間）よりこれだけ高い状態が 3 時間続くと知らせます。自動では 8℃。待機中の負荷の差（10 ポイント）は変えられません。</value>
+  </data>
+  <data name="Settings_Threshold_WorseThanUsual_Unit" xml:space="preserve">
+    <value>℃</value>
   </data>
 </root>

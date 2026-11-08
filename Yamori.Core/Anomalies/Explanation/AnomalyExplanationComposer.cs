@@ -111,7 +111,13 @@ public sealed class AnomalyExplanationComposer
         if (Positive(anomaly, AnomalyEvidenceNames.DeltaFromBaseline) is { } delta
             && AnomalyEvidence.Get(anomaly, AnomalyEvidenceNames.BaselineValue) is { } baseline)
         {
-            yield return Format(_templates.DeltaFromUsual, Temperature(baseline), Temperature(delta));
+            yield return Format(_templates.DeltaFromUsual, Temperature(baseline), Temperature(delta), FormatDuration(anomaly.Duration));
+        }
+
+        if (Positive(anomaly, AnomalyEvidenceNames.IdleLoadDeltaPoints) is { } loadDelta
+            && AnomalyEvidence.Get(anomaly, AnomalyEvidenceNames.BaselineIdleLoadPercent) is { } loadBaseline)
+        {
+            yield return Format(_templates.IdleLoadDeltaFromUsual, Round(loadBaseline), Round(loadDelta), FormatDuration(anomaly.Duration));
         }
     }
 

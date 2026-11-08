@@ -32,7 +32,7 @@ public static class LocalSensorServiceFactory
     /// <param name="extended">拡張センサーの判断と同意の扱い。</param>
     /// <param name="extendedProvider">拡張センサーの Provider。使わない場合は null。同意の有無は Provider の中で確かめること。</param>
     /// <param name="timeProvider">現在時刻とタイマーの提供元。</param>
-    /// <param name="anomalyRules">異常の判定の規則。マスタを開けたときだけ、異常を見張る（一覧と設定はマスタに置く）。</param>
+    /// <param name="createAnomalyRules">異常の判定の規則の作り方（記録の読み方を受け取る）。マスタを開けたときだけ、異常を見張る（一覧と設定はマスタに置く）。</param>
     /// <returns>新しいサービス。使い終わったら破棄すること。</returns>
     /// <exception cref="ArgumentNullException"><paramref name="extendedProvider"/> 以外の引数が null。</exception>
     public static LocalSensorService CreateForHelper(
@@ -42,14 +42,14 @@ public static class LocalSensorServiceFactory
         IExtendedSensorControl extended,
         ISensorProvider? extendedProvider,
         TimeProvider timeProvider,
-        IReadOnlyList<IAnomalyRule> anomalyRules)
+        Func<AnomalyHistoryReader, IReadOnlyList<IAnomalyRule>> createAnomalyRules)
     {
         ArgumentNullException.ThrowIfNull(wmi);
         ArgumentNullException.ThrowIfNull(priorityFilePath);
         ArgumentNullException.ThrowIfNull(dataDirectory);
         ArgumentNullException.ThrowIfNull(extended);
         ArgumentNullException.ThrowIfNull(timeProvider);
-        ArgumentNullException.ThrowIfNull(anomalyRules);
+        ArgumentNullException.ThrowIfNull(createAnomalyRules);
 
         var owned = new List<IDisposable>();
         var standard = WindowsStandardProviderFactory.Create(wmi, timeProvider);
@@ -65,7 +65,9 @@ public static class LocalSensorServiceFactory
         }
 
         var (persistence, master) = TryCreatePersistence(dataDirectory, providers.Select(p => p.ProviderId).ToArray(), timeProvider, owned);
-        var anomalies = master is null ? null : AnomalyMonitoring.Create(master, anomalyRules, timeProvider);
+        var anomalies = master is null || persistence is null
+            ? null
+            : AnomalyMonitoring.Create(master, createAnomalyRules(persistence.GetHistory), timeProvider);
         return Assemble(providers, priorityFilePath, persistence, anomalies, extended, timeProvider, owned);
     }
 

@@ -131,6 +131,59 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
+        <!-- しきい値 -->
+        <TextBlock Style="{StaticResource SettingsGroupHeaderTextStyle}" Text="{l:Loc Key=Settings_GroupThresholds}" />
+        <ItemsControl ItemsSource="{x:Bind ViewModel.Notifications.Thresholds}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:AnomalyThresholdOption">
+                    <Border Margin="0,0,0,4" Style="{StaticResource SettingsCardStyle}">
+                        <Grid ColumnSpacing="16" RowSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon VerticalAlignment="Center" FontSize="20" Glyph="&#xE9CA;" />
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                <TextBlock Text="{x:Bind Title}" />
+                                <TextBlock Style="{StaticResource FootnoteTextStyle}" Text="{x:Bind Description}" />
+                            </StackPanel>
+                            <StackPanel
+                                Grid.Column="2"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="8">
+                                <ComboBox
+                                    MinWidth="160"
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.Name="{x:Bind Title}"
+                                    IsEnabled="{x:Bind IsEditable, Mode=OneWay}"
+                                    SelectedIndex="{x:Bind ModeIndex, Mode=TwoWay}">
+                                    <ComboBoxItem Content="{l:Loc Key=Settings_ThresholdAutomatic}" />
+                                    <ComboBoxItem Content="{l:Loc Key=Settings_ThresholdManual}" />
+                                </ComboBox>
+                                <NumberBox
+                                    Width="110"
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.Name="{x:Bind Title}"
+                                    IsEnabled="{x:Bind IsEditable, Mode=OneWay}"
+                                    Maximum="{x:Bind Maximum}"
+                                    Minimum="{x:Bind Minimum}"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind Value, Mode=TwoWay}"
+                                    Visibility="{x:Bind IsManual, Mode=OneWay}" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="{x:Bind Unit}"
+                                    Visibility="{x:Bind IsManual, Mode=OneWay}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
         <!-- 表示 -->
         <TextBlock Style="{StaticResource SettingsGroupHeaderTextStyle}" Text="{l:Loc Key=Settings_GroupDisplay}" />
         <Border Style="{StaticResource SettingsCardStyle}">

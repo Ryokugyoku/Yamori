@@ -214,6 +214,23 @@ public sealed class AnomalyDetector
     private void Begin(AnomalyKind kind, AnomalyFinding finding, DateTimeOffset now, List<AnomalyNotice> notices)
     {
         var started = finding.SinceUtc is { } since && since <= now ? since : now;
+
+        // 異常の状態の始まりが、同じ部品の同じ種類で前に終わった異常の終わりより前なら、同じ異常の続き（Helper の再起動をまたいだなど）。
+        // 新しい行を作らずに開き直す（同じ異常を 1 件にまとめるため。通知済みと「これは正常」の印もそのまま）。
+        if (finding.SinceUtc is not null
+            && _repository.FindLatest(kind, finding.HardwareKey) is { EndedUtc: { } ended } latest
+            && started <= ended
+            && _repository.Reopen(latest.AnomalyId, now, Max(latest.Severity, finding.Severity), finding.Evidence) is { } reopened)
+        {
+            _open[(kind, finding.HardwareKey)] = new OpenAnomaly(reopened, now, finding.Notifiable);
+            if (finding.Severity > latest.Severity)
+            {
+                notices.Add(new AnomalyNotice(AnomalyChange.Escalated, reopened, finding.Notifiable && ShouldNotify(kind, reopened, now)));
+            }
+
+            return;
+        }
+
         var name = _hardwareNames.GetValueOrDefault(finding.HardwareKey, finding.HardwareKey);
         var record = _repository.Insert(new AnomalyRecord(
             0, kind, finding.HardwareKey, finding.HardwareKind, name, started, now, null, finding.Severity, finding.Evidence, null, null));
@@ -245,6 +262,8 @@ public sealed class AnomalyDetector
             notices.Add(new AnomalyNotice(AnomalyChange.Escalated, open.Record, open.Notifiable && ShouldNotify(kind, open.Record, now)));
         }
     }
+
+    private static AnomalySeverity Max(AnomalySeverity a, AnomalySeverity b) => a >= b ? a : b;
 
     private bool ShouldNotify(AnomalyKind kind, AnomalyRecord record, DateTimeOffset now) =>
         _settings.GetNotificationsEnabled()

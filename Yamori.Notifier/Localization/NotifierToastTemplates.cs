@@ -15,13 +15,16 @@ internal static class NotifierToastTemplates
         ThermalThrottlingTitle: NotifierText.Get("Toast_ThermalThrottlingTitle"),
         LimitThrottlingTitle: NotifierText.Get("Toast_LimitThrottlingTitle"),
         WorseThanUsualTitle: NotifierText.Get("Toast_WorseThanUsualTitle"),
+        IdleLoadWorseThanUsualTitle: NotifierText.Get("Toast_IdleLoadWorseThanUsualTitle"),
         CpuName: NotifierText.Get("Toast_PartCpu"),
         GpuName: NotifierText.Get("Toast_PartGpu"),
         OtherPartName: NotifierText.Get("Toast_PartOther"),
         Temperature: NotifierText.Get("Toast_Temperature"),
         ClockDrop: NotifierText.Get("Toast_ClockDrop"),
         DeltaFromUsual: NotifierText.Get("Toast_DeltaFromUsual"),
+        IdleLoadDeltaFromUsual: NotifierText.Get("Toast_IdleLoadDeltaFromUsual"),
         DurationSeconds: NotifierText.Get("Toast_DurationSeconds"),
         DurationMinutes: NotifierText.Get("Toast_DurationMinutes"),
+        DurationHours: NotifierText.Get("Toast_DurationHours"),
         Separator: NotifierText.Get("Toast_Separator"));
 }

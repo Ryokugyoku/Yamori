@@ -23,7 +23,8 @@ public class AnomalyExplanationTests
         CurrentLimit: "電流の上限による制限が {0}",
         PeakTemperature: "最高温度が {0}",
         ClockDrop: "クロックの低下が約 {0}%",
-        DeltaFromUsual: "ふだん（{0}）との差が {1}",
+        DeltaFromUsual: "待機中の温度がふだん（直近 14 日の中央値 {0}）より {1} 高い時間が {2}",
+        IdleLoadDeltaFromUsual: "待機中の負荷がふだん（直近 14 日の中央値 {0}%）より {1} ポイント高い時間が {2}",
         Temperature: "{0}℃",
         DurationSeconds: "{0} 秒",
         DurationMinutes: "{0} 分 {1} 秒",
@@ -79,9 +80,25 @@ public class AnomalyExplanationTests
         var composer = new AnomalyExplanationComposer(Japanese, CultureInfo.InvariantCulture);
         var worse = Anomaly(AnomalyKind.WorseThanUsual, (AnomalyEvidenceNames.BaselineValue, 41), (AnomalyEvidenceNames.DeltaFromBaseline, 9.4));
 
-        Assert.Equal("ふだん（41℃）との差が 9℃ だったため、「警告」と判断しました。", composer.Compose(worse));
+        Assert.Equal("待機中の温度がふだん（直近 14 日の中央値 41℃）より 9℃ 高い時間が 3 分 0 秒 だったため、「警告」と判断しました。", composer.Compose(worse));
         Assert.Equal("「危険」と判断しました。", composer.Compose(Anomaly(AnomalyKind.ThermalThrottling) with { Severity = AnomalySeverity.Critical }));
         Assert.Equal("2 時間 5 分", composer.FormatDuration(TimeSpan.FromMinutes(125)));
+    }
+
+    [Fact]
+    public void WorseThanUsualExplainsTemperatureAndIdleLoadWithTheUsualMedianAndDuration()
+    {
+        var composer = new AnomalyExplanationComposer(Japanese, CultureInfo.InvariantCulture);
+        var both = Anomaly(
+            AnomalyKind.WorseThanUsual,
+            (AnomalyEvidenceNames.BaselineValue, 42),
+            (AnomalyEvidenceNames.DeltaFromBaseline, 9.2),
+            (AnomalyEvidenceNames.BaselineIdleLoadPercent, 3.4),
+            (AnomalyEvidenceNames.IdleLoadDeltaPoints, 12.6)) with { EndedUtc = null, LastSeenUtc = Start.AddHours(3), Severity = AnomalySeverity.Notice };
+
+        Assert.Equal(
+            "待機中の温度がふだん（直近 14 日の中央値 42℃）より 9℃ 高い時間が 3 時間 0 分、待機中の負荷がふだん（直近 14 日の中央値 3%）より 13 ポイント高い時間が 3 時間 0 分 だったため、「注意」と判断しました。",
+            composer.Compose(both));
     }
 
     [Fact]

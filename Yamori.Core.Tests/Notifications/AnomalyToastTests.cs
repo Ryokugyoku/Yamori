@@ -13,15 +13,18 @@ public class AnomalyToastTests
     private static readonly AnomalyToastTemplates Japanese = new(
         ThermalThrottlingTitle: "{0} が熱で性能を落としています",
         LimitThrottlingTitle: "{0} が電力の上限で性能を落としています",
-        WorseThanUsualTitle: "{0} の温度がふだんより高くなっています",
+        WorseThanUsualTitle: "{0} の待機中の温度がふだんより高くなっています",
+        IdleLoadWorseThanUsualTitle: "{0} の待機中の負荷がふだんより高くなっています",
         CpuName: "CPU",
         GpuName: "GPU",
         OtherPartName: "PC",
         Temperature: "{0}℃",
         ClockDrop: "クロック約 {0}% 低下",
         DeltaFromUsual: "ふだんより {0}℃ 高い",
+        IdleLoadDeltaFromUsual: "待機中の負荷 {0}%（ふだんより {1} ポイント高い）",
         DurationSeconds: "{0} 秒間",
         DurationMinutes: "{0} 分間",
+        DurationHours: "{0} 時間",
         Separator: "・");
 
     [Fact]
@@ -78,13 +81,30 @@ public class AnomalyToastTests
     [Fact]
     public void WorseThanUsualShowsTheDifference()
     {
-        var anomaly = Anomaly(4, TimeSpan.FromMinutes(20), (AnomalyEvidenceNames.PeakTemperatureCelsius, 61), (AnomalyEvidenceNames.DeltaFromBaseline, 9.4))
+        var anomaly = Anomaly(4, TimeSpan.FromMinutes(200), (AnomalyEvidenceNames.IdleTemperatureCelsius, 61), (AnomalyEvidenceNames.DeltaFromBaseline, 9.4))
             with { Kind = AnomalyKind.WorseThanUsual, HardwareKind = HardwareKind.Gpu };
 
         var content = new AnomalyToastComposer(Japanese, CultureInfo.InvariantCulture).Compose(anomaly);
 
-        Assert.Equal("GPU の温度がふだんより高くなっています", content.Title);
-        Assert.Equal("61℃・ふだんより 9℃ 高い・20 分間", content.Body);
+        Assert.Equal("GPU の待機中の温度がふだんより高くなっています", content.Title);
+        Assert.Equal("61℃・ふだんより 9℃ 高い・3 時間", content.Body);
+    }
+
+    [Fact]
+    public void WorseThanUsualIdleLoadOnlyHasItsOwnTitleAndNoAppName()
+    {
+        var anomaly = Anomaly(
+                5,
+                TimeSpan.FromHours(4.5),
+                (AnomalyEvidenceNames.IdleLoadPercent, 17.6),
+                (AnomalyEvidenceNames.BaselineIdleLoadPercent, 3),
+                (AnomalyEvidenceNames.IdleLoadDeltaPoints, 14.6))
+            with { Kind = AnomalyKind.WorseThanUsual };
+
+        var content = new AnomalyToastComposer(Japanese, CultureInfo.InvariantCulture).Compose(anomaly);
+
+        Assert.Equal("CPU の待機中の負荷がふだんより高くなっています", content.Title);
+        Assert.Equal("待機中の負荷 18%（ふだんより 15 ポイント高い）・4 時間", content.Body);
     }
 
     [Theory]

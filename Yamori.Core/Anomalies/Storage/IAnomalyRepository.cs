@@ -40,6 +40,27 @@ public interface IAnomalyRepository
     int CloseOngoing();
 
     /// <summary>
+    /// 同じ部品の同じ種類の異常で、最後に始まったものを取得する（終わった異常を続きとして開き直すかを決めるため）。
+    /// </summary>
+    /// <param name="kind">異常の種類。</param>
+    /// <param name="hardwareKey">部品のキー。</param>
+    /// <returns>最後に始まった異常。なければ null。</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="hardwareKey"/> が null。</exception>
+    AnomalyRecord? FindLatest(AnomalyKind kind, string hardwareKey);
+
+    /// <summary>
+    /// 終わった異常を、続いている状態に戻す（終わった時刻を消し、最後に確かめた時刻・重さ・判断の理由を更新する）。
+    /// 「これは正常」の印と通知を出した時刻はそのまま残す。
+    /// </summary>
+    /// <param name="anomalyId">行の番号。</param>
+    /// <param name="lastSeenUtc">最後に確かめた時刻。</param>
+    /// <param name="severity">重さ。</param>
+    /// <param name="evidence">判断の理由の数値。</param>
+    /// <returns>戻したあとの異常。なければ null。</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="evidence"/> が null。</exception>
+    AnomalyRecord? Reopen(long anomalyId, DateTimeOffset lastSeenUtc, AnomalySeverity severity, IReadOnlyDictionary<string, double> evidence);
+
+    /// <summary>
     /// 異常を 1 つ取得する。
     /// </summary>
     /// <param name="anomalyId">行の番号。</param>

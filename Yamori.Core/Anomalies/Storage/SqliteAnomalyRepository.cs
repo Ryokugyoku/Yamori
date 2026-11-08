@@ -86,6 +86,47 @@ public sealed class SqliteAnomalyRepository : IAnomalyRepository
         Execute("UPDATE anomaly SET ended_ms = last_seen_ms WHERE ended_ms IS NULL;");
 
     /// <inheritdoc />
+    public AnomalyRecord? FindLatest(AnomalyKind kind, string hardwareKey)
+    {
+        ArgumentNullException.ThrowIfNull(hardwareKey);
+
+        return _database.Execute(connection =>
+        {
+            using var command = SqliteCommands.Create(
+                connection,
+                $"""
+                SELECT {Columns} FROM anomaly WHERE kind = $kind AND hardware_key = $hardwareKey
+                ORDER BY started_ms DESC, anomaly_id DESC LIMIT 1;
+                """,
+                ("$kind", (int)kind),
+                ("$hardwareKey", hardwareKey));
+            return ReadSingle(command);
+        });
+    }
+
+    /// <inheritdoc />
+    public AnomalyRecord? Reopen(long anomalyId, DateTimeOffset lastSeenUtc, AnomalySeverity severity, IReadOnlyDictionary<string, double> evidence)
+    {
+        ArgumentNullException.ThrowIfNull(evidence);
+
+        return _database.Execute(connection =>
+        {
+            using var command = SqliteCommands.Create(
+                connection,
+                $"""
+                UPDATE anomaly SET ended_ms = NULL, last_seen_ms = $lastSeen, severity = $severity, evidence_json = $evidence
+                WHERE anomaly_id = $id
+                RETURNING {Columns};
+                """,
+                ("$id", anomalyId),
+                ("$lastSeen", lastSeenUtc.ToUnixTimeMilliseconds()),
+                ("$severity", (int)severity),
+                ("$evidence", AnomalyEvidenceJson.Serialize(evidence)));
+            return ReadSingle(command);
+        });
+    }
+
+    /// <inheritdoc />
     public AnomalyRecord? Find(long anomalyId) =>
         _database.Execute(connection =>
         {

@@ -16,7 +16,14 @@ namespace Yamori.Core.Anomalies.Explanation;
 /// <param name="CurrentLimit">電流の上限による制限の時間（<c>{0}</c> は長さ）。</param>
 /// <param name="PeakTemperature">最も高かった温度（<c>{0}</c> は温度）。</param>
 /// <param name="ClockDrop">クロックの下がり方（<c>{0}</c> は整数の %）。</param>
-/// <param name="DeltaFromUsual">ふだんとの差（<c>{0}</c> はふだんの値、<c>{1}</c> は差）。</param>
+/// <param name="DeltaFromUsual">
+/// 待機中の温度がふだんより高い状態（<c>{0}</c> はふだんの温度、<c>{1}</c> は差の温度、<c>{2}</c> は続いた長さ）。
+/// 例：「待機中の温度が、ふだん（直近 14 日の中央値 {0}）より {1} 高い状態が {2} 続いた」。
+/// </param>
+/// <param name="IdleLoadDeltaFromUsual">
+/// 待機中の負荷がふだんより高い状態（<c>{0}</c> はふだんの負荷の整数の %、<c>{1}</c> は差の整数のポイント、<c>{2}</c> は続いた長さ）。
+/// 例：「待機中の負荷が、ふだん（直近 14 日の中央値 {0}%）より {1} ポイント高い状態が {2} 続いた」。
+/// </param>
 /// <param name="Temperature">温度の書き方（<c>{0}</c> は整数の ℃）。例：「{0}℃」。</param>
 /// <param name="DurationSeconds">1 分未満の長さ（<c>{0}</c> は秒）。</param>
 /// <param name="DurationMinutes">1 時間未満の長さ（<c>{0}</c> は分、<c>{1}</c> は秒）。秒が 0 でも同じ型を使う。</param>
@@ -36,6 +43,7 @@ public sealed record AnomalyExplanationTemplates(
     string PeakTemperature,
     string ClockDrop,
     string DeltaFromUsual,
+    string IdleLoadDeltaFromUsual,
     string Temperature,
     string DurationSeconds,
     string DurationMinutes,

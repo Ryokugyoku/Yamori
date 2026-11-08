@@ -1186,7 +1186,7 @@
     <value>una frecuencia un {0}% por debajo de lo habitual</value>
   </data>
   <data name="Explain_DeltaFromUsual" xml:space="preserve">
-    <value>{1} por encima de lo habitual ({0})</value>
+    <value>una temperatura en reposo {1} por encima de lo habitual (mediana de 14 días: {0}) durante {2}</value>
   </data>
   <data name="Explain_Temperature" xml:space="preserve">
     <value>{0} °C</value>
@@ -1199,5 +1199,41 @@
   </data>
   <data name="Explain_DurationHours" xml:space="preserve">
     <value>{0} h {1} min</value>
+  </data>
+  <data name="Settings_Notify_WorseThanUsual" xml:space="preserve">
+    <value>Peor de lo habitual</value>
+  </data>
+  <data name="Settings_Notify_WorseThanUsual_Description" xml:space="preserve">
+    <value>Cuando la temperatura o la carga en reposo se mantienen por encima de los periodos con carga similar de los últimos 14 días (señal de polvo, un ventilador desgastado o una aplicación en segundo plano). Empieza tras 7 días de registros.</value>
+  </data>
+  <data name="Explain_IdleLoadDeltaFromUsual" xml:space="preserve">
+    <value>una carga en reposo {1} puntos por encima de lo habitual (mediana de 14 días: {0} %) durante {2}</value>
+  </data>
+  <data name="Settings_GroupThresholds" xml:space="preserve">
+    <value>Umbrales</value>
+  </data>
+  <data name="Settings_ThresholdAutomatic" xml:space="preserve">
+    <value>Automático (recomendado)</value>
+  </data>
+  <data name="Settings_ThresholdManual" xml:space="preserve">
+    <value>Manual</value>
+  </data>
+  <data name="Settings_Threshold_ThermalThrottling" xml:space="preserve">
+    <value>Temperatura de aviso (limitación térmica)</value>
+  </data>
+  <data name="Settings_Threshold_ThermalThrottling_Description" xml:space="preserve">
+    <value>En automático se usan 5 °C por debajo de la temperatura a la que la CPU empieza el control térmico y 5 °C por debajo del límite del controlador para la GPU (90 °C para la CPU y 85 °C para la GPU si no se conocen). Un valor manual se usa para la CPU, la GPU y los sensores de temperatura.</value>
+  </data>
+  <data name="Settings_Threshold_ThermalThrottling_Unit" xml:space="preserve">
+    <value>°C</value>
+  </data>
+  <data name="Settings_Threshold_WorseThanUsual" xml:space="preserve">
+    <value>Temperatura por encima de lo habitual (peor de lo habitual)</value>
+  </data>
+  <data name="Settings_Threshold_WorseThanUsual_Description" xml:space="preserve">
+    <value>Avisa cuando la temperatura en reposo se mantiene esta cantidad por encima de lo habitual (periodos con carga similar de los últimos 14 días) durante 3 horas. En automático son 8 °C. La diferencia de carga en reposo (10 puntos) no se puede cambiar.</value>
+  </data>
+  <data name="Settings_Threshold_WorseThanUsual_Unit" xml:space="preserve">
+    <value>°C</value>
   </data>
 </root>

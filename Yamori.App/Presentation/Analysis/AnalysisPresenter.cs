@@ -306,6 +306,7 @@ public sealed class AnalysisPresenter
             UiText.Get("Explain_PeakTemperature"),
             UiText.Get("Explain_ClockDrop"),
             UiText.Get("Explain_DeltaFromUsual"),
+            UiText.Get("Explain_IdleLoadDeltaFromUsual"),
             UiText.Get("Explain_Temperature"),
             UiText.Get("Explain_DurationSeconds"),
             UiText.Get("Explain_DurationMinutes"),

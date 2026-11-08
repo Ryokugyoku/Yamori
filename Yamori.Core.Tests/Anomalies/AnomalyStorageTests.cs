@@ -172,6 +172,31 @@ public sealed class AnomalyStorageTests : IDisposable
     }
 
     [Theory]
+    [InlineData(AnomalyKind.ThermalThrottling, 92.4, 92.0)]
+    [InlineData(AnomalyKind.ThermalThrottling, 120.0, 110.0)]   // 範囲に収める
+    [InlineData(AnomalyKind.WorseThanUsual, 7.5, 8.0)]          // 1℃ 単位に丸める
+    [InlineData(AnomalyKind.WorseThanUsual, 0.5, 2.0)]
+    [InlineData(AnomalyKind.WorseThanUsual, null, null)]        // 自動に戻す
+    [InlineData(AnomalyKind.WorseThanUsual, double.NaN, null)]
+    public void ManualThresholdIsRoundedAndKeptInRange(AnomalyKind kind, double? input, double? expected)
+    {
+        var current = new AnomalySetting(kind, false, 50);
+
+        var next = AnomalySettingRules.WithManualThreshold(current, input);
+
+        Assert.Equal(expected, next.ManualThreshold);
+        Assert.False(next.NotificationsEnabled);
+        Assert.True(AnomalySettingRules.IsValid(next));
+    }
+
+    [Fact]
+    public void SwitchingToManualStartsFromTheAutomaticValue()
+    {
+        Assert.Equal(90, AnomalySettingRules.InitialManualThreshold(AnomalyKind.ThermalThrottling));
+        Assert.Equal(8, AnomalySettingRules.InitialManualThreshold(AnomalyKind.WorseThanUsual));
+    }
+
+    [Theory]
     [InlineData(HardwareKind.Cpu, 100.0, null, 95.0)]   // TjMax の 5℃ 下
     [InlineData(HardwareKind.Cpu, null, null, 90.0)]    // TjMax が取れなければ CPU の初期値
     [InlineData(HardwareKind.Gpu, null, null, 85.0)]

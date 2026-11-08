@@ -1,5 +1,6 @@
 using Yamori.Core.Anomalies.Detection;
 using Yamori.Core.Anomalies.Detection.Throttling;
+using Yamori.Core.Anomalies.Detection.Usual;
 using Yamori.Core.AppUsage;
 using Yamori.Core.Hardware.Wmi;
 using Yamori.Core.Sensors.Extended;
@@ -42,7 +43,7 @@ public static class HelperServiceCollectionExtensions
             provider.GetRequiredService<IExtendedSensorControl>(),
             CreatePawnIoProvider(provider.GetRequiredService<IExtendedSensorControl>(), provider.GetRequiredService<TimeProvider>()),
             provider.GetRequiredService<TimeProvider>(),
-            CreateAnomalyRules()));
+            CreateAnomalyRules));
         services.AddSingleton(provider => AppUsageRecording.CreateForHelper(
             MachineDataPaths.GetSensorDataDirectory(),
             provider.GetRequiredService<TimeProvider>()));
@@ -56,9 +57,23 @@ public static class HelperServiceCollectionExtensions
     }
 
     /// <summary>
-    /// 異常の判定の規則を作る。今はサーマルスロットリングだけ（「ふだんより悪い」は段階 5 で足す）。
+    /// 異常の判定の規則を作る。サーマルスロットリング（毎秒の値）と、ふだんより悪い（1 分集計を 1 時間ごとに読む）。
     /// </summary>
-    private static IReadOnlyList<IAnomalyRule> CreateAnomalyRules() => [new ThermalThrottlingRule()];
+    private static IReadOnlyList<IAnomalyRule> CreateAnomalyRules(AnomalyHistoryReader history) =>
+        [new ThermalThrottlingRule(), new WorseThanUsualRule(new SensorHistoryUsualSource(history), CreateUsualComparisonOptions())];
+
+    /// <summary>
+    /// 「ふだんより悪い」の決まりごとを作る。Debug のビルドでは、確かめ用のファイル（<c>usual-debug.json</c>）があればその値に差し替える。
+    /// </summary>
+    private static UsualComparisonOptions CreateUsualComparisonOptions()
+    {
+#if DEBUG
+        return DebugUsualComparisonOptions.Load(Path.Combine(AppContext.BaseDirectory, DebugUsualComparisonOptions.FileName))
+            ?? UsualComparisonOptions.Default;
+#else
+        return UsualComparisonOptions.Default;
+#endif
+    }
 
     /// <summary>
     /// PawnIO の Provider を作る。PawnIO を開くのは、同意があって最初に宣言するときだけ。
