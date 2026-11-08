@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Yamori.ViewModels;
@@ -38,6 +39,27 @@ public sealed partial class ShellView : UserControl
 
     /// <summary>設定画面の状態を取得する。x:Bind の参照先。</summary>
     public SettingsViewModel Settings { get; }
+
+    /// <summary>
+    /// 指定した画面に切り替える。通知を押してアプリを開いたときなどに使う。
+    /// </summary>
+    /// <param name="tag">画面のタグ（ナビゲーションの項目の Tag。例：<c>Realtime</c>）。</param>
+    /// <returns>切り替えたら true。そのタグの項目がなければ false。</returns>
+    public bool SelectPage(string tag)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tag);
+
+        foreach (var item in Navigation.MenuItems.Concat(Navigation.FooterMenuItems))
+        {
+            if (item is NavigationViewItem { Tag: string itemTag } navigationItem && itemTag == tag)
+            {
+                Navigation.SelectedItem = navigationItem;
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     private void OnSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {

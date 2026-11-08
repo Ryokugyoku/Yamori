@@ -80,6 +80,7 @@ Yamori.slnx
 ├─ Yamori.Core         データ収集、記録、集計、おすすめを出すロジック
 ├─ Yamori.Core.Tests   Coreのテスト
 ├─ Yamori.Helper       常駐の Windows サービス（LocalSystem）。センサーの収集・記録と PawnIO の利用を担当
+├─ Yamori.Notifier     通知専用の小さな常駐プログラム（サインイン時に起動、トレイに常駐、Windows の通知を出す）
 └─ Yamori.Guard        （v2・未作成）ファイアウォール制御用の補助プログラム（管理者権限）
 ```
 
@@ -89,6 +90,14 @@ Yamori.slnx
 - **管理者だけができる操作**：記録の設定の変更と、PawnIO の利用の同意の変更。画面から同意を変えるときは、`Yamori.Helper.exe --pawnio-consent on|off` を UAC の承認つきで起動し、そのコマンドが Helper に依頼する。
 - **Helper が動いていないとき**：画面は標準 API だけを読んで表示する（記録はせず、拡張センサーも使わない）。タイトルバーの見守りの札（「見守り中」「記録が止まっています」など。どの画面でも出る）と、リアルタイム画面のお知らせに「サービスを起動」のボタンを出し、押すと `sc.exe start` でサービスを起動する（権限が足りなければ UAC の承認つきで起動し直す。Debug は `YamoriHelperDev`、Release は `YamoriHelper`）。
 - **Helper のデータフォルダー**：パッケージのマシン共通フォルダー（なければ `%ProgramData%\Yamori`）の `sensors\`。アクセス権は SYSTEM と Administrators だけ。
+
+### 通知（Yamori.Notifier）
+- Helper はサービス（セッション 0）なので、自分では Windows の通知を出せない。そのため、利用者のサインイン時に起動する小さな常駐プログラム `Yamori.Notifier.exe` が通知を出す（MSIX のスタートアップ タスク `YamoriNotifier`。止めるのは Windows の「設定 → アプリ → スタートアップ」）。アプリ本体を開いたときに動いていなければ、アプリ本体が起動する。
+- トレイにアイコンを出す。左クリックで Yamori を開き、右クリックのメニューで「Yamori を開く」「通知を 1 時間止める」「通知を明日まで止める」「通知を再開する」「終了」を選べる。
+- 全画面のアプリ（ゲームなど）やプレゼンテーションの間は通知を出さない。夜間などは Windows の「応答不可」に任せる。
+- 通知を押すと、Windows がアプリ本体を開く（COM の起動と `AppNotificationManager`。`Package.appxmanifest` の `windows.comServer` と `windows.toastNotificationActivation`）。通知を出すのにサインインは不要で、通知から開いたときも Windows Hello のサインインのあとで画面を切り替える。
+- 想定外の失敗は `%LOCALAPPDATA%\Yamori\notifier-errors.log` に書き残す。
+- 開発中の状態：トレイ・一時停止・通知の出し方と押したときの動きまで。Helper から異常の知らせを受け取る部分は未実装（異常の検出と一緒に作る）。
 
 ### センサーの記録（Helper）
 - 時系列は **RocksDB**（`timeseries\`）、センサー・ハードウェアの一覧とイベントは **SQLite**（`master.db`）に保存する
@@ -130,6 +139,17 @@ Debug ビルドでは、パッケージ サービスの宣言（`Package.appxman
 
 - 登録したアカウントは、UAC なしに SYSTEM で動くコードを差し替えられるようになる。開発用の PC だけで使い、使い終わったら Uninstall すること。
 - Release のパッケージの `YamoriHelper` と同じパイプを使うため、両方を同時には動かせない。
+
+### 開発中の通知
+Debug でもスタートアップ タスクと通知の起動の宣言は残す。パッケージに入った状態でないと通知を出せないため、確かめるときはパッケージの ID つきで起動する。
+
+```powershell
+$pfn = (Get-AppxPackage b14827bd-a0ec-4f5d-a38d-dbb3f654a1f9).PackageFamilyName
+$dir = (Get-AppxPackage b14827bd-a0ec-4f5d-a38d-dbb3f654a1f9).InstallLocation
+Invoke-CommandInDesktopPackage -PackageFamilyName $pfn -AppId App -Command "$dir\Yamori.Notifier.exe" -Args '--test-notification'   # 確かめ用の通知を 1 回出す
+```
+
+- `Package.appxmanifest` の拡張（Extensions）を変えたときは、同じ版のままでは登録し直せない。Visual Studio の配置か、`Remove-AppxPackage -PreserveApplicationData` のあとで登録し直す。
 
 ---
 
@@ -213,7 +233,7 @@ Debug ビルドでは、パッケージ サービスの宣言（`Package.appxman
 - [ ] アプリごとの GPU・読み書き・メモリの記録（今の値はリアルタイム表示と、メモリはアプリ画面で見られる）
 - [ ] GPU・ストレージ・ネットワークの使用率、SSD寿命の長期的な傾向
 - [ ] アプリごとの通信量（v1.5）
-- [ ] ローカル通知
+- [ ] 異常の自動検出と通知（サーマルスロットリング、ふだんより悪い状態）と、部品ごとの分析画面。通知の常駐プログラムの土台（トレイ・一時停止・通知を押して開く）までできている
 
 既知の制限：
 - CPU の温度は、拡張センサー（PawnIO）を使う Intel の CPU でだけ表示する。AMD の CPU と、マザーボードにつながったファンの回転数にはまだ対応していない（標準 API では読めない）。GPU のファン・温度は、ドライバーが Windows に報告している場合だけ表示する。
@@ -238,6 +258,7 @@ Debug ビルドでは、パッケージ サービスの宣言（`Package.appxman
 | `Storage/` | データの置き場所（画面の設定と、想定外のエラーの記録 `errors.log` は `%LOCALAPPDATA%\Yamori`、Helper の記録はマシン共通のフォルダー）と、Helper のデータフォルダーのアクセス権。`Legacy/` は以前の版の CSV を起動時に消す処理 |
 | `Settings/` | ユーザー設定（表示言語）と、その保存（`%LOCALAPPDATA%\Yamori\settings.json`） |
 | `Localization/`, `Resources/` | 表示文字列（`*.resx`。英語が既定、`.ja`・`.es` が翻訳） |
+| `Notifications/` | 通知の常駐プログラムとアプリ本体の間の決まりごと（通知を押したときの引数、通知の XML、一時停止、常駐プログラムの名前） |
 | `Processes/` | プロセスの使用量（メモリ、CPU・GPU・入出力）の取得と、アプリ単位の集計 |
 | `AppUsage/` | アプリごとの CPU 使用率の記録（Helper の中で動く）。`Sampling/`（パフォーマンスカウンターで測る）、`Recording/`（1 分ごとの平均と、記録の繰り返し・保持期間）、`Storage/`（SQLite の `app-usage.db`）、`Analysis/`（期間の平均と、高負荷の時間だけの平均）、`Service/`（読み出しの窓口。画面からは `Sensors/Ipc/` のパイプで読む） |
 | `Analysis/` | 負荷時間（しきい値を超えていた時間の割合）の分析。`History/` は分析に使う使用率の履歴の読み取り元（Helper の時系列の 1 分集計をパイプで読む） |

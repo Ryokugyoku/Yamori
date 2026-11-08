@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Yamori.Core.Notifications;
 using Yamori.Core.Storage.Legacy;
 using Yamori.ViewModels;
 using Yamori.Views;
@@ -21,6 +22,8 @@ public sealed class AppSession : IDisposable
     private MainViewModel? _main;
     private HelperStatusViewModel? _status;
     private Task? _sensorsRun;
+    private ShellView? _shell;
+    private NotificationActivationRequest? _pendingActivation;
 
     /// <summary>
     /// 部品とウィンドウを指定して作る。
@@ -88,6 +91,44 @@ public sealed class AppSession : IDisposable
         _main = _services.CreateMainViewModel();
         ShowShell(openSettings: false);
         _ = _main.RefreshCommand.ExecuteAsync(null);
+
+        // サインイン前に通知を押して開いたときは、ここでその画面へ移る。
+        if (_pendingActivation is { } pending)
+        {
+            _pendingActivation = null;
+            ApplyActivation(pending);
+        }
+    }
+
+    /// <summary>
+    /// 通知を押してアプリが開かれたときの指定に従って画面を切り替える。
+    /// サインインがまだなら覚えておき、サインインのあとで切り替える（通知から開いても、サインインは省かない）。UI スレッドから呼ぶこと。
+    /// </summary>
+    /// <param name="request">開き方の指定。</param>
+    /// <exception cref="ArgumentNullException"><paramref name="request"/> が null。</exception>
+    public void HandleActivation(NotificationActivationRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (_shell is null)
+        {
+            _pendingActivation = request;
+            return;
+        }
+
+        ApplyActivation(request);
+    }
+
+    private void ApplyActivation(NotificationActivationRequest request)
+    {
+        if (request.Kind != NotificationActivationKind.OpenAnomaly)
+        {
+            return;
+        }
+
+        // 段階 4 で「分析」画面ができたら、そこでこの異常（request.AnomalyId）を選んだ状態で開く。
+        // それまでは、通知から開いたことが分かるようにリアルタイム画面を開く。
+        _shell?.SelectPage("Realtime");
     }
 
     private void ShowShell(bool openSettings)
@@ -99,7 +140,8 @@ public sealed class AppSession : IDisposable
 
         var settings = _services.CreateSettingsViewModel();
         settings.LanguageChanged += OnLanguageChanged;
-        _window.ShowContent(new ShellView(_main!, settings, _services.CreateRealtimeViewModel, openSettings));
+        _shell = new ShellView(_main!, settings, _services.CreateRealtimeViewModel, openSettings);
+        _window.ShowContent(_shell);
     }
 
     private void OnLanguageChanged(object? sender, EventArgs e)

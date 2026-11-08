@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Yamori.Composition;
+using Yamori.Core.Notifications;
 using Yamori.Services;
 
 namespace Yamori;
@@ -10,6 +11,7 @@ namespace Yamori;
 /// </summary>
 public partial class App : Application
 {
+    private readonly NotificationActivationListener _notifications = new();
     private MainWindow? _window;
     private AppSession? _session;
 
@@ -34,10 +36,37 @@ public partial class App : Application
 
         _window = new MainWindow();
         _session = new AppSession(services, _window);
-        _window.Closed += (_, _) => _session.Dispose();
+        _window.Closed += (_, _) =>
+        {
+            _notifications.Activated -= OnNotificationActivated;
+            _notifications.Dispose();
+            _session.Dispose();
+        };
 
         _session.Start();
         _window.Activate();
+
+        // 通知を押して起動されたときは、サインインのあとでその画面へ移る。
+        _notifications.Activated += OnNotificationActivated;
+        if (_notifications.Start() is { } request)
+        {
+            _session.HandleActivation(request);
+        }
+
+        // 通知の常駐プログラムを止めていても、アプリを開けば通知が戻るようにする。
+        _ = Task.Run(NotifierProcessStarter.EnsureRunning);
+    }
+
+    /// <summary>
+    /// アプリが開いている間に通知が押されたとき、ウィンドウを前に出して、その画面へ移る。
+    /// </summary>
+    private void OnNotificationActivated(object? sender, NotificationActivationRequest request)
+    {
+        _window?.DispatcherQueue.TryEnqueue(() =>
+        {
+            _session?.HandleActivation(request);
+            _window.Activate();
+        });
     }
 
     /// <summary>

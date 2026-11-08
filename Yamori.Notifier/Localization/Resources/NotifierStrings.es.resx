@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Tray_Tooltip" xml:space="preserve">
+    <value>Yamori - vigilando tu PC</value>
+  </data>
+  <data name="Tray_TooltipPaused" xml:space="preserve">
+    <value>Yamori - notificaciones en pausa hasta las {0}</value>
+  </data>
+  <data name="Tray_Open" xml:space="preserve">
+    <value>Abrir Yamori</value>
+  </data>
+  <data name="Tray_PauseOneHour" xml:space="preserve">
+    <value>Pausar notificaciones 1 hora</value>
+  </data>
+  <data name="Tray_PauseUntilTomorrow" xml:space="preserve">
+    <value>Pausar notificaciones hasta mañana</value>
+  </data>
+  <data name="Tray_Resume" xml:space="preserve">
+    <value>Reanudar notificaciones</value>
+  </data>
+  <data name="Tray_Exit" xml:space="preserve">
+    <value>Salir</value>
+  </data>
+  <data name="Test_Title" xml:space="preserve">
+    <value>Notificación de prueba de Yamori</value>
+  </data>
+  <data name="Test_Body" xml:space="preserve">
+    <value>Haz clic para abrir Yamori.</value>
+  </data>
+</root>

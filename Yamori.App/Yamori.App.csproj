@@ -47,6 +47,8 @@
     <ProjectReference Include="..\Yamori.Core\Yamori.Core.csproj" />
     <!-- The Helper (Windows service) ships inside this MSIX; its exe, runtimeconfig, deps and PawnIO module are copied next to Yamori.exe. -->
     <ProjectReference Include="..\Yamori.Helper\Yamori.Helper.csproj" />
+    <!-- The notifier (tray + Windows notifications, started at sign-in) also ships inside this MSIX next to Yamori.exe. -->
+    <ProjectReference Include="..\Yamori.Notifier\Yamori.Notifier.csproj" />
   </ItemGroup>
 
   <!--

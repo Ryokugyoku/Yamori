@@ -6,8 +6,10 @@
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   xmlns:systemai="http://schemas.microsoft.com/appx/manifest/systemai/windows10"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   xmlns:desktop6="http://schemas.microsoft.com/appx/manifest/desktop/windows10/6"
-  IgnorableNamespaces="uap rescap systemai desktop6">
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  IgnorableNamespaces="uap rescap systemai desktop desktop6 com">
 
   <Identity
     Name="b14827bd-a0ec-4f5d-a38d-dbb3f654a1f9"
@@ -44,14 +46,29 @@
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
-      <!-- release-only:begin (removed from Debug builds; during development the Helper runs as a sc.exe service via Yamori.Helper\DevService.ps1) -->
       <Extensions>
+        <!-- Yamori Notifier: the small tray program started at sign-in that shows anomaly notifications (Windows toasts) for the Helper. Users can turn it off in Settings > Apps > Startup. -->
+        <desktop:Extension Category="windows.startupTask" Executable="Yamori.Notifier.exe" EntryPoint="Windows.FullTrustApplication">
+          <desktop:StartupTask TaskId="YamoriNotifier" Enabled="true" DisplayName="Yamori" />
+        </desktop:Extension>
+        <!-- Clicking a notification activates Yamori.exe through this COM class (Windows App SDK AppNotificationManager). The CLSID must match in both entries. -->
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:ExeServer Executable="Yamori.exe" Arguments="----AppNotificationActivated:" DisplayName="Yamori notifications">
+              <com:Class Id="5A3B078A-90C5-4A2E-AA94-11D3493F8AA2" />
+            </com:ExeServer>
+          </com:ComServer>
+        </com:Extension>
+        <desktop:Extension Category="windows.toastNotificationActivation">
+          <desktop:ToastNotificationActivation ToastActivatorCLSID="5A3B078A-90C5-4A2E-AA94-11D3493F8AA2" />
+        </desktop:Extension>
+        <!-- release-only:begin (removed from Debug builds; during development the Helper runs as a sc.exe service via Yamori.Helper\DevService.ps1) -->
         <!-- Yamori Helper: the always-on Windows service (LocalSystem) that collects and records sensors and owns PawnIO. -->
         <desktop6:Extension Category="windows.service" Executable="Yamori.Helper.exe" EntryPoint="Windows.FullTrustApplication">
           <desktop6:Service Name="YamoriHelper" StartupType="auto" StartAccount="localSystem" />
         </desktop6:Extension>
+        <!-- release-only:end -->
       </Extensions>
-      <!-- release-only:end -->
     </Application>
   </Applications>
 

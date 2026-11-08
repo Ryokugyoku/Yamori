@@ -11,4 +11,7 @@
   <Project Path="Yamori.Helper/Yamori.Helper.csproj">
     <Platform Solution="*|x64" Project="x64" />
   </Project>
+  <Project Path="Yamori.Notifier/Yamori.Notifier.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
 </Solution>
